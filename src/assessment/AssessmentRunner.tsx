@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  SandpackCodeEditor,
   SandpackPreview,
   SandpackProvider,
   SandpackTests,
@@ -12,6 +11,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import type { AssessmentBundle } from '@/content-layer/loader';
 import { AssessmentFormatButton } from './AssessmentFormatButton';
+import { AssessmentMonacoEditor } from './AssessmentMonacoEditor';
 import type { GradeResult } from './grade';
 import { ResultPanel } from './ResultPanel';
 import { toSandpackFiles } from './sandpackFiles';
@@ -52,7 +52,7 @@ function Lab({ nextHref, onComplete, result }: LabProps): ReactNode {
       <Panel defaultSize={56} minSize={28} className="lab__editor">
         <AssessmentFormatButton />
         <div className="lab__editor-body">
-          <SandpackCodeEditor showTabs showLineNumbers />
+          <AssessmentMonacoEditor />
         </div>
       </Panel>
 

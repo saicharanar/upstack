@@ -1026,8 +1026,17 @@ a.sidebar__chapter:hover {
   overflow: hidden;
 }
 
-.lab__editor-body .sp-code-editor {
+.lab__editor-body .sp-code-editor,
+.assessment-monaco {
   block-size: 100%;
+}
+
+.assessment-monaco__loading {
+  display: grid;
+  place-items: center;
+  block-size: 100%;
+  margin: 0;
+  color: var(--color-text-muted);
 }
 
 .lab__side {
