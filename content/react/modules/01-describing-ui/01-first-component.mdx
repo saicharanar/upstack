@@ -1,0 +1,150 @@
+---
+id: first-component
+title: Your First Component
+order: 1
+module: describing-ui
+summary: Components are the building blocks of every React app. We'll see what a component really is (just a function that returns markup), write one from scratch, and learn to nest them into a tree.
+concepts:
+  - component-is-a-function
+  - component-returns-markup
+  - component-naming
+estMinutes: 12
+status: published
+assessment: welcome-banner
+prereqs: []
+---
+
+Every React screen you've ever used is built from **components**. Once you can write one, most
+of React is just learning how to combine them. So this is the foundation — let's build it
+carefully.
+
+## Apps are trees of components
+
+Look at almost any app and you can mentally draw boxes around its parts: a header, a sidebar,
+a feed, and inside the feed a repeated "post," and inside each post an avatar and a like
+button. Each of those boxes is a **component**, and they nest inside one another:
+
+<Mermaid
+  chart={`flowchart TD
+    App["App"] --> Header["Header"]
+    App --> Feed["Feed"]
+    App --> Footer["Footer"]
+    Feed --> P1["Post"]
+    Feed --> P2["Post"]
+    P1 --> Avatar["Avatar"]
+    P1 --> LikeButton["LikeButton"]`}
+  caption="A real UI is a tree of components — small pieces nested inside bigger ones."
+/>
+
+This is the mental picture to keep: you build big UIs by composing small, reusable
+components. Now let's see what one actually *is*.
+
+## A component is just a function that returns markup
+
+Here is a complete, working React component:
+
+```jsx
+function Profile() {
+  return <img src="https://i.imgur.com/MK3eW3As.jpg" alt="Ada Lovelace" />;
+}
+```
+
+That's it. Read it as plain JavaScript: it's a function named `Profile` that **returns some
+markup** (that `<img>` is JSX — HTML-like syntax we'll cover properly next chapter). When
+React "renders" this component, it calls the function and puts the returned markup on screen.
+
+So a component is nothing exotic — it's a function whose job is to **describe a piece of UI**.
+
+## Two rules that always apply
+
+There are exactly two things React insists on:
+
+1. **The name must start with a capital letter.** `Profile`, not `profile`. This is how React
+   tells *your components* apart from plain HTML tags like `<img>` or `<div>` — lowercase means
+   "HTML tag," capitalized means "a component I wrote." Get this wrong and React quietly treats
+   your component as an unknown HTML tag.
+2. **It must return markup** — some JSX, or `null` if it should render nothing at all. A
+   function that returns nothing isn't a valid component.
+
+<Callout type="gotcha" title="Capitalization is not a style preference">
+  `<profile />` (lowercase) and `<Profile />` (capitalized) mean *completely different things*
+  to React. Lowercase → an HTML element. Uppercase → your component. This trips up nearly
+  every beginner once; now you'll recognize it instantly.
+</Callout>
+
+## Building and using one
+
+A component becomes useful when other components render it. You use it like an HTML tag,
+capitalized:
+
+```jsx
+function Profile() {
+  return <img src="https://i.imgur.com/MK3eW3As.jpg" alt="Ada Lovelace" />;
+}
+
+function Gallery() {
+  return (
+    <section>
+      <h1>Amazing scientists</h1>
+      <Profile />
+      <Profile />
+      <Profile />
+    </section>
+  );
+}
+```
+
+`Gallery` renders `Profile` three times. Write the component once, reuse it anywhere — this is
+the whole payoff. Fix a bug in `Profile` and all three (and every other place it's used)
+improve at once.
+
+## Why real apps are built this way
+
+Products are built by teams, and teams need pieces they can build, test, and change
+independently. A `Button` component written once and used in a hundred places means one place
+to fix, one place to restyle, one consistent button everywhere. That's why a React app is a
+*tree of components* rather than one giant HTML file — small pieces, composed.
+
+## See it run
+
+Edit the component below — change the name, add another line of markup, add a second
+component and render it — and watch the preview update live.
+
+<LiveExample
+  code={`function Profile() {
+  return (
+    <div>
+      <h2>Ada Lovelace</h2>
+      <p>The first computer programmer.</p>
+    </div>
+  );
+}
+
+export default function Gallery() {
+  return (
+    <section>
+      <h1>Amazing scientists</h1>
+      <Profile />
+      <Profile />
+    </section>
+  );
+}`}
+/>
+
+Try this: change the text inside `Profile`, and notice **both** copies update — that's reuse
+in action.
+
+## Recap
+
+- A component is a **JavaScript function that returns markup**.
+- Its name must be **capitalized**, and it must **return** JSX (or `null`).
+- You **use** a component by writing it as a tag: `<Profile />`.
+- Apps are **trees** of components — small, reusable pieces nested and composed.
+
+## Your turn
+
+Write your very first component from scratch: a `NameBadge` — the "Hello, my name is…" sticker
+you wear at an event — with a big hello heading and a name below it. Run the checks to confirm
+each piece.
+
+<Assessment id="welcome-banner" />

@@ -1,0 +1,116 @@
+---
+id: custom-hooks
+title: Reusing Logic with Custom Hooks
+order: 8
+module: escape-hatches
+summary: Custom Hooks let you extract and reuse stateful logic between components. Learn the naming rule, what they share (logic, not state), and how to build one.
+concepts:
+  - hook-extract-logic
+  - hook-naming-use
+  - hook-shares-logic-not-state
+estMinutes: 12
+status: published
+assessment: use-counter
+prereqs: []
+---
+
+When two components need the same **stateful logic** — a counter, a form field, a data fetch,
+an online/offline indicator — you don't copy-paste the `useState`/`useEffect` blocks. You
+extract them into a **custom Hook**: a function whose name starts with `use` and that calls
+other Hooks. This is how the whole React ecosystem shares behavior.
+
+## Building one
+
+A custom Hook is just a function that uses Hooks and returns whatever the caller needs:
+
+```jsx
+import { useState } from 'react';
+
+function useCounter(initial = 0) {
+  const [count, setCount] = useState(initial);
+  const increment = () => setCount((c) => c + 1);
+  return { count, increment };
+}
+```
+
+Any component can now use it, and stays tiny:
+
+```jsx
+function Counter() {
+  const { count, increment } = useCounter(0);
+  return <button onClick={increment}>{count}</button>;
+}
+```
+
+You've moved the "how a counter works" logic into one reusable place.
+
+## The crucial subtlety: Hooks share logic, not state
+
+<Mermaid
+  chart={`flowchart TD
+    Hook["useCounter() — reusable logic"]
+    Hook --> A["Counter A → its OWN count"]
+    Hook --> B["Counter B → its OWN count"]`}
+  caption="Each call to a custom Hook gets its own independent state. Hooks reuse logic, not values."
+/>
+
+<Callout type="note" title="Two components using the same Hook do NOT share state">
+  Each call to `useCounter()` runs its own `useState`, so each component gets a **separate**
+  count. Custom Hooks reuse the *logic*, not the *values*. If you want two components to share
+  the same value, that's lifting state up or Context — not a custom Hook.
+</Callout>
+
+## The rules
+
+- **Name it `useSomething`.** The `use` prefix is how React and the linter know it's a Hook and
+  can enforce the rules of Hooks inside it. A regular function that calls `useState` but isn't
+  named `use…` is a bug waiting to happen.
+- **Only call Hooks at the top level** of the custom Hook — same rule as components.
+- **Extract when logic is shared or genuinely complex**, not for its own sake. A good custom
+  Hook has a clear, nameable purpose: `useOnlineStatus`, `useFormInput`, `useChatRoom`.
+
+## Why this matters
+
+Every "use this library" hook you'll ever import — `useQuery` (data fetching), `useForm`,
+router hooks — is a custom Hook. Writing your own is how you keep components small, stop
+duplicating logic, and package behavior for reuse. It's the natural graduation from "I know the
+built-in Hooks" to "I compose them."
+
+## See it run
+
+<LiveExample
+  code={`import { useState } from 'react';
+
+function useCounter(initial = 0) {
+  const [count, setCount] = useState(initial);
+  return { count, increment: () => setCount((c) => c + 1) };
+}
+
+export default function App() {
+  const a = useCounter(0);
+  const b = useCounter(100); // independent state!
+  return (
+    <div style={{ display: 'flex', gap: 16 }}>
+      <button onClick={a.increment}>A: {a.count}</button>
+      <button onClick={b.increment}>B: {b.count}</button>
+    </div>
+  );
+}`}
+/>
+
+Click each — they count independently, proving each `useCounter()` call has its own state.
+
+## Recap
+
+- A **custom Hook** is a `use…`-named function that calls other Hooks to package reusable
+  logic.
+- Each call gets its **own state** — Hooks reuse **logic, not values**.
+- Follow the rules of Hooks; name it `use…`; extract when logic is shared or complex.
+- Library hooks (`useQuery`, `useForm`, …) are all just custom Hooks.
+
+## Your turn
+
+Extract a `useCounter` custom Hook that manages the count and exposes `{ count, increment }`,
+and wire a component to it. Run the checks.
+
+<Assessment id="use-counter" />

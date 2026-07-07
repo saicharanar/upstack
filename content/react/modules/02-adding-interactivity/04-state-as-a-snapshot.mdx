@@ -1,0 +1,85 @@
+---
+id: state-as-a-snapshot
+title: State as a Snapshot
+order: 4
+module: adding-interactivity
+summary: State variables look like normal variables, but each render sees a fixed snapshot of them. This one idea explains why setting state doesn't immediately change the value you already have.
+concepts:
+  - snapshot-fixed-per-render
+  - snapshot-async-batching
+  - snapshot-stale-closure
+estMinutes: 11
+status: published
+assessment: null
+prereqs: []
+---
+
+Here's a surprise that trips up nearly everyone learning React — and once it clicks, a whole
+class of confusing bugs disappears. Setting state does **not** change the variable in the code
+that's already running. It schedules a *new render* with a *new value*. For the render you're
+currently in, a state variable is a fixed **snapshot** that never changes.
+
+## The example that breaks intuition
+
+```jsx
+const [number, setNumber] = useState(0);
+
+<button onClick={() => {
+  setNumber(number + 1);
+  setNumber(number + 1);
+  setNumber(number + 1);
+}}>+3?</button>
+```
+
+You'd reasonably expect `+3`. It adds **1**. Why?
+
+During this click, `number` is `0` — and it stays `0` for the entire handler, because it's a
+snapshot of this render. So all three lines compute `setNumber(0 + 1)` → they all say "set it
+to 1." React re-renders once, with `number = 1`.
+
+<Mermaid
+  chart={`flowchart TD
+    A["This render: number = 0 (a fixed snapshot)"] --> B["setNumber(0 + 1) → 'set to 1'"]
+    A --> C["setNumber(0 + 1) → 'set to 1'"]
+    A --> D["setNumber(0 + 1) → 'set to 1'"]
+    B --> E["Next render: number = 1"]
+    C --> E
+    D --> E`}
+  caption="All three calls read the same snapshot (0), so they all set 1. Result: +1, not +3."
+/>
+
+## Why a render "freezes" its state
+
+Every time React renders a component, the `number` for *that* render is fixed. The event
+handlers created during that render "remember" that render's `number` — even if you `await`
+something or use a `setTimeout` and the user clicks more in the meantime. The handler will
+still see the `number` from the render it was born in.
+
+<Callout type="note" title="A render captures everything">
+  Each render has its own props, its own state values, its own event handlers — all built from
+  the state *at the moment that render happened*. Calling a setter doesn't reach back and change
+  the current render's variables; it asks React to do a fresh render with new values.
+</Callout>
+
+## Why React works this way
+
+Treating state as unchanging within a render makes your code predictable: a handler always sees
+a consistent set of values, even across delays. It's also what makes **batching** safe — React
+can process several state updates and re-render once, without any half-applied in-between state
+flickering on screen.
+
+## The fix (and the next chapter)
+
+So how *do* you make three updates stack to `+3`? You pass an **updater function** —
+`setNumber(n => n + 1)` — so each update builds on the latest queued value instead of the stale
+snapshot. That's exactly the next chapter, and its exercise.
+
+## Recap
+
+- A state variable is a **snapshot**: fixed for the duration of a render.
+- Calling a setter schedules a **new render**; it doesn't change the value you already have in
+  the current handler.
+- This makes handlers predictable and enables **batching** (many updates → one re-render).
+- To stack updates that depend on the previous value, use **updater functions** (next).
+
+Read this, then mark it complete.

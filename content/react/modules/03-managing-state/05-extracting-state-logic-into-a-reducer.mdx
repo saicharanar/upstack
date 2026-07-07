@@ -1,0 +1,119 @@
+---
+id: reducer
+title: Extracting State Logic into a Reducer
+order: 5
+module: managing-state
+summary: When state updates are scattered across many handlers, a reducer consolidates them into one function. Learn useReducer, actions, dispatch, and when a reducer beats useState.
+concepts:
+  - reducer-usereducer
+  - reducer-actions
+  - reducer-pure-function
+estMinutes: 13
+status: published
+assessment: task-reducer
+prereqs: []
+---
+
+As a component grows, its state updates tend to spread across many event handlers — add,
+delete, edit, toggle, each calling setters in its own way. It gets hard to see all the ways
+state can change. A **reducer** gathers that logic into one function, outside the component, so
+every update flows through a single, testable place.
+
+## The shift: from setters to dispatched actions
+
+With `useState`, handlers call setters directly. With `useReducer`, handlers **dispatch
+actions** — plain objects describing *what happened* — and one **reducer** function decides how
+state changes in response:
+
+<Mermaid
+  chart={`flowchart LR
+    H["Event handler"] -->|"dispatch({ type: 'increment' })"| D["dispatch"]
+    D --> R["reducer(state, action)"]
+    R -->|"returns next state"| S["New state → re-render"]`}
+  caption="Handlers dispatch actions; one reducer decides the next state from (state, action)."
+/>
+
+```jsx
+import { useReducer } from 'react';
+
+function reducer(state, action) {
+  switch (action.type) {
+    case 'increment': return state + 1;
+    case 'reset':     return 0;
+    default:          return state;
+  }
+}
+
+function Counter() {
+  const [count, dispatch] = useReducer(reducer, 0); // reducer + initial state
+  return (
+    <>
+      <p>{count}</p>
+      <button onClick={() => dispatch({ type: 'increment' })}>+1</button>
+      <button onClick={() => dispatch({ type: 'reset' })}>Reset</button>
+    </>
+  );
+}
+```
+
+`useReducer` returns the current state and a `dispatch` function. Handlers just say *what
+happened* (`{ type: 'increment' }`); the reducer holds *how* state changes.
+
+## Reducers must be pure
+
+<Callout type="note" title="A reducer is a pure function">
+  A reducer takes `(state, action)` and returns the **next state** — no mutation, no side
+  effects, no fetching. Same inputs, same output. That purity is a gift: you can test all your
+  update logic by calling `reducer(state, action)` directly, with no component and no rendering.
+  (It's the same idea as `Array.reduce` — accumulate a result step by step.)
+</Callout>
+
+## When to use a reducer vs. useState
+
+- **`useState`** — simple, independent values (a toggle, an input, a count). Start here.
+- **`useReducer`** — when several pieces of state change together, when the next state depends
+  intricately on the action, or when you want update logic *out* of the component so it's easy
+  to read and test. Common for todo lists, forms, and complex widgets.
+
+Neither is "better" — they're two tools. Many components mix both.
+
+## See it run
+
+<LiveExample
+  code={`import { useReducer } from 'react';
+
+function reducer(count, action) {
+  if (action.type === 'inc') return count + 1;
+  if (action.type === 'dec') return count - 1;
+  if (action.type === 'reset') return 0;
+  return count;
+}
+
+export default function Stepper() {
+  const [count, dispatch] = useReducer(reducer, 0);
+  return (
+    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      <button onClick={() => dispatch({ type: 'dec' })}>-</button>
+      <strong>{count}</strong>
+      <button onClick={() => dispatch({ type: 'inc' })}>+</button>
+      <button onClick={() => dispatch({ type: 'reset' })}>reset</button>
+    </div>
+  );
+}`}
+/>
+
+Notice all the state logic lives in one `reducer` function — the buttons just dispatch.
+
+## Recap
+
+- A reducer moves scattered update logic into **one pure function** outside the component.
+- Handlers **dispatch actions** (`{ type: ... }`); the reducer returns the **next state**.
+- `const [state, dispatch] = useReducer(reducer, initialState)`.
+- Prefer `useState` for simple values; reach for `useReducer` when logic is complex or shared.
+
+## Your turn
+
+Write a reducer that handles `increment` and `reset` actions for a counter. Run the checks for
+each action.
+
+<Assessment id="task-reducer" />

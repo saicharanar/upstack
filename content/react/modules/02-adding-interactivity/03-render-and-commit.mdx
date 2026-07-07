@@ -1,0 +1,80 @@
+---
+id: render-and-commit
+title: Render and Commit
+order: 3
+module: adding-interactivity
+summary: How React actually puts UI on screen, in three steps — trigger, render, commit — and why it only touches the DOM where something genuinely changed.
+concepts:
+  - rac-trigger
+  - rac-render
+  - rac-commit
+estMinutes: 9
+status: published
+assessment: null
+prereqs: []
+---
+
+You've seen that changing state updates the screen. But *how*, exactly? React does it in
+**three distinct steps**. Understanding them clears up a surprising amount of later behavior —
+including the mind-bending "snapshot" idea in the next chapter.
+
+<Mermaid
+  chart={`flowchart LR
+    T["1. Trigger<br/>a render is requested"] --> R["2. Render<br/>React calls your components"] --> C["3. Commit<br/>React updates the DOM"]`}
+  caption="Every screen update goes through three steps: trigger → render → commit."
+/>
+
+## Step 1: Trigger
+
+A render is *triggered* for one of exactly two reasons:
+
+- **The initial render**, when your app first starts (a framework, or `createRoot(...).render(...)`,
+  kicks this off once).
+- **A state update.** Every time you call a `set` function, React queues a re-render of that
+  component. Changing state is like a customer placing an order — it *requests* an update.
+
+## Step 2: Render
+
+"Rendering" means **React calls your component function** to find out what should be on screen.
+On the first render it calls the root component; on a state update it calls the component whose
+state changed (and its children).
+
+This step is a pure calculation (Module 1!) — it produces a description of the UI and must have
+no side effects. Crucially:
+
+<Callout type="note" title='"Render" does NOT mean "touch the DOM"'>
+  Rendering is just React calling your function to get JSX. It does **not** change the screen
+  yet — that's the next step. This separation is exactly why, for one render, a state value can
+  still look "old": the function already ran with the previous value. Hold this thought for the
+  next chapter.
+</Callout>
+
+## Step 3: Commit
+
+Now React takes the JSX it computed and updates the real DOM — but it's smart about it. It
+**compares** the new render with the previous one and changes **only the DOM nodes that
+actually differ**. If a component rendered identical output, React leaves that part of the DOM
+completely untouched.
+
+That's why React feels fast: it re-runs your functions freely (cheap) but only performs the
+minimal DOM surgery (expensive). After committing, the browser repaints the pixels.
+
+## Putting it together
+
+For a counter you click:
+
+1. **Trigger** — you click; `setCount(1)` requests a render.
+2. **Render** — React calls `Counter()` again; this time it returns `<button>Clicked 1…</button>`.
+3. **Commit** — React sees only the text changed, so it updates just that text node. Nothing
+   else in the DOM is touched.
+
+## Recap
+
+- Screen updates happen in three steps: **trigger** (initial render or a state change),
+  **render** (React calls your components to compute JSX), **commit** (React updates only the
+  changed DOM nodes).
+- **Rendering ≠ updating the DOM** — rendering is a pure calculation; committing is the DOM
+  change.
+- React re-renders freely but commits minimally, which is what keeps it fast.
+
+Read this, then mark it complete. Next: why a state value can look "stuck" during a render.

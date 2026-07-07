@@ -1,0 +1,79 @@
+---
+id: lifecycle-of-reactive-effects
+title: Lifecycle of Reactive Effects
+order: 5
+module: escape-hatches
+summary: An Effect has a different lifecycle than a component. Learn to think in terms of starting and stopping synchronization, not mounting and unmounting.
+concepts:
+  - effect-start-stop-sync
+  - effect-reactive-values
+  - effect-per-dependency-change
+estMinutes: 10
+status: published
+assessment: null
+prereqs: []
+---
+
+A component mounts, updates, and unmounts. An Effect has a simpler but *different* lifecycle:
+it **starts synchronizing** and later **stops synchronizing** — and that pair can happen many
+times while a single component stays mounted. Thinking this way (instead of "run on mount")
+prevents a lot of Effect confusion.
+
+## Think "sync," not "mount"
+
+Consider an Effect that connects to a chat room based on `roomId`:
+
+```jsx
+useEffect(() => {
+  const connection = createConnection(roomId);
+  connection.connect();
+  return () => connection.disconnect();
+}, [roomId]);
+```
+
+Don't read this as "connect on mount, disconnect on unmount." Read it as: **synchronize to
+`roomId`**. If `roomId` changes from "general" to "travel", React stops the old sync
+(disconnect from general) and starts a new one (connect to travel) — the component never
+unmounted:
+
+<Mermaid
+  chart={`flowchart LR
+    R1["roomId = 'general'"] -->|"start sync"| C1["connected to general"]
+    C1 -->|"roomId changes"| Stop["cleanup: disconnect general"]
+    Stop -->|"start sync again"| C2["connected to travel"]`}
+  caption="An Effect starts and stops synchronizing as its dependencies change — many times per mount."
+/>
+
+<Callout type="note" title="Each Effect = one synchronization">
+  Every Effect should describe a single, self-contained sync process with its own start (setup)
+  and stop (cleanup). If one Effect does two unrelated things, **split it** — each can have its
+  own dependencies and its own lifecycle.
+</Callout>
+
+## Effects react to reactive values
+
+Props, state, and anything computed from them are **reactive** — they can differ between
+renders. An Effect "reacts to" every reactive value it reads, so all of them belong in the
+dependency array. React then re-synchronizes whenever any of them changes. This is why the
+dependency list isn't optional decoration — it literally *defines when to re-sync*.
+
+Values that are **not** reactive (module-level constants, things that never change) don't need
+to be dependencies — and part of the skill (next two chapters) is arranging your code so the
+honest dependency list stays small.
+
+## Strict Mode verifies the symmetry
+
+In development, React deliberately does start → stop → start once for each Effect, to check
+that stopping and restarting works cleanly. If your chat ends up with duplicate connections,
+that's the missing symmetry between setup and cleanup showing up early — exactly what you want
+to catch.
+
+## Recap
+
+- An Effect's lifecycle is **start syncing → stop syncing**, repeatable while mounted.
+- Read Effects as "**synchronize to these values**," not "run on mount."
+- Every **reactive** value the Effect reads must be a dependency; React re-syncs when they
+  change.
+- Keep each Effect to **one** synchronization, with matching setup and cleanup.
+
+Read this, then mark it complete — next, reading the latest value without re-syncing.

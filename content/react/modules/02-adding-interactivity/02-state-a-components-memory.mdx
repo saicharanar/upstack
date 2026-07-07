@@ -1,0 +1,214 @@
+---
+id: state-memory
+title: "State: A Component's Memory"
+order: 2
+module: adding-interactivity
+summary: State is how a component remembers things between renders. We'll see exactly why a normal variable can't do the job, meet the useState Hook step by step, and build a real mental model of how a click turns into a screen update.
+concepts:
+  - state-usestate
+  - state-vs-variable
+  - state-rules-of-hooks
+estMinutes: 16
+status: published
+assessment: toggle-visibility
+prereqs: []
+---
+
+In the last chapter you attached event handlers — functions that run when the user clicks.
+But a handler on its own can only do throwaway things like pop up an alert. The moment you
+want the click to **change what's on the screen** — increase a number, open a panel, switch a
+tab — you need the component to *remember* something. That memory is called **state**, and in
+React you create it with the `useState` Hook.
+
+This is one of the two or three most important ideas in all of React, so we're going to go
+slowly and actually understand it, not just memorize the syntax.
+
+## First, let's see the problem for ourselves
+
+Here's the most natural thing a beginner tries. "I want a button that counts how many times
+it's been clicked. I'll just make a variable and add one to it each click":
+
+```jsx
+function Counter() {
+  let count = 0; // a normal variable
+
+  function handleClick() {
+    count = count + 1;   // add one
+    console.log(count);  // this DOES print 1, 2, 3...
+  }
+
+  return <button onClick={handleClick}>Clicked {count} times</button>;
+}
+```
+
+If you run this, the `console.log` really does print `1`, `2`, `3`… but the **button on
+screen is stuck at "Clicked 0 times."** That's confusing the first time you see it. Why?
+
+Two separate things are going wrong, and it's worth naming both:
+
+1. **React doesn't know anything changed.** React only updates the screen when you *tell* it
+   to re-render. Reassigning a plain variable is invisible to React — nothing asks it to
+   redraw the button, so the old "0" stays on screen.
+2. **Even if it did re-render, your count would reset.** Every time React draws a component,
+   it runs your function again *from the top*. That line `let count = 0` would run again and
+   reset `count` back to `0`. A local variable is thrown away and recreated on every render —
+   it has no memory.
+
+<Callout type="note" title="The two things state must do">
+  So we need a special kind of value that (1) **survives** between renders instead of resetting,
+  and (2) **tells React to re-render** when we change it. A normal variable does neither. That
+  special value is state, and `useState` gives it to us.
+</Callout>
+
+## Meet useState, one piece at a time
+
+Here's the counter done correctly. Don't worry about every character yet — we'll take the
+important line apart right after.
+
+```jsx
+import { useState } from 'react';
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  function handleClick() {
+    setCount(count + 1);
+  }
+
+  return <button onClick={handleClick}>Clicked {count} times</button>;
+}
+```
+
+Now the button actually counts up. Let's dissect the one line that makes it work:
+
+```jsx
+const [count, setCount] = useState(0);
+```
+
+- **`useState(0)`** creates one piece of state, with `0` as its **initial value** (the value
+  it has on the very first render only).
+- It hands back an **array of two things**, and we use array destructuring (from Module 0) to
+  name them:
+  - **`count`** — the current value of the state *for this render*. First render, it's `0`.
+  - **`setCount`** — a **setter** function. Calling it is how you say "change this value and
+    re-render."
+- The names are yours to choose, but the convention is `something` and `setSomething`
+  (`count` / `setCount`, `isOpen` / `setIsOpen`).
+
+So `setCount(count + 1)` means: "set the count to one more than it currently is, and
+re-render." React updates the stored value **and** redraws the component — the two things a
+plain variable couldn't do.
+
+## The mental model: a click becomes a new render
+
+Here's the loop that powers every interactive React app. Read it slowly — this is the payoff:
+
+1. The component renders with `count = 0`. React shows "Clicked 0 times".
+2. You click. `handleClick` runs and calls `setCount(1)`.
+3. React stores the new value (`1`) and **re-renders the component** — it calls your function
+   again.
+4. This time `useState` hands back `count = 1`. React shows "Clicked 1 times".
+5. Click again → `setCount(2)` → re-render → shows "2"… and so on.
+
+Here's that whole loop as a picture — the cycle every interactive React app runs on:
+
+<Mermaid
+  chart={`flowchart TD
+    A["First render: count = 0"] --> B["Screen shows &quot;Clicked 0 times&quot;"]
+    B --> C["User clicks the button"]
+    C --> D["handleClick runs → setCount(count + 1)"]
+    D --> E["React stores the new value and re-renders"]
+    E --> F["useState now hands back count = 1"]
+    F --> G["Screen shows &quot;Clicked 1 times&quot;"]
+    G -->|next click| C`}
+  caption="State change → re-render → updated screen. You change state; React redraws."
+/>
+
+Notice that **you never touch the DOM.** You just change state and describe what the UI looks
+like for that state; React does the redrawing. That's the declarative idea from Module 0,
+made concrete.
+
+## Now try it yourself
+
+Below is a live counter. Before you touch it, predict what will happen. Then:
+
+- **Click the button a few times** and watch the number go up — each click is one full
+  render cycle from the list above.
+- **Change the starting number** in `useState(0)` to `useState(10)` and watch the button
+  start at 10. (That's the *initial value* — it only applies on the first render.)
+- **Add a second button** that does `setCount(0)` to reset it, and see both buttons drive the
+  same piece of state.
+
+<LiveExample
+  code={`import { useState } from 'react';
+
+export default function Counter() {
+  // Try changing 0 to 10 below, or adding a reset button.
+  const [count, setCount] = useState(0);
+
+  return (
+    <div style={{ fontSize: 18 }}>
+      <p>You clicked {count} times</p>
+      <button onClick={() => setCount(count + 1)}>Click me</button>
+    </div>
+  );
+}`}
+/>
+
+Playing with an example like this — poking at it and predicting the result — is how the
+mental model above stops being words and becomes intuition. Take a minute here.
+
+## Two rules that keep state working
+
+**1. Call Hooks only at the top level.** `useState` (and every Hook) must be called at the top
+of your component, never inside an `if`, a loop, or a nested function:
+
+```jsx
+function Profile({ isLoggedIn }) {
+  if (isLoggedIn) {
+    const [name, setName] = useState(''); // ❌ Hook inside a condition — not allowed
+  }
+}
+```
+
+Why? React keeps track of your state by the **order** the Hooks are called in. If a Hook
+sometimes runs and sometimes doesn't, that order shifts and React loses track of which value
+belongs to which `useState`. Keeping them at the top guarantees the same order every render.
+
+**2. Treat the state value as read-only for this render.** Don't write `count = 5` or
+`count++`. Always go through the setter (`setCount(5)`). Directly changing the variable brings
+us right back to the broken version — React wouldn't know, and it'd reset anyway.
+
+## Each copy of a component has its own state
+
+State is **local and private** to the component instance that declares it. Render two counters
+and they don't interfere:
+
+```jsx
+<Counter />  {/* has its own count */}
+<Counter />  {/* has a completely separate count */}
+```
+
+Clicking the first doesn't change the second. This is exactly what you want — a "like" button
+on each post remembers its own likes. When two components need to *share* a value, we'll lift
+that state up to a common parent (that's a whole chapter in the next module).
+
+## Recap
+
+- A component can't remember anything in a plain variable — it resets every render and doesn't
+  tell React to redraw. **State solves both problems.**
+- `const [value, setValue] = useState(initial)` gives you the current value and a setter.
+- Calling the setter **stores the new value and triggers a re-render**; on that render
+  `useState` hands back the updated value.
+- You change state, and React updates the screen — you never touch the DOM yourself.
+- Call Hooks at the top level; never mutate the state variable directly.
+- Each component instance has its own private state.
+
+## Your turn
+
+Time to prove the loop clicks for you. Build a **light switch**: a button that flips a light
+**on and off**, showing "The light is on" only when it's on — using a boolean piece of state
+(`useState(false)`). It's the same render loop you just learned, applied to `true`/`false`
+instead of a number.
+
+<Assessment id="toggle-visibility" />

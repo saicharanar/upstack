@@ -1,0 +1,81 @@
+---
+id: reducer-and-context
+title: Scaling Up with Reducer and Context
+order: 7
+module: managing-state
+summary: Combine a reducer (for the logic) with context (for the reach) to manage app-wide state cleanly — the built-in pattern many apps use instead of a state library.
+concepts:
+  - scale-reducer-plus-context
+  - scale-two-contexts
+  - scale-custom-hook
+estMinutes: 10
+status: published
+assessment: null
+prereqs: []
+---
+
+You now have two powerful tools. **`useReducer`** centralizes *how* state changes. **Context**
+makes state reachable *anywhere* without prop drilling. Combine them and you can share state
+across an entire app — dispatch actions from any component — with no third-party library. This
+is the well-known "state management without Redux" pattern.
+
+## The recipe
+
+<Mermaid
+  chart={`flowchart TD
+    Provider["TasksProvider<br/>useReducer(tasksReducer)"] --> C1["TasksContext.Provider (state)"]
+    C1 --> C2["TasksDispatchContext.Provider (dispatch)"]
+    C2 --> Tree["Your whole app"]
+    Tree -->|"useContext(TasksContext)"| Read["Components read tasks"]
+    Tree -->|"useContext(TasksDispatchContext)"| Write["Components dispatch actions"]`}
+  caption="A reducer holds the logic; two contexts share the state and the dispatch function down the tree."
+/>
+
+```jsx
+const TasksContext = createContext(null);
+const TasksDispatchContext = createContext(null);
+
+function TasksProvider({ children }) {
+  const [tasks, dispatch] = useReducer(tasksReducer, initialTasks);
+  return (
+    <TasksContext.Provider value={tasks}>
+      <TasksDispatchContext.Provider value={dispatch}>
+        {children}
+      </TasksDispatchContext.Provider>
+    </TasksContext.Provider>
+  );
+}
+```
+
+Now any component can read `useContext(TasksContext)` to get the tasks, or
+`useContext(TasksDispatchContext)` to dispatch actions — from anywhere in the tree.
+
+## Why split state and dispatch into two contexts?
+
+`dispatch` never changes between renders, but the state does. Keeping them separate means a
+component that only **dispatches** (like an "Add" button) doesn't re-render every time the
+state changes — a small but real performance win. It also reads more cleanly: "I need to read"
+vs "I need to change."
+
+<Callout type="tip" title="Wrap the contexts in custom Hooks">
+  Rather than importing raw contexts everywhere, expose small hooks — `useTasks()` and
+  `useTasksDispatch()` — that call `useContext` for you. Consumers get a clean API, and you can
+  add a helpful error ("must be used inside TasksProvider") in one place. (Custom Hooks are the
+  finale of the next module.)
+</Callout>
+
+## Why this matters
+
+This pattern scales from a todo app to a fairly large application, all with built-in React.
+Knowing it means you can often skip adding a state library — and when you *do* meet libraries
+like Redux, Zustand, or Jotai, you'll recognize they're polished versions of this same
+reducer + shared-store shape.
+
+## Recap
+
+- **Reducer + Context** = app-wide state without a library: the reducer holds the logic, context
+  gives it reach.
+- Put **state** and **dispatch** in **two separate contexts** (fewer re-renders, clearer intent).
+- Wrap them in **custom Hooks** for a clean, guarded API.
+
+You've finished Managing State — read this and mark it complete. Next: the escape hatches.

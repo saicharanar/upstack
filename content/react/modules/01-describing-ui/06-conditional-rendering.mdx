@@ -1,0 +1,120 @@
+---
+id: conditional-rendering
+title: Conditional Rendering
+order: 6
+module: describing-ui
+summary: Real UIs show different things depending on the data — a badge, an empty state, a spinner. Learn every way to render conditionally in JSX, and the classic && gotcha.
+concepts:
+  - conditional-ternary
+  - conditional-and
+  - conditional-null
+estMinutes: 12
+status: published
+assessment: status-badge
+prereqs: []
+---
+
+The same component almost always needs to show **different markup depending on the data**:
+"Sold out" when stock is zero, a spinner while loading, a checkmark when a task is done. Since
+JSX is just JavaScript (Module 1's recurring theme), you use ordinary JavaScript to choose
+what to render. Here are all the ways, from most to least verbose.
+
+## Option 1: `if` with an early return
+
+The plainest approach — return different JSX from an `if`:
+
+```jsx
+function Item({ name, isPacked }) {
+  if (isPacked) {
+    return <li>{name} ✅</li>;
+  }
+  return <li>{name}</li>;
+}
+```
+
+Clear, but wordy when the difference is small. For that, use a ternary.
+
+## Option 2: the ternary `? :` (inline)
+
+The ternary lets you choose *inside* the JSX, which is perfect for small differences:
+
+```jsx
+function Item({ name, isPacked }) {
+  return <li>{name} {isPacked ? '✅' : '❌'}</li>;
+}
+```
+
+Read `condition ? whenTrue : whenFalse`. Here's the decision as a picture:
+
+<Mermaid
+  chart={`flowchart TD
+    Q{"isPacked ?"} -->|"true"| Y["render name + ✅"]
+    Q -->|"false"| N["render name + ❌"]`}
+  caption="A ternary picks one of two outputs based on a condition."
+/>
+
+## Option 3: `&&` for "render only when true"
+
+When one branch should render **nothing**, `&&` is the shortest form — "if the left side is
+true, render the right side":
+
+```jsx
+{unreadCount > 0 && <span className="badge">{unreadCount}</span>}
+```
+
+If `unreadCount > 0` is true, the badge renders; if false, nothing renders.
+
+## Option 4: return `null` to render nothing
+
+A component can render nothing at all by returning `null`:
+
+```jsx
+if (!isVisible) {
+  return null; // this component disappears from the UI
+}
+```
+
+<Callout type="gotcha" title="The && zero trap — this one bites everyone">
+  Never put a plain **number** on the left of `&&`. `{count && <Badge/>}` renders the literal
+  `0` on screen when `count` is `0`, because `0` is falsy but still a renderable value — you'll
+  see a stray "0" in your UI. Always compare to make a real boolean: `{count > 0 && <Badge/>}`.
+</Callout>
+
+## See it run
+
+Flip the `packed` values and add a new item. Try changing a `? :` into an `&&` and see the
+difference.
+
+<LiveExample
+  code={`function Item({ name, packed }) {
+  return (
+    <li>
+      {name} {packed ? '✅' : '❌'}
+    </li>
+  );
+}
+
+export default function PackingList() {
+  return (
+    <ul>
+      <Item name="Passport" packed={true} />
+      <Item name="Charger" packed={true} />
+      <Item name="Umbrella" packed={false} />
+    </ul>
+  );
+}`}
+/>
+
+## Recap
+
+- Choose markup with plain JavaScript: **`if`/early return**, the **ternary `? :`**, **`&&`**
+  for "only when true", and **`return null`** for nothing.
+- Ternary for two small outputs; `&&` for show-or-nothing.
+- Guard `&&` against numbers — compare (`count > 0`) so a `0` never leaks onto the screen.
+
+## Your turn
+
+Build a `StatusBadge` that reads "Online" when a teammate is available and "Offline" when
+they're away — covering both branches of a condition. Run the checks.
+
+<Assessment id="status-badge" />

@@ -1,0 +1,95 @@
+---
+id: context
+title: Passing Data Deeply with Context
+order: 6
+module: managing-state
+summary: Context lets a parent provide data to any component below it without threading props through every level. Learn createContext, the Provider, useContext, and when to use it.
+concepts:
+  - context-create
+  - context-provide
+  - context-consume
+estMinutes: 13
+status: published
+assessment: theme-context
+prereqs: []
+---
+
+Lifting state up works, but sometimes the component that owns the data is *far* above the one
+that needs it — and you'd have to pass a prop through many middle components that don't care
+about it. That tedium is called **prop drilling**, and **Context** is the cure: a parent
+provides a value to its whole subtree, and any descendant can read it directly.
+
+## The problem Context solves
+
+<Mermaid
+  chart={`flowchart TD
+    subgraph Drilling["Prop drilling (tedious)"]
+      A["App (theme)"] -->|theme| B["Page"] -->|theme| C["Sidebar"] -->|theme| D["Button uses theme"]
+    end
+    subgraph Ctx["Context (direct)"]
+      A2["App — Provider value=theme"] --> B2["Page"] --> C2["Sidebar"] --> D2["Button — useContext ✓"]
+    end`}
+  caption="Instead of threading a prop through every level, a Provider makes it available to the whole subtree."
+/>
+
+## The three pieces
+
+```jsx
+import { createContext, useContext } from 'react';
+
+// 1. Create a context (with a default used when there's no Provider above)
+const ThemeContext = createContext('light');
+
+// 2. Provide a value to a subtree
+function App() {
+  return (
+    <ThemeContext.Provider value="dark">
+      <Page />
+    </ThemeContext.Provider>
+  );
+}
+
+// 3. Consume it anywhere below — no props needed
+function Button() {
+  const theme = useContext(ThemeContext); // 'dark'
+  return <button className={theme}>Click</button>;
+}
+```
+
+`createContext` makes the context; `<Context.Provider value={...}>` supplies a value to
+everything inside it; `useContext(Context)` reads the nearest Provider's value.
+
+<Callout type="tip" title="React 19: the Provider shorthand">
+  In React 19 you can render the context itself as the provider — `<ThemeContext value="dark">`
+  — dropping `.Provider`. Both work; this course uses `.Provider` so examples run on any recent
+  React, but you'll see the shorthand in new codebases.
+</Callout>
+
+## When to reach for Context — and when not to
+
+Context shines for data that **many components at different depths** need: the current theme,
+the signed-in user, the UI language, a locale. It is **not** a replacement for passing props —
+for local, one-or-two-level data, props are simpler and clearer. Overusing Context makes data
+flow harder to trace. Rule of thumb: use props by default; reach for Context specifically to
+kill deep prop drilling of truly app-wide data.
+
+## Context + state
+
+The value you provide can be **state** from the Provider component — so when you update it, all
+consumers re-render with the new value. Pairing Context with a reducer (next chapter) is a
+common way to manage app-wide state with no external library.
+
+## Recap
+
+- **Prop drilling** = threading a prop through layers that don't use it. Context fixes it.
+- Three pieces: `createContext`, `<Context.Provider value>`, and `useContext(Context)`.
+- Use it for **widely-needed** data (theme, user, locale) — not as a default replacement for
+  props.
+- Providing **state** as the value lets updates re-render all consumers.
+
+## Your turn
+
+Provide a theme value of `"dark"` at the top of a tree, and read it with `useContext` in a
+deeply nested component — no prop drilling. Run the checks.
+
+<Assessment id="theme-context" />

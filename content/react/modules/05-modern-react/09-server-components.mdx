@@ -1,0 +1,87 @@
+---
+id: server-components
+title: Server Components
+order: 9
+module: modern-react
+summary: React Server Components render on the server and send zero JavaScript to the browser. Learn what they are, how they differ from client components, and where Server Actions fit.
+concepts:
+  - rsc-server-vs-client
+  - rsc-use-client
+  - rsc-server-actions
+estMinutes: 12
+status: published
+assessment: null
+prereqs: []
+---
+
+**React Server Components (RSC)** run on the server, render to a special format, and ship their
+*output* to the browser **without their JavaScript**. They're the foundation of modern
+frameworks like Next.js's App Router. You'll almost always meet them through a framework, but
+the mental model is worth having.
+
+## Two kinds of components
+
+<Mermaid
+  chart={`flowchart TD
+    Server["Server Component (default)<br/>runs on the server"] -->|"can"| SCan["await data, read DB/files, keep secrets"]
+    Server -->|"cannot"| SNo["use state, effects, or browser APIs"]
+    Client["Client Component ('use client')<br/>runs in the browser"] -->|"can"| CCan["useState, useEffect, event handlers"]`}
+  caption="Server Components fetch data and ship no JS; Client Components are the interactive ones."
+/>
+
+- **Server Components** (the default in an RSC framework) run on the server. They can `await`
+  data directly, read the filesystem or database, and hold secrets — but they **cannot** use
+  state, Effects, or browser APIs, because they never run in the browser.
+- **Client Components** are the interactive ones you've built all course — `useState`,
+  `useEffect`, event handlers. You opt in with the **`'use client'`** directive at the top of
+  the file.
+
+```jsx
+// Server Component (default): fetches directly, ships no JS to the browser
+async function ProductPage({ id }) {
+  const product = await db.products.get(id); // runs on the server
+  return <AddToCart product={product} />;     // renders a client component
+}
+```
+
+```jsx
+'use client';
+import { useState } from 'react';
+
+export function AddToCart({ product }) { // interactive → client component
+  const [count, setCount] = useState(1);
+  // ...
+}
+```
+
+## Server Actions
+
+A **Server Action** is a function marked **`'use server'`** that runs on the server but can be
+called from the client — often as a form `action` (remember Actions from chapter 1). It's how
+you mutate data without hand-writing an API endpoint:
+
+```jsx
+async function createTodo(formData) {
+  'use server';
+  await db.todos.create({ text: formData.get('text') });
+}
+```
+
+<Callout type="note" title="Why this matters">
+  RSC moves data fetching and heavy work to the server, shrinking the JavaScript users download
+  and making apps faster by default. The form Actions you learned are the client-facing half of
+  the same story. You'll use all of this through a framework (like Next.js) rather than wiring
+  it by hand — this course's own platform is built on it.
+</Callout>
+
+## Recap
+
+- **Server Components** run on the server, fetch data directly, and ship **no JavaScript**;
+  they can't use state/effects.
+- **Client Components** (`'use client'`) are the interactive ones with hooks and handlers.
+- **Server Actions** (`'use server'`) run on the server but are callable from the client, often
+  as form actions.
+- You use RSC through a framework; it makes apps faster by default. (Server-only, so this is
+  conceptual — it can't run in the browser sandbox.)
+
+Read this, then mark it complete.

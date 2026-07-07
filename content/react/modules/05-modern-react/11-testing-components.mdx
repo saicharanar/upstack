@@ -1,0 +1,83 @@
+---
+id: testing-components
+title: Testing Your Components
+order: 11
+module: modern-react
+summary: Good component tests check behavior the way a user experiences it. Learn the Testing Library philosophy — query by role and text, interact, and assert on what's visible.
+concepts:
+  - test-user-perspective
+  - test-query-by-role
+  - test-interact-and-assert
+estMinutes: 11
+status: published
+assessment: null
+prereqs: []
+---
+
+The best component tests resemble how a **user** interacts with your UI: find things the way a
+person would (by visible text, by role), do something (click, type), and assert on what's now
+on screen. That's the philosophy of **React Testing Library**, the standard tool — and, not
+coincidentally, exactly how the exercises in this course have been grading you all along.
+
+## The shape of a good test
+
+<Mermaid
+  chart={`flowchart LR
+    R["Render the component"] --> F["Find elements like a user (role/text)"] --> I["Interact (click, type)"] --> A["Assert on what's visible now"]`}
+  caption="Render → find as a user would → interact → assert on the resulting UI."
+/>
+
+## Query the way a user would
+
+Prefer accessible queries over implementation details:
+
+```jsx
+import { render, screen } from '@testing-library/react';
+
+render(<Greeting name="Ada" />);
+screen.getByRole('heading', { name: /welcome/i }); // by role + accessible name
+screen.getByText('Ada Lovelace');                  // by visible text
+```
+
+Avoid querying by CSS class or internal component structure — those change when you refactor,
+even though the behavior didn't. Query by what the user sees and what assistive tech announces,
+and your tests survive refactors.
+
+## Interact, then assert
+
+```jsx
+import userEvent from '@testing-library/user-event';
+
+const user = userEvent.setup();
+render(<Counter />);
+await user.click(screen.getByRole('button', { name: '+1' }));
+expect(screen.getByText('Count: 1')).toBeInTheDocument();
+```
+
+Render, act like a user, assert on the resulting UI. Notice what you **don't** test: the
+`useState` call, the handler's name, internal variables. You test the **behavior**, so you can
+change the implementation freely without rewriting tests.
+
+<Callout type="tip" title="You've been reading these tests all course">
+  Every graded exercise here checked behavior in plain language — "counts up when the button is
+  clicked", "shows the avatar with the correct alt text". That naming is deliberate: a good test
+  name reads like a **product requirement**, not an implementation note. If a non-developer can
+  read your test names and understand what the feature does, you're doing it right.
+</Callout>
+
+## What to test (and what not to)
+
+Focus on behavior users depend on: what renders for given props, what changes on interaction,
+and the edge cases (empty states, errors, boundaries). Don't chase 100% coverage of trivial
+code — test the logic and flows that would actually break something if they regressed. A few
+meaningful tests beat a hundred that assert nothing real.
+
+## Recap
+
+- Test **behavior from the user's perspective**, not implementation details.
+- **Query** by role and visible text (accessible queries), not CSS classes or internals.
+- **Render → interact → assert** on what's visible; refactor freely without rewriting tests.
+- Name tests like **requirements**; focus on behavior that matters, not coverage for its own
+  sake.
+
+You've reached the end of the course. Read this, mark it complete, and go build something real.

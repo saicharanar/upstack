@@ -1,0 +1,145 @@
+---
+id: import-export
+title: Importing and Exporting Components
+order: 2
+module: describing-ui
+summary: Components get powerful when you split them across files. Learn default vs named exports, how importing works, and why one-component-per-file keeps a codebase sane.
+concepts:
+  - default-export
+  - named-export
+  - import-statement
+estMinutes: 10
+status: published
+assessment: null
+prereqs:
+  - first-component
+---
+
+In the last chapter, `Gallery` and `Profile` lived in the same file. That's fine for two tiny
+components, but real projects put components in **separate files** — usually one main
+component per file. It keeps each file small, makes components easy to find, and lets you
+reuse them anywhere. To do that, you **export** a component from its file and **import** it
+where you need it.
+
+## The mental model: a web of files
+
+Think of your project as files that point at each other with `import` lines. One file
+*exports* something; another *imports* it to use it:
+
+<Mermaid
+  chart={`flowchart LR
+    Profile["Profile.js<br/>exports Profile"]
+    Gallery["Gallery.js<br/>imports Profile"]
+    App["App.js<br/>imports Gallery"]
+    Profile -->|"import Profile"| Gallery
+    Gallery -->|"import Gallery"| App`}
+  caption="Each file exports a component; other files import it. This web is your module tree."
+/>
+
+## Three steps to move a component to its own file
+
+Say we want `Profile` in its own file:
+
+1. **Make a file** for it, e.g. `Profile.js`.
+2. **Export** the component from that file so other files can use it.
+3. **Import** it wherever you need it.
+
+## Default exports
+
+Most files have one *main* thing they export — the **default export**:
+
+```jsx
+// Profile.js
+export default function Profile() {
+  return <img src="https://i.imgur.com/MK3eW3As.jpg" alt="Ada Lovelace" />;
+}
+```
+
+You import a default export with **any name you like**, and **no curly braces**:
+
+```jsx
+// Gallery.js
+import Profile from './Profile'; // the name is your choice; no braces
+
+export default function Gallery() {
+  return (
+    <section>
+      <Profile />
+      <Profile />
+    </section>
+  );
+}
+```
+
+The `./` in `'./Profile'` means "a file next to this one." A file can have **at most one**
+default export.
+
+## Named exports
+
+A file can also export **many** things by name. Named imports must use the **exact name** and
+**curly braces**:
+
+```jsx
+// utils.js
+export const siteName = 'upstack';
+export function formatCount(n) {
+  return `${n} lessons`;
+}
+```
+
+```jsx
+import { siteName, formatCount } from './utils'; // names must match; braces required
+```
+
+<Callout type="tip" title="Default vs named — a simple rule">
+  Use a **default export** for the one main component a file is about, and **named exports**
+  for the extra helpers, constants, or secondary components alongside it. A file can have one
+  default export and as many named exports as you want. (You'll see both styles constantly —
+  React itself is imported as `import React, { useState } from 'react'`: a default *and* named.)
+</Callout>
+
+## Why bother splitting files at all
+
+When the profile card and the "follow" button live in separate files, two engineers can work
+on them at the same time without colliding, and each can be imported into a dozen different
+screens. This web of imports is also what a **bundler** follows to decide which code to ship
+to the browser. Splitting sensibly is what makes a real component library possible.
+
+## See it run
+
+Here a `Gallery` composes `Profile` three times (kept in one file so it runs in a single
+editor — but imagine `Profile` living in its own file, imported in).
+
+<LiveExample
+  code={`function Profile() {
+  return (
+    <div className="profile" style={{ textAlign: 'center' }}>
+      <img src="https://i.imgur.com/MK3eW3As.jpg" alt="Ada Lovelace" width="64" />
+      <p>Ada Lovelace</p>
+    </div>
+  );
+}
+
+export default function Gallery() {
+  return (
+    <section>
+      <h2>Amazing scientists</h2>
+      <div style={{ display: 'flex', gap: 16 }}>
+        <Profile />
+        <Profile />
+        <Profile />
+      </div>
+    </section>
+  );
+}`}
+/>
+
+## Recap
+
+- Put components in their own files; **export** them and **import** where needed.
+- **Default export**: one per file, imported with any name, no braces.
+- **Named exports**: many per file, imported with exact names in braces.
+- The web of imports is your project's **module tree** — what the bundler ships.
+
+This chapter has no graded exercise — read it, try the example, then mark it complete when
+you're ready.

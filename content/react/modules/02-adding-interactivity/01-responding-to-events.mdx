@@ -1,0 +1,118 @@
+---
+id: responding-to-events
+title: Responding to Events
+order: 1
+module: adding-interactivity
+summary: Event handlers are how components react to clicks, typing, and more. Learn to attach them, pass them as props, and avoid the single most common beginner mistake — calling instead of passing.
+concepts:
+  - event-handler-function
+  - event-pass-not-call
+  - event-handler-props
+estMinutes: 11
+status: published
+assessment: click-counter
+prereqs: []
+---
+
+Everything interactive starts with an **event**: a click, a keypress, a form submit, a hover.
+React lets you respond to these with **event handlers** — functions you attach right in your
+JSX using props named `onClick`, `onChange`, `onSubmit`, and so on.
+
+## Attaching your first handler
+
+You define a function and pass it to the event prop:
+
+```jsx
+export default function Button() {
+  function handleClick() {
+    alert('You clicked me!');
+  }
+  return <button onClick={handleClick}>Click me</button>;
+}
+```
+
+Three things to notice: the handler is usually named `handle` + the event (`handleClick`), it's
+defined *inside* the component, and it's **passed**, not called — that leads to the one gotcha
+everyone hits.
+
+## The mistake everyone makes once
+
+<Callout type="gotcha" title="Pass the function — do NOT call it">
+  `onClick={handleClick}` — correct. You hand React the function, and it calls it *later*, when
+  the click happens.
+
+  `onClick={handleClick()}` — wrong. The `()` calls the function **immediately during render**
+  and passes its return value (usually `undefined`) to `onClick`. The result: it fires once on
+  page load and never on click. Remember: **no parentheses** when passing a handler.
+</Callout>
+
+When you need to pass an argument, wrap it in an inline arrow function so it's still a function
+being passed, not a call:
+
+```jsx
+<button onClick={() => handleDelete(item.id)}>Delete</button>
+```
+
+The `() =>` makes a new little function; React calls *it* on click, and it calls `handleDelete`
+with the id.
+
+## Handlers are just props
+
+Because handlers are ordinary functions, a parent can pass one down as a prop. This is how a
+reusable `Button` lets its *parent* decide what a click does:
+
+```jsx
+function Button({ onClick, children }) {
+  return <button onClick={onClick}>{children}</button>;
+}
+
+// parent decides the behavior:
+<Button onClick={() => alert('Saved!')}>Save</Button>
+```
+
+## From events to changing the screen
+
+On their own, handlers can only do throwaway things like `alert`. To make a click actually
+**change what's on screen**, the handler updates **state** — which is the next chapter. Here's
+the full loop you're building toward:
+
+<Mermaid
+  chart={`flowchart LR
+    U["User clicks"] --> H["Event handler runs"] --> S["Updates state (next chapter)"] --> R["React re-renders"] --> UI["Screen updates"]`}
+  caption="A handler responds to the event and updates state; React re-renders to update the screen."
+/>
+
+## See it run
+
+<LiveExample
+  code={`export default function Toolbar() {
+  function handleSave() {
+    alert('Saved!');
+  }
+  return (
+    <div style={{ display: 'flex', gap: 8 }}>
+      <button onClick={handleSave}>Save</button>
+      <button onClick={() => alert('Shared!')}>Share</button>
+    </div>
+  );
+}`}
+/>
+
+Try adding a third button. Try (deliberately) writing `onClick={handleSave()}` with
+parentheses and watch it fire on load — then fix it.
+
+## Recap
+
+- Respond to events with handler props: **`onClick`**, `onChange`, `onSubmit`, etc.
+- **Pass** the function (`onClick={handleClick}`); don't **call** it (`handleClick()`). Use an
+  arrow function to pass arguments.
+- Handlers are just functions, so they can be passed down as **props**.
+- To change the UI, a handler updates **state** — that's next.
+
+## Your turn
+
+Build a **like button**, like on a social post: it starts at "♥ 0 likes" and adds one like on
+each tap. (You'll use `useState`, introduced in the next chapter — the label reads the count.)
+Run the checks.
+
+<Assessment id="click-counter" />

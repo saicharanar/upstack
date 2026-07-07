@@ -1,0 +1,121 @@
+---
+id: javascript-in-jsx
+title: JavaScript in JSX with Curly Braces
+order: 4
+module: describing-ui
+summary: Curly braces are the window from JSX back into JavaScript. Learn exactly where { } works, what can go inside, and the "double curly" for objects like style.
+concepts:
+  - jsx-curly-text
+  - jsx-curly-attributes
+  - jsx-double-curly
+estMinutes: 11
+status: published
+assessment: price-tag
+prereqs: []
+---
+
+JSX would be useless if it could only show fixed text. Real UIs show **data** — a user's name,
+a price, today's date. **Curly braces `{ }`** are how you drop live JavaScript into your
+markup. Whatever you put between the braces is evaluated as JavaScript, and its result is
+rendered.
+
+## The two places curly braces work
+
+There are exactly two spots, and it helps to name them precisely:
+
+<Mermaid
+  chart={`flowchart TD
+    JSX["Inside JSX you can use { } in two places"]
+    JSX --> T["As TEXT between tags<br/>&lt;h1&gt;{name}&lt;/h1&gt;"]
+    JSX --> A["As an ATTRIBUTE value<br/>&lt;img src={url} /&gt;"]`}
+  caption="Curly braces work as text content between tags, and as an attribute value."
+/>
+
+**1. As text, directly inside a tag:**
+
+```jsx
+const name = 'Gregorio';
+return <h1>{name}'s To Do List</h1>; // renders: Gregorio's To Do List
+```
+
+**2. As an attribute value** (note: `src="..."` is a fixed string; `src={...}` reads a
+variable):
+
+```jsx
+const avatar = 'https://i.imgur.com/7vQD0fPs.jpg';
+return <img src={avatar} alt={name} />;
+```
+
+## What can go inside the braces?
+
+Any JavaScript **expression** — anything that produces a value:
+
+```jsx
+{user.name}                {/* a property */}
+{price.toFixed(2)}         {/* a method call */}
+{isLoggedIn ? 'Hi' : 'Yo'} {/* a ternary */}
+{count + 1}                {/* arithmetic */}
+{formatDate(post.date)}    {/* a function call */}
+```
+
+What *can't* go inside: **statements** like `if`, `for`, or variable declarations — they don't
+produce a value. (That's exactly why, in later chapters, you'll use the `? :` ternary and the
+`.map()` method inside JSX instead of `if` and `for` loops.)
+
+## The "double curlies": passing objects
+
+When you pass an **object** into JSX — most often an inline `style` — you'll see two sets of
+braces. Don't let it confuse you: the **outer** `{ }` means "JavaScript here," and the
+**inner** `{ }` is just a normal JavaScript object literal.
+
+```jsx
+<div style={{ backgroundColor: 'black', color: 'white' }}>
+```
+
+Read it as `style={ ... }` where the `...` happens to be the object `{ backgroundColor: ... }`.
+
+<Callout type="gotcha" title="style is an object with camelCase keys">
+  In HTML, `style` is a string (`"background-color: black"`). In React, `style` takes a
+  JavaScript **object** with **camelCased** property names: `backgroundColor`, not
+  `background-color`. That's the "double curly" you'll see everywhere.
+</Callout>
+
+## See it run
+
+Change the `user` data below and watch every `{…}` update. Try formatting the name, or adding
+a new field and displaying it.
+
+<LiveExample
+  code={`const user = {
+  name: 'Hedy Lamarr',
+  imageUrl: 'https://i.imgur.com/yXOvdOSs.jpg',
+  theme: { backgroundColor: '#0b7a4b', color: 'white' },
+};
+
+export default function Profile() {
+  return (
+    <div style={user.theme} className="card">
+      <h1>{user.name}</h1>
+      <img src={user.imageUrl} alt={'Photo of ' + user.name} width={80} />
+      <p>{user.name.length} characters in the name.</p>
+    </div>
+  );
+}`}
+/>
+
+Notice `{user.name.length}` — that's a real expression being evaluated right in the markup.
+
+## Recap
+
+- `{ }` lets you use JavaScript **expressions** in JSX, in two places: as **text** between
+  tags, and as an **attribute value**.
+- Only expressions (things that produce a value) go inside — not `if`/`for` statements.
+- Passing an object (like `style`) gives you **double braces**: outer = "JS here," inner = the
+  object literal, with camelCased keys.
+
+## Your turn
+
+Build a `PriceTag` that reads a product object and shows its name in a heading and its price
+formatted as `$49.50`. Run the checks.
+
+<Assessment id="price-tag" />

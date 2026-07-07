@@ -1,0 +1,98 @@
+---
+id: usememo
+title: Caching Calculations with useMemo
+order: 6
+module: modern-react
+summary: useMemo caches the result of an expensive calculation so it isn't recomputed on every render. Learn what it does, its dependency array, and when it's worth it.
+concepts:
+  - usememo-cache-value
+  - usememo-dependencies
+  - usememo-when-to-use
+estMinutes: 9
+status: published
+assessment: null
+prereqs: []
+---
+
+Every render re-runs your component function top to bottom, including any calculations in it.
+Usually that's fine. But if a calculation is genuinely expensive — filtering a huge list,
+heavy math — redoing it on every render (even renders where its inputs didn't change) is
+wasteful. **`useMemo`** caches the result and only recomputes when its inputs change.
+
+## useMemo
+
+```jsx
+import { useMemo } from 'react';
+
+const visibleItems = useMemo(
+  () => filterHugeList(items, query), // the expensive calculation
+  [items, query],                     // dependencies — recompute only when these change
+);
+```
+
+`useMemo` takes a function and a dependency array. On the first render it runs the function and
+caches the result. On later renders, if the dependencies are unchanged, it returns the
+**cached** value instead of recomputing:
+
+<Mermaid
+  chart={`flowchart TD
+    R["Render"] --> Q{"Did [items, query] change?"}
+    Q -->|"no"| Cached["Return the cached result (skip the work)"]
+    Q -->|"yes"| Recompute["Run the calculation again, cache it"]`}
+  caption="useMemo recomputes only when its dependencies change; otherwise it returns the cached value."
+/>
+
+## A second use: stable object props for memo
+
+`useMemo` also keeps an **object** reference stable between renders. That matters when you pass
+an object to a `memo`-wrapped child — without it, a fresh object every render would defeat the
+child's memoization:
+
+```jsx
+const style = useMemo(() => ({ color, size }), [color, size]);
+return <MemoizedChild style={style} />; // style stays the same object unless color/size change
+```
+
+<Callout type="gotcha" title="Don't wrap every calculation">
+  Most calculations are cheap — wrapping them in `useMemo` adds overhead (React still compares
+  dependencies and stores the result) and noise. Reach for it when you've **measured** a slow
+  calculation, or when you specifically need a stable reference for a memoized child. Otherwise,
+  just compute the value plainly.
+</Callout>
+
+## See it run
+
+<LiveExample
+  code={`import { useState, useMemo } from 'react';
+
+export default function App() {
+  const [count, setCount] = useState(0);
+  const [n, setN] = useState(5);
+
+  // Pretend this is expensive; it only recomputes when n changes, not on every count click.
+  const factorial = useMemo(() => {
+    let f = 1;
+    for (let i = 2; i <= n; i++) f *= i;
+    return f;
+  }, [n]);
+
+  return (
+    <div>
+      <p>{n}! = {factorial}</p>
+      <button onClick={() => setN(n + 1)}>n + 1</button>
+      <button onClick={() => setCount(count + 1)}>unrelated re-render ({count})</button>
+    </div>
+  );
+}`}
+/>
+
+Clicking "unrelated re-render" re-renders the component but does **not** recompute the
+factorial — its dependency `n` didn't change.
+
+## Recap
+
+- **`useMemo(fn, deps)`** caches an expensive calculation, recomputing only when `deps` change.
+- It also keeps **object references stable** for memoized children.
+- Use it for **measured** expensive work or needed reference stability — not by default.
+
+Read this, then mark it complete — next, its sibling for functions, `useCallback`.

@@ -1,0 +1,86 @@
+---
+id: updating-arrays-in-state
+title: Updating Arrays in State
+order: 7
+module: adding-interactivity
+summary: Arrays in state are read-only too. Learn the non-mutating operations — spread to add, filter to remove, map to change — and which array methods to avoid.
+concepts:
+  - array-non-mutating
+  - array-add-spread
+  - array-remove-filter
+  - array-change-map
+estMinutes: 12
+status: published
+assessment: todo-list
+prereqs: []
+---
+
+Arrays follow the exact same rule as objects: **don't mutate them in state.** That rules out
+the array methods you might reach for first — `push`, `pop`, `splice`, and assigning to an
+index all *change the array in place*. Instead, you build a **new** array with non-mutating
+operations. Here's the cheat sheet.
+
+## Mutating vs. non-mutating
+
+<Mermaid
+  chart={`flowchart LR
+    Avoid["Avoid (mutate in place)<br/>push, pop, splice, sort, reverse"] -.->|"in state"| Bad["❌"]
+    Use["Use (return a new array)<br/>[...spread], map, filter, slice"] -->|"in state"| Good["✅"]`}
+  caption="In state, prefer methods that return a NEW array over ones that mutate in place."
+/>
+
+## The three moves
+
+```jsx
+// ADD — spread the old array, then the new item
+setTasks([...tasks, newTask]);
+
+// REMOVE — filter out the one you don't want
+setTasks(tasks.filter((t) => t.id !== idToRemove));
+
+// CHANGE one item — map, replacing just the match with a modified copy
+setTasks(tasks.map((t) => (t.id === id ? { ...t, done: true } : t)));
+```
+
+Each returns a brand-new array; the original in state is never touched. Notice the CHANGE case
+combines both patterns — `map` to find the item, spread to make a changed **copy** of it (never
+mutate the item in place either).
+
+<Callout type="gotcha" title="The mutating methods to avoid">
+  `push`, `unshift`, `pop`, `shift`, `splice`, `reverse`, and `sort` all change the array in
+  place — don't use them on state. Their safe counterparts return a new array: spread `[...]` to
+  add, `filter` to remove, `map` to change, `slice` to copy a range. Need to sort? Copy first:
+  `[...items].sort(...)`.
+</Callout>
+
+## See it run
+
+<LiveExample
+  code={`import { useState } from 'react';
+
+export default function Cart() {
+  const [items, setItems] = useState(['Keyboard']);
+  return (
+    <div>
+      <ul>{items.map((it, i) => <li key={i}>{it}</li>)}</ul>
+      <button onClick={() => setItems([...items, 'Mouse'])}>Add mouse</button>
+      <button onClick={() => setItems(items.filter((it) => it !== 'Mouse'))}>Remove mouse</button>
+    </div>
+  );
+}`}
+/>
+
+Add and remove a few times. Every change builds a new array — `push` and `splice` never appear.
+
+## Recap
+
+- Treat state arrays as **read-only**; never `push`/`splice`/`sort` them in place.
+- **Add** with spread `[...arr, item]`, **remove** with `filter`, **change** with `map`.
+- To edit an object inside an array, `map` to it and spread a modified copy — don't mutate it.
+
+## Your turn
+
+Build a task list that renders its starting tasks and an "Add task" button that appends a new
+one immutably. Run the checks.
+
+<Assessment id="todo-list" />

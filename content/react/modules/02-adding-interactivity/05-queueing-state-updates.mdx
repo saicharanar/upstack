@@ -1,0 +1,100 @@
+---
+id: queueing-state-updates
+title: Queueing a Series of State Updates
+order: 5
+module: adding-interactivity
+summary: When several updates in one event must build on each other, pass an updater function. Learn how React queues updaters, applies them in order, and why this beats reading the snapshot.
+concepts:
+  - queue-batching
+  - queue-updater-function
+  - queue-order
+estMinutes: 10
+status: published
+assessment: updater-batch
+prereqs: []
+---
+
+Last chapter showed the puzzle: three `setNumber(number + 1)` calls only add one, because they
+all read the same snapshot. Now the solution — the **updater function** — and the batching
+model behind it.
+
+## Two ways to call a setter
+
+There are two things you can pass to a state setter:
+
+```jsx
+setCount(count + 1);   // a VALUE — "set count to this" (reads the snapshot)
+setCount(c => c + 1);  // an UPDATER FUNCTION — "take the latest queued value, add 1"
+```
+
+The second form is the key. When you pass a function, React puts it in a **queue**. After your
+event handler finishes, React runs the queue in order, feeding each updater the result of the
+one before it:
+
+<Mermaid
+  chart={`flowchart LR
+    Start["start: 0"] --> U1["c => c + 1<br/>0 → 1"] --> U2["c => c + 1<br/>1 → 2"] --> U3["c => c + 1<br/>2 → 3"] --> End["final: 3"]`}
+  caption="Updater functions queue up and each receives the previous result — so they stack to +3."
+/>
+
+```jsx
+setCount(c => c + 1); // 0 → 1
+setCount(c => c + 1); // 1 → 2
+setCount(c => c + 1); // 2 → 3  ✅ now it's +3
+```
+
+Because each updater gets the **latest** value (not the frozen snapshot), they compound
+correctly.
+
+<Callout type="tip" title="When to use the updater form">
+  Use `setX(x => …)` whenever the new value depends on the previous one — especially if you
+  update the same state more than once in an event, or update from inside an async callback or
+  `setTimeout` (where the snapshot would definitely be stale). When you're just setting a fresh,
+  independent value, the plain `setX(value)` form is fine.
+</Callout>
+
+## Batching: why the UI never flickers mid-handler
+
+React **batches** state updates: it waits until your entire event handler finishes, then does a
+single re-render for all the changes together. So even if you update several pieces of state in
+one click, the user sees one smooth update, never a half-finished in-between state. Batching is
+also what makes the snapshot model safe and fast.
+
+## See it run
+
+<LiveExample
+  code={`import { useState } from 'react';
+
+export default function Score() {
+  const [score, setScore] = useState(0);
+  return (
+    <div>
+      <p>Score: {score}</p>
+      <button onClick={() => { setScore(s => s + 1); setScore(s => s + 1); }}>
+        +2 with updaters
+      </button>
+      <button onClick={() => { setScore(score + 1); setScore(score + 1); }}>
+        +2 with the value (only adds 1!)
+      </button>
+    </div>
+  );
+}`}
+/>
+
+Click each button and compare — the updater one adds 2, the value one adds only 1. That's the
+whole lesson in one click.
+
+## Recap
+
+- Pass a **value** to *replace* state; pass an **updater function** (`s => s + 1`) to build on
+  the previous value.
+- React **queues** updater functions and runs them in order, each receiving the latest result.
+- React **batches** updates in an event and re-renders once.
+- Reach for the updater form whenever the new value depends on the old one.
+
+## Your turn
+
+Make a button that adds **3** in a single click — which only works if all three updates stack
+via updater functions. Run the checks.
+
+<Assessment id="updater-batch" />

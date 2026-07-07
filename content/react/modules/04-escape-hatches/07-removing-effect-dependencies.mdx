@@ -1,0 +1,88 @@
+---
+id: removing-effect-dependencies
+title: Removing Effect Dependencies
+order: 7
+module: escape-hatches
+summary: When an Effect re-runs too often, you don't delete a dependency — you change the code so the dependency truly isn't needed. Learn the safe techniques.
+concepts:
+  - deps-not-a-choice
+  - deps-move-inside
+  - deps-functional-updates
+estMinutes: 10
+status: published
+assessment: null
+prereqs: []
+---
+
+The dependency array is **not a knob you tune** — it's determined by the code. Every reactive
+value your Effect reads must be listed. So when an Effect re-runs too often, the fix is never
+"remove it from the array" (that just hides a bug and lies to React). The fix is to change the
+code so the Effect genuinely no longer *needs* that dependency.
+
+<Mermaid
+  chart={`flowchart TD
+    P["Effect re-runs too often"] --> Q{"Is this value truly needed<br/>and truly reactive?"}
+    Q -->|"never changes"| Move["Move it out of the component<br/>or inside the Effect"]
+    Q -->|"only need previous state"| Upd["Use an updater function"]
+    Q -->|"latest value, no re-sync"| EE["Use an Effect Event (prev chapter)"]
+    Move --> Fix["Honest dependency list shrinks ✓"]
+    Upd --> Fix
+    EE --> Fix`}
+  caption="Don't edit the array — refactor so the honest dependency list is naturally smaller."
+/>
+
+## Technique 1: move non-reactive values out
+
+If a value never actually changes, define it **outside** the component (module scope) or
+**inside** the Effect — then it's no longer a reactive dependency:
+
+```jsx
+// ❌ a fresh object every render → Effect re-runs constantly
+const options = { serverUrl, roomId };
+useEffect(() => { connect(options); }, [options]);
+
+// ✅ build it inside → depend only on the primitives that matter
+useEffect(() => {
+  const options = { serverUrl, roomId };
+  connect(options);
+}, [serverUrl, roomId]);
+```
+
+## Technique 2: prefer updater functions
+
+If the Effect only needs the *previous* state to compute the next, use the updater form so it
+doesn't need to depend on that state at all:
+
+```jsx
+// ❌ depends on messages → re-subscribes on every new message
+useEffect(() => {
+  connection.on('message', (m) => setMessages([...messages, m]));
+}, [roomId, messages]);
+
+// ✅ updater form → no messages dependency
+useEffect(() => {
+  connection.on('message', (m) => setMessages((prev) => [...prev, m]));
+}, [roomId]);
+```
+
+<Callout type="gotcha" title="Objects and functions are fresh every render">
+  A value created during render (an object literal, an arrow function) is a **new** reference
+  each render, so listing it as a dependency makes the Effect run every render. Fixes: create it
+  **inside** the Effect, **hoist** it out of the component if it's constant, or (for functions
+  with non-reactive parts) wrap them in an **Effect Event**.
+</Callout>
+
+## The rule
+
+Never silence the linter by editing the array. Instead ask: "Is this value actually reactive,
+and does the Effect truly need it?" Then refactor — move it, use an updater, or use an Effect
+Event — until the honest dependency list is small and correct.
+
+## Recap
+
+- Dependencies are **determined by the code**, not chosen — list every reactive value read.
+- To re-run less, **refactor** so a dependency isn't needed: move constants out/in, use
+  **updater functions**, use **Effect Events** for latest-value reads.
+- Beware objects/functions created in render — they're new every time.
+
+Read this, then mark it complete — the module finale: custom Hooks.

@@ -1,0 +1,101 @@
+---
+id: manipulating-dom-with-refs
+title: Manipulating the DOM with Refs
+order: 2
+module: escape-hatches
+summary: Sometimes you need the actual DOM node — to focus an input, scroll to it, or measure it. Learn to attach a ref to JSX and call DOM methods on the real element.
+concepts:
+  - ref-attach-to-jsx
+  - ref-dom-node
+  - ref-imperative-methods
+estMinutes: 10
+status: published
+assessment: focus-input
+prereqs: []
+---
+
+React updates the DOM for you, so you rarely touch it directly. But occasionally you need the
+**real DOM node** to do something React has no prop for: **focus** an input, **scroll** an
+element into view, play a `<video>`, or **measure** an element's size. You reach the node by
+attaching a ref to JSX.
+
+## Attaching a ref to a DOM node
+
+```jsx
+import { useRef } from 'react';
+
+function Form() {
+  const inputRef = useRef(null);
+
+  function handleClick() {
+    inputRef.current.focus(); // inputRef.current is the real <input> DOM node
+  }
+
+  return (
+    <>
+      <input ref={inputRef} />
+      <button onClick={handleClick}>Focus the input</button>
+    </>
+  );
+}
+```
+
+The flow: create a ref with `useRef(null)`, pass it to an element's **`ref`** attribute, and
+after React renders and commits, `inputRef.current` holds the actual DOM node. Then you can
+call browser methods on it — `.focus()`, `.scrollIntoView()`, `.play()`.
+
+<Mermaid
+  chart={`flowchart LR
+    R["useRef(null)"] -->|"ref={inputRef}"| E["React commits the &lt;input&gt;"] --> C["inputRef.current = the DOM node"] --> M["Call node.focus(), .scrollIntoView(), ..."]`}
+  caption="Attach a ref to an element; after commit, ref.current is the real DOM node to call methods on."
+/>
+
+<Callout type="note" title="React 19: ref is just a prop">
+  In React 19 you can pass `ref` straight to your own function components as a normal prop — no
+  more `forwardRef` wrapper. Older code uses `forwardRef` to forward a ref to an inner DOM node;
+  you'll still see it, but new code doesn't need it.
+</Callout>
+
+## Use refs only for what React can't do declaratively
+
+DOM refs are an **escape hatch** — prefer doing things with props and state. Reach for a ref
+only for **non-destructive** actions React has no API for: focus, scroll, measure, media
+control. Don't use a ref to add, remove, or restructure DOM nodes that React manages — you'll
+be fighting the renderer, and it'll break. Let React own the DOM's structure; use refs to
+*interact* with individual nodes.
+
+## See it run
+
+<LiveExample
+  code={`import { useRef } from 'react';
+
+export default function ScrollDemo() {
+  const boxRef = useRef(null);
+  return (
+    <div>
+      <button onClick={() => boxRef.current.scrollIntoView({ behavior: 'smooth' })}>
+        Scroll to the box
+      </button>
+      <div style={{ height: 200 }} />
+      <div ref={boxRef} style={{ height: 80, background: '#0b7a4b', color: 'white', padding: 8 }}>
+        Here I am!
+      </div>
+    </div>
+  );
+}`}
+/>
+
+## Recap
+
+- Attach a ref to an element with **`ref={myRef}`**; after commit, `myRef.current` is the real
+  **DOM node**.
+- Use it to call browser methods React has no prop for: **focus, scroll, measure, media**.
+- Refs are an escape hatch — don't use them to restructure React-managed DOM.
+- React 19: `ref` is a normal prop (no `forwardRef` needed for new code).
+
+## Your turn
+
+Wire up a ref so clicking a button focuses a text input — and confirm the input isn't focused
+before the click. Run the checks.
+
+<Assessment id="focus-input" />

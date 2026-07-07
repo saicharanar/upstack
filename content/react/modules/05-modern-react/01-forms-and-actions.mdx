@@ -1,0 +1,116 @@
+---
+id: forms-and-actions
+title: Forms and Actions
+order: 1
+module: modern-react
+summary: React 19 introduced Actions — async functions wired directly to forms — plus useActionState and useFormStatus, which handle pending state, errors, and results with almost no boilerplate.
+concepts:
+  - action-form-action
+  - action-use-action-state
+  - action-use-form-status
+estMinutes: 13
+status: published
+assessment: null
+prereqs: []
+---
+
+Submitting a form used to mean hand-managing four things: the input via `useState`, a
+`submitting` boolean, an error message, and a `preventDefault` handler. **React 19 Actions**
+collapse most of that. An Action is just an async function you hand to a `<form>`, and React
+manages the async lifecycle for you.
+
+## Form actions
+
+Pass an async function to a form's **`action`** prop. React calls it with the form's
+`FormData` on submit, tracks it as a pending transition, and resets the form afterward — no
+`preventDefault`, no manual submitting flag:
+
+```jsx
+function Signup() {
+  async function signup(formData) {
+    const email = formData.get('email'); // read fields from FormData
+    await createUser(email);
+  }
+  return (
+    <form action={signup}>
+      <input name="email" />
+      <button type="submit">Sign up</button>
+    </form>
+  );
+}
+```
+
+<Mermaid
+  chart={`flowchart LR
+    Submit["User submits form"] --> Action["action(formData) runs (async)"]
+    Action -->|"while awaiting"| Pending["isPending = true"]
+    Action -->|"resolves"| Result["result / error available; form resets"]`}
+  caption="A form Action runs on submit; React tracks pending state and the result for you."
+/>
+
+## useActionState — result + pending in one hook
+
+`useActionState` wraps an Action to give you the latest **result**, a **wrapped action** to
+pass to the form, and an **isPending** flag:
+
+```jsx
+import { useActionState } from 'react';
+
+function Signup() {
+  const [error, submitAction, isPending] = useActionState(
+    async (previousState, formData) => {
+      const err = await createUser(formData.get('email'));
+      return err ?? null; // whatever you return becomes the new state
+    },
+    null, // initial state
+  );
+
+  return (
+    <form action={submitAction}>
+      <input name="email" />
+      <button disabled={isPending}>{isPending ? 'Signing up…' : 'Sign up'}</button>
+      {error && <p className="error">{error}</p>}
+    </form>
+  );
+}
+```
+
+That's the entire "async submit with pending + error" pattern — no `useState` juggling.
+
+## useFormStatus — pending state without prop drilling
+
+A submit button often needs to know if its form is submitting, but it may be nested deep. The
+`useFormStatus` hook (from `react-dom`) reads the status of the **nearest parent `<form>`**:
+
+```jsx
+import { useFormStatus } from 'react-dom';
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return <button disabled={pending}>{pending ? 'Submitting…' : 'Submit'}</button>;
+}
+```
+
+Drop `<SubmitButton />` inside any `<form>` and it automatically disables while that form
+submits — no props passed.
+
+<Callout type="note" title="Why Actions matter">
+  Actions standardize the pending/error/reset dance that every app used to rewrite by hand. They
+  also power **Server Actions** — data mutations that run on the server (you'll meet those in the
+  Server Components chapter). This is the biggest ergonomic addition in React 19.
+</Callout>
+
+## Why this is shown as code (not a live editor)
+
+These APIs require React 19, and the in-browser sandbox here runs React 18, so this chapter
+presents them as code to read rather than run. Everything else you'll build runs live.
+
+## Recap
+
+- A **form Action** is an async function on `<form action={fn}>`; React handles submit,
+  pending, and reset.
+- **`useActionState`** gives you `[state, action, isPending]` — the result and pending flag with
+  no manual state.
+- **`useFormStatus`** lets a nested button read its form's pending status without props.
+
+Read this, then mark it complete.

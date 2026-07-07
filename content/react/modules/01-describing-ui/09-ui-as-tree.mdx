@@ -1,0 +1,83 @@
+---
+id: ui-as-tree
+title: Your UI as a Tree
+order: 9
+module: describing-ui
+summary: React models your UI as a tree of components. Understanding the render tree (and the module tree) explains data flow, re-rendering, and where state should live.
+concepts:
+  - tree-render
+  - tree-top-down
+  - tree-module-dependency
+estMinutes: 8
+status: published
+assessment: null
+prereqs: []
+---
+
+Browsers model a page as a tree of HTML nodes (the DOM). React works the same way one level
+up: your app is a **tree of components**, each nesting others. This is the mental model that
+ties the whole module together — because data, rendering, and state all follow the tree's
+shape.
+
+## The render tree
+
+When React renders your app, it starts at the root and walks **down**: the root renders its
+children, they render theirs, down to the leaf elements. That structure is the **render tree**:
+
+<Mermaid
+  chart={`flowchart TD
+    App["App"] --> Header["Header"]
+    App --> Feed["Feed"]
+    App --> Footer["Footer"]
+    Feed --> Post1["Post"]
+    Feed --> Post2["Post"]
+    Post1 --> Avatar1["Avatar"]
+    Post1 --> Body1["PostBody"]`}
+  caption="The render tree: components nested inside components, from the root down to the leaves."
+/>
+
+Two hugely important consequences fall straight out of this shape:
+
+- **Data flows down.** A parent passes props to its children; children don't push data back up
+  directly. (When a child needs to trigger a change, it calls a function the parent passed — you
+  saw handlers-as-props in the props chapter, and you'll lift state up in the next module.)
+- **Re-rendering flows down.** When a component re-renders, React re-renders its subtree
+  beneath it. This is *why* keeping components pure matters, and why *where* you put state
+  affects how much re-renders.
+
+## The module (dependency) tree
+
+There's a second tree worth knowing about: the one formed by your **`import` statements**. It's
+what a bundler follows to decide which code to ship to the browser:
+
+<Mermaid
+  chart={`flowchart TD
+    AppJs["App.js"] --> GalleryJs["Gallery.js"]
+    AppJs --> HeaderJs["Header.js"]
+    GalleryJs --> ProfileJs["Profile.js"]
+    GalleryJs --> DataJs["data.js"]`}
+  caption="The module tree: files importing files. It shapes what code gets bundled and loaded."
+/>
+
+<Callout type="tip" title="Two trees, two questions">
+  The **render tree** answers "what's on screen, and how does data flow?" The **module tree**
+  answers "what code gets bundled and shipped?" They often look similar but aren't the same
+  thing — keep them distinct in your head.
+</Callout>
+
+## Why this matters
+
+Almost every concept ahead is easiest to reason about by asking *where in the tree* it happens:
+lifting state up (to a common ancestor), Context (providing to a subtree), effects, and
+performance (which subtree re-renders). This tree model is the real payoff of "Describing UI"
+— hold onto it as you move into interactivity.
+
+## Recap
+
+- A React app is a **tree of components**, rendered from the root down.
+- **Data flows down** (props) and **re-rendering flows down** (a component re-renders its
+  subtree).
+- The separate **module tree** (imports) determines what code the bundler ships.
+
+You've finished Module 1 — you can now *describe* any UI as components. Read this and mark it
+complete; next, we make it interactive.

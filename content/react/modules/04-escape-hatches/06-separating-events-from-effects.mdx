@@ -1,0 +1,83 @@
+---
+id: separating-events-from-effects
+title: Separating Events from Effects
+order: 6
+module: escape-hatches
+summary: Some logic inside an Effect should read the latest values without re-triggering the Effect. Learn reactive vs non-reactive logic, and the useEffectEvent hook.
+concepts:
+  - effect-reactive-vs-event
+  - effect-event-latest-value
+  - effect-event-hook
+estMinutes: 10
+status: published
+assessment: null
+prereqs: []
+---
+
+Inside an Effect, some values should make it **re-synchronize** when they change, and some
+should just be **read at their latest value** without restarting the sync. Telling these apart
+is the key to Effects that fire exactly when they should — no more, no less.
+
+## Reactive vs. non-reactive logic
+
+Picture a chat Effect that connects to `roomId` and shows a notification (using the current
+`theme`) when a message arrives:
+
+- Connecting depends on `roomId` — that's **reactive**. Change rooms → reconnect. Correct.
+- The `theme` used inside the "message received" callback should be the **latest** theme, but
+  changing the theme should **not** reconnect the chat. That read is **non-reactive**.
+
+<Mermaid
+  chart={`flowchart TD
+    Room["roomId (reactive)"] -->|"in dependency array"| Resync["Effect re-syncs (reconnect)"]
+    Theme["theme (non-reactive read)"] -->|"in an Effect Event"| Latest["Read latest value, do NOT re-sync"]`}
+  caption="Reactive values drive re-syncing; 'read the latest but don't re-sync' logic goes in an Effect Event."
+/>
+
+If you put `theme` in the dependency array, the chat reconnects every time the theme toggles —
+wrong. If you leave it out, the linter complains and you'd read a stale theme. Neither is good.
+
+## Effect Events
+
+React's answer is **`useEffectEvent`**: wrap the non-reactive logic in an *Effect Event*, which
+always "sees" the latest props and state but is **not** a dependency of the Effect:
+
+```jsx
+import { useEffectEvent } from 'react';
+
+const onMessage = useEffectEvent((text) => {
+  showNotification(text, theme); // always the LATEST theme
+});
+
+useEffect(() => {
+  const connection = createConnection(roomId);
+  connection.on('message', (text) => onMessage(text));
+  connection.connect();
+  return () => connection.disconnect();
+}, [roomId]); // only roomId — theme is read via the Effect Event, so it's not a dependency
+```
+
+Now switching rooms reconnects (reactive), while toggling the theme does **not** reconnect but
+the next notification still uses the current theme (non-reactive, latest value).
+
+<Callout type="note" title="Where useEffectEvent stands">
+  `useEffectEvent` is the modern, first-party fix for "latest value without re-syncing,"
+  stabilized in recent React (19.2). Rules: only call an Effect Event from **inside** an Effect,
+  and don't pass it to other components.
+</Callout>
+
+## The mental model
+
+Sort each value an Effect uses into one of two buckets: **reactive** (the sync depends on it →
+dependency array) or **"read latest, don't re-sync"** (→ an Effect Event). Getting this split
+right is what makes Effects fire precisely when they should.
+
+## Recap
+
+- Inside an Effect, separate **reactive** values (drive re-syncing) from **non-reactive** reads
+  (latest value, no re-sync).
+- Put reactive values in the **dependency array**; wrap non-reactive logic in **`useEffectEvent`**.
+- Effect Events always see the latest props/state and aren't dependencies — call them only
+  inside Effects.
+
+Read this, then mark it complete — next, shrinking dependency lists the right way.

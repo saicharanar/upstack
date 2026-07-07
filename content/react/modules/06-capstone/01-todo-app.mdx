@@ -1,0 +1,80 @@
+---
+id: capstone-todo
+title: "Capstone: Build a Todo App"
+order: 1
+module: capstone
+summary: The final project. Build a complete Todo app — add, complete, and delete tasks, with a live "remaining" count — and handle the edge cases a real app has to get right.
+concepts:
+  - capstone-compose-concepts
+  - capstone-immutable-updates
+  - capstone-edge-cases
+estMinutes: 20
+status: published
+assessment: todo-capstone
+prereqs: []
+---
+
+This is it — the capstone. A Todo app is small enough to finish in one sitting, but it
+exercises almost everything you've learned: **components**, **state**, **events**, **lists
+with keys**, **conditional rendering**, and **immutable updates**. And it forces you to handle
+the **edge cases** that a real feature can't ignore.
+
+## What you're building
+
+A working task list where a person can:
+
+- **See** their tasks (a list rendered from state).
+- **Add** a task by typing and submitting the form.
+- **Complete** a task by clicking it (toggling a `done` flag).
+- **Delete** a task.
+- See a live **"N left"** count of tasks still to do.
+
+## How it maps to what you've learned
+
+<Mermaid
+  chart={`flowchart TD
+    State["tasks: array of { id, text, done }<br/>draft: the input text"] --> Add["Add → append immutably (spread)"]
+    State --> Toggle["Toggle → map, flip done"]
+    State --> Delete["Delete → filter out by id"]
+    Add --> Render["Re-render: list + 'N left' count"]
+    Toggle --> Render
+    Delete --> Render`}
+  caption="Every feature is an immutable update to one piece of state; the UI is a function of it."
+/>
+
+Notice the shape: **one array of tasks in state**, and every action (add, toggle, delete) is
+an **immutable update** to it (spread / map / filter — straight from Module 2). The
+"remaining" count isn't stored separately — it's **derived** during render (Module 3's
+"don't store what you can calculate"). That's the whole architecture.
+
+## The edge cases (this is the real test)
+
+A demo works on the happy path. A real app handles the awkward moments — and this exercise
+checks two that trip people up:
+
+<Callout type="important" title="Handle these, not just the happy path">
+  1. **Empty input.** If the field is blank (or just spaces), **don't** add a blank task. Trim
+     the text and ignore it if there's nothing left. Forgetting this litters the list with empty
+     rows — a classic real bug.
+  2. **Empty list.** When every task is deleted, don't show a bare, confusing blank area — show
+     a friendly message (this project checks for one containing **"All done"**).
+</Callout>
+
+## Your task
+
+The scaffold gives you the state, the input, and the list markup. **You implement the three
+handlers** — `addTask` (with the empty-input guard), `toggleTask`, and `deleteTask` — all with
+immutable updates, **and** the empty-state message. Six checks verify each feature and both
+edge cases.
+
+Take your time. This is the graduation exercise — when it's green, you've built a real,
+interactive React app end to end.
+
+<Assessment id="todo-capstone" />
+
+## Where to go next
+
+You've finished the course: from your first component to a complete app, with modern React
+(19) throughout. From here, the natural next steps are a real project of your own, a router
+(React Router or a framework like Next.js), and a data-fetching library — but you now have the
+foundation they all build on. Nicely done. 🏆

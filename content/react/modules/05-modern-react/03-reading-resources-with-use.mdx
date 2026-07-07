@@ -1,0 +1,86 @@
+---
+id: use-and-suspense
+title: Reading Resources with use() and Suspense
+order: 3
+module: modern-react
+summary: The use() API reads a promise or context during render, and Suspense shows a fallback while data loads. Together they turn "loading then data" into a declarative pattern.
+concepts:
+  - use-read-promise
+  - use-suspense-fallback
+  - use-conditional
+estMinutes: 11
+status: published
+assessment: null
+prereqs: []
+---
+
+Fetching data the old way meant `useEffect` + `useState` + an `isLoading` flag + an error
+state — a lot of ceremony. React 19's **`use()`** API reads a **resource** (most importantly a
+promise) directly during render, and **`<Suspense>`** shows a fallback while it loads. The
+result is declarative async data.
+
+## use() with a promise + Suspense
+
+```jsx
+import { use, Suspense } from 'react';
+
+function Profile({ userPromise }) {
+  const user = use(userPromise);   // suspends here until the promise resolves
+  return <h1>{user.name}</h1>;
+}
+
+function Page({ userPromise }) {
+  return (
+    <Suspense fallback={<p>Loading…</p>}>
+      <Profile userPromise={userPromise} />
+    </Suspense>
+  );
+}
+```
+
+When the promise is pending, `use()` **suspends** the component, and React shows the nearest
+`<Suspense fallback>`. When it resolves, React renders `Profile` with the value. There's no
+loading flag to manage:
+
+<Mermaid
+  chart={`flowchart LR
+    Render["Profile renders, calls use(promise)"] -->|"pending"| Fallback["Suspense shows fallback"]
+    Fallback -->|"promise resolves"| Done["Profile renders with the data"]`}
+  caption="use() suspends while the promise is pending; Suspense shows a fallback until it resolves."
+/>
+
+## use() with context (and why it's special)
+
+`use()` can also read context — and unlike `useContext`, it may be called **conditionally**,
+inside an `if` or a loop:
+
+```jsx
+function Heading({ children }) {
+  if (children == null) return null;
+  const theme = use(ThemeContext); // allowed inside a condition — useContext is not
+  return <h1 className={theme}>{children}</h1>;
+}
+```
+
+<Callout type="note" title="use() bends a rule of Hooks on purpose">
+  Normal Hooks must be called unconditionally at the top level. `use()` is designed to be
+  callable in conditions and loops — it's how React is moving async reads into render. In real
+  apps the promise usually comes from a framework or a cache, not from creating a new one during
+  render (which would refetch every time).
+</Callout>
+
+## Suspense is bigger than data
+
+The same `<Suspense>` also powers `lazy()` code-splitting (show a fallback while a component's
+code loads) and streaming Server Components (next-but-one chapter) — one consistent "show a
+fallback until this part is ready" idea, applied to data, code, and server chunks.
+
+## Recap
+
+- **`use(promise)`** reads a promise during render, **suspending** until it resolves.
+- **`<Suspense fallback>`** shows a fallback for any suspended component below it.
+- `use()` can also read **context conditionally** (unlike `useContext`).
+- Suspense also covers lazy code and streaming — same fallback idea everywhere. (React 19 API,
+  shown as code here.)
+
+Read this, then mark it complete.

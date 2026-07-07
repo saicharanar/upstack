@@ -1,0 +1,88 @@
+---
+id: error-boundaries
+title: Error Boundaries
+order: 10
+module: modern-react
+summary: A render error shouldn't blank the whole app. Error boundaries catch errors in their subtree and show a fallback UI instead of crashing everything.
+concepts:
+  - eb-catches-subtree
+  - eb-fallback-ui
+  - eb-what-they-miss
+estMinutes: 9
+status: published
+assessment: null
+prereqs: []
+---
+
+If a component throws an error while rendering, React's default is drastic: it unmounts the
+**entire** component tree, leaving a blank screen. An **error boundary** catches errors from
+anywhere in its subtree and renders a fallback UI instead — containing the damage to one
+section rather than taking down the whole app.
+
+<Mermaid
+  chart={`flowchart TD
+    EB["ErrorBoundary"] --> Dash["Dashboard"]
+    Dash --> W1["Widget (throws!)"]
+    W1 -.->|"error bubbles up"| EB
+    EB -->|"catches it"| FB["Renders fallback UI — rest of the app survives"]`}
+  caption="An error boundary catches errors from its subtree and shows a fallback instead of crashing everything."
+/>
+
+## Writing a boundary
+
+Error boundaries are the one place class components are still required. Two methods make one:
+
+```jsx
+import { Component } from 'react';
+
+class ErrorBoundary extends Component {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true }; // switch to the fallback on the next render
+  }
+
+  componentDidCatch(error, info) {
+    logToService(error, info); // report it somewhere
+  }
+
+  render() {
+    if (this.state.hasError) return this.props.fallback;
+    return this.props.children;
+  }
+}
+```
+
+Then wrap any risky part of the tree, with a fallback:
+
+```jsx
+<ErrorBoundary fallback={<p>Something went wrong. Try refreshing.</p>}>
+  <Dashboard />
+</ErrorBoundary>
+```
+
+<Callout type="tip" title="Use the library in practice">
+  Most teams use the small **`react-error-boundary`** package instead of writing the class
+  by hand — it adds a reset action, an `onError` callback, and a `FallbackComponent` prop. Same
+  concept, friendlier API.
+</Callout>
+
+## What boundaries do and don't catch
+
+- **Catch:** errors during rendering, in lifecycle methods, and in constructors of the subtree.
+- **Don't catch:** errors in **event handlers** (use a normal `try/catch` there), in **async
+  code** (`setTimeout`, promises), or during **server rendering**.
+
+Place boundaries thoughtfully: one near the root for a global "something broke" fallback, plus
+finer boundaries around independent sections (a widget, a route, a chart) so a single failure
+doesn't blank everything around it.
+
+## Recap
+
+- Without a boundary, a render error **unmounts the whole app**.
+- An **error boundary** catches errors in its subtree and shows a **fallback**.
+- They're **class components** (`getDerivedStateFromError` + `componentDidCatch`); most people
+  use `react-error-boundary`.
+- They **don't** catch event-handler, async, or server errors — handle those separately.
+
+Read this, then mark it complete.

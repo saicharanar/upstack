@@ -1,0 +1,124 @@
+---
+id: keeping-components-pure
+title: Keeping Components Pure
+order: 8
+module: describing-ui
+summary: React assumes every component is a pure function — same inputs, same output, no side effects during render. Learn what purity means, how to spot impurity, and why it unlocks React's biggest features.
+concepts:
+  - pure-same-input-output
+  - pure-no-mutation
+  - pure-local-mutation-ok
+estMinutes: 12
+status: published
+assessment: tea-set
+prereqs: []
+---
+
+React makes one big assumption about your components: that each one is a **pure function**.
+This isn't a stylistic preference — it's the contract that lets React skip unnecessary
+re-renders, render on the server, and (with the new compiler) optimize your code
+automatically. So it's worth understanding exactly what "pure" means.
+
+## What "pure" means
+
+A pure function follows two rules:
+
+<Mermaid
+  chart={`flowchart LR
+    IN["Same inputs<br/>(same props)"] --> F["Pure component"] --> OUT["Same output<br/>(same JSX)"]
+    F -.->|"forbidden during render"| SIDE["Changing outside variables / DOM / state"]`}
+  caption="A pure component: same props in → same JSX out, with no outside changes during render."
+/>
+
+1. **Same inputs → same output.** Given the same props, it always returns the same JSX.
+2. **No side effects during render.** Rendering only computes and returns markup — it must not
+   change anything that existed before it ran (no mutating outside variables, no writing to the
+   DOM, no network calls).
+
+## Spotting an impure component
+
+Here's a component that breaks the rules — it changes a variable that lives *outside* it:
+
+```jsx
+let guest = 0;
+
+function Cup() {
+  guest = guest + 1; // ❌ mutating an outside variable during render
+  return <h2>Tea cup for guest #{guest}</h2>;
+}
+```
+
+Render `<Cup />` three times and you get "#1, #2, #3" — different output for the *same* (no)
+input. Worse, with React's optimizations it might render a different order and produce garbage.
+The fix is to **pass the value in as a prop**, so the output depends only on inputs:
+
+```jsx
+function Cup({ guest }) {
+  return <h2>Tea cup for guest #{guest}</h2>; // ✅ pure — depends only on props
+}
+```
+
+Now `<Cup guest={1} />` always renders "#1", no matter how many times or in what order.
+
+<Callout type="note" title="Local mutation is totally fine">
+  Purity only forbids changing things that existed *before* this render. Creating and changing
+  a variable **inside** the same render — like building up an array with a loop before returning
+  it — is perfectly pure, because nothing outside can observe it. Don't be scared of `let` and
+  `push` on a *local* variable.
+</Callout>
+
+## Then where do side effects go?
+
+Fetching data, setting timers, logging, subscribing — these are side effects, and they're
+essential. They just don't belong *in render*. They go in:
+
+- **Event handlers** — functions that run in response to user actions (next module). They're
+  allowed to be impure.
+- **Effects** — code that runs *after* render to sync with the outside world (Module 4).
+
+Keeping render itself pure is exactly what makes those two escape hatches predictable.
+
+## Why this matters (a lot)
+
+Purity isn't academic. React's most important capabilities all depend on it:
+
+- **Skipping re-renders** — if inputs didn't change, a pure component's output can't have
+  changed, so React can reuse it.
+- **Server rendering & concurrent features** — a component may run in different environments or
+  be paused and resumed; only pure components survive that safely.
+- **The React Compiler** — it can auto-optimize your components *only because* it can trust
+  they're pure.
+
+Write pure components today and you get all of that for free, now and later.
+
+## See it run
+
+<LiveExample
+  code={`function Cup({ guest }) {
+  return <li>Tea cup for guest #{guest}</li>;
+}
+
+export default function TeaGathering() {
+  const cups = [];
+  for (let i = 1; i <= 5; i++) {
+    cups.push(<Cup key={i} guest={i} />); // local mutation — safe and pure
+  }
+  return <ul>{cups}</ul>;
+}`}
+/>
+
+## Recap
+
+- A component should be a **pure function**: same props → same JSX, no outside changes during
+  render.
+- Impurity usually means **mutating something outside** during render — pass data via props
+  instead.
+- **Local** mutation inside a render is fine; side effects belong in event handlers or Effects.
+- Purity is what powers re-render skipping, server rendering, and the React Compiler.
+
+## Your turn
+
+Build a pure `Cupcake` that computes its label only from its `guest` prop, so a `TeaParty`
+sets out one correctly-numbered cupcake per guest. Run the checks.
+
+<Assessment id="tea-set" />

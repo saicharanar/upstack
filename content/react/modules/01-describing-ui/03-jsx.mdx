@@ -1,0 +1,136 @@
+---
+id: jsx
+title: Writing Markup with JSX
+order: 3
+module: describing-ui
+summary: JSX is the HTML-like syntax you write inside JavaScript. Learn what it really is, its three rules, and why bundling markup with logic makes components easier to reason about.
+concepts:
+  - jsx-single-root
+  - jsx-classes
+  - jsx-attributes
+estMinutes: 14
+status: published
+assessment: jsx-user-card
+prereqs: []
+---
+
+You've already been writing `<img />` and `<div>` inside your components. That HTML-looking
+syntax is called **JSX**, and it's worth understanding properly, because it has a few rules
+that will otherwise bite you.
+
+## What JSX actually is
+
+JSX *looks* like HTML, but it is really **JavaScript in disguise**. Every tag you write gets
+compiled into a plain function call that returns a JavaScript object describing the UI. This:
+
+```jsx
+const heading = <h1 className="title">Hello</h1>;
+```
+
+is compiled to roughly this:
+
+```js
+const heading = React.createElement('h1', { className: 'title' }, 'Hello');
+```
+
+You never write that second form — but knowing JSX is *just JavaScript underneath* explains
+its rules. Because it's JavaScript, attribute names follow JavaScript conventions (that's why
+it's `className`, not `class`), and every tag must be valid, closed syntax.
+
+## Why markup and logic live together
+
+For decades, the web kept structure (HTML) in one file and behavior (JavaScript) in another.
+React deliberately puts them in the **same** component, and there's a good reason: in a real
+product, a piece of UI and the logic that drives it **change together**.
+
+Imagine a "follow" button. The designer tweaks its layout while an engineer wires up what
+happens on click. If the markup and the click handler live in one component, that change is
+one file and one review. JSX is what lets a single component own both its look and its
+behavior. Rendering logic and markup aren't really separate concerns — they're the same
+concern, so React keeps them together.
+
+## The three rules of JSX
+
+<Diagram
+  src="/diagrams/jsx-nesting.svg"
+  alt="A component returning two sibling elements on the left is marked invalid; the same two elements wrapped in one parent div on the right is marked valid."
+  caption="Rule 1 in a picture: JSX must return a single parent element — wrap siblings in one container."
+/>
+
+**1. Return a single root element.** A component returns **one** tree, not two siblings
+side by side. Wrap multiple elements in a parent:
+
+```jsx
+// ❌ two siblings at the top level — not allowed
+return (
+  <h1>Title</h1>
+  <p>Body</p>
+);
+
+// ✅ wrapped in one parent
+return (
+  <div>
+    <h1>Title</h1>
+    <p>Body</p>
+  </div>
+);
+```
+
+Don't want an extra `<div>` in the output? Use an empty **Fragment** `<>…</>`, which groups
+without adding any element:
+
+```jsx
+return (
+  <>
+    <h1>Title</h1>
+    <p>Body</p>
+  </>
+);
+```
+
+*(Why? Remember JSX compiles to function calls — a function can only return one value, so your
+markup must have one root.)*
+
+**2. Close every tag.** Self-closing tags like `<img>` need the slash — `<img />` — and
+wrapping tags like `<li>…</li>` need a matching close. HTML is forgiving about this; JSX is not.
+
+**3. Use camelCase for most attribute names.** Since attributes become keys on a JavaScript
+object, they follow JS naming: `class` → `className`, `stroke-width` → `strokeWidth`,
+`onclick` → `onClick`. `className` is the one you'll hit constantly.
+
+<Callout type="gotcha" title="class vs className">
+  The single most common first-day JSX error: writing `class="..."`. In JSX it's
+  `className="..."`, because `class` is a reserved word in JavaScript. Your editor and React's
+  warnings will remind you, but now you'll know *why*.
+</Callout>
+
+## See it run
+
+Edit the markup below — change the heading, add a paragraph, try removing the wrapping
+`<div>` and watch it break (then put it back). That's the three rules, live.
+
+<LiveExample
+  code={`export default function Greeting() {
+  return (
+    <div className="greeting">
+      <h1>Hello, JSX!</h1>
+      <p>This markup lives right inside JavaScript.</p>
+    </div>
+  );
+}`}
+/>
+
+## Recap
+
+- JSX is **JavaScript**, not HTML — it compiles to function calls that return UI objects.
+- It keeps markup and logic together because they change together.
+- Three rules: **one root element**, **close every tag**, **camelCase attributes**
+  (`className`, not `class`).
+
+## Your turn
+
+Build a small profile card from scratch, applying all three rules: a single wrapping element
+with the class `user-card`, an avatar image whose `alt` text is the person's name, and the
+name inside a heading. Run the checks for each rule.
+
+<Assessment id="jsx-user-card" />

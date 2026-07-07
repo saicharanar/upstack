@@ -1,0 +1,79 @@
+---
+id: reacting-to-input
+title: Reacting to Input with State
+order: 1
+module: managing-state
+summary: Declarative UI means describing the states your UI can be in, not the steps to get between them. Learn to think in states instead of manually toggling the DOM.
+concepts:
+  - declarative-vs-imperative
+  - thinking-in-states
+  - state-drives-ui
+estMinutes: 10
+status: published
+assessment: null
+prereqs: []
+---
+
+You can now use state and events. This module is about the harder, more valuable skill: not
+*how* to set state, but *how to think about it* — where it should live, how to shape it, and
+how to share it. We start with the mindset shift that makes all of it click: **thinking in
+states**.
+
+## Two ways to build a form
+
+Imagine a form that submits an answer. The **imperative** way is a list of commands: "when they
+type, enable the button; when they submit, disable the button and show the spinner; if it
+fails, hide the spinner and show the error and re-enable the button…" Every feature adds more
+"when X, toggle Y," and it's easy to end up in an impossible state (spinner *and* error both
+showing).
+
+The **declarative** way — React's way — flips it: you enumerate the **states** the view can be
+in, and describe what each one looks like. A click just switches the state; React redraws.
+
+## Think in states
+
+List the distinct states first:
+
+<Mermaid
+  chart={`stateDiagram-v2
+    [*] --> Empty
+    Empty --> Typing: user types
+    Typing --> Submitting: submit
+    Submitting --> Success: request ok
+    Submitting --> Error: request failed
+    Error --> Typing: user edits`}
+  caption="Enumerate the states your view can be in, then describe each — instead of wiring toggles."
+/>
+
+Then hold the current state in a variable and let the UI read from it:
+
+```jsx
+const [status, setStatus] = useState('typing'); // 'typing' | 'submitting' | 'success' | 'error'
+
+<button disabled={status === 'submitting'}>Submit</button>
+{status === 'error' && <p className="error">Something went wrong.</p>}
+{status === 'success' && <p>Thanks!</p>}
+```
+
+<Callout type="tip" title="The mental shift">
+  Don't ask "what should I *change* when the user clicks?" Ask "what *states* can this view be
+  in, and what does each look like?" Then a click just does `setStatus('submitting')`, and React
+  updates the DOM to match. You can't get stuck in a half-updated, inconsistent screen, because
+  the screen is always a pure function of the current state.
+</Callout>
+
+## Why declarative wins as apps grow
+
+Imperative toggle-code grows fragile: each new requirement means more conditional DOM tweaks,
+and combinations multiply. With states, adding a case is adding one branch, and impossible
+combinations simply can't happen because there's a single `status`. This is why React (and UI
+frameworks generally) moved to the declarative model.
+
+## Recap
+
+- **Imperative**: step-by-step commands to change the DOM — fragile as it grows.
+- **Declarative** (React): enumerate the **states**, describe each, and switch between them.
+- Hold the current state in a variable; the UI is a **pure function** of it, so it's always
+  consistent.
+
+Read this, then mark it complete — next, how to *shape* that state well.

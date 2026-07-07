@@ -1,0 +1,102 @@
+---
+id: choosing-state-structure
+title: Choosing the State Structure
+order: 2
+module: managing-state
+summary: Well-shaped state prevents whole categories of bugs. Learn the guiding principles — avoid redundant state, avoid contradictions, avoid duplication, and group what changes together.
+concepts:
+  - state-group-related
+  - state-avoid-redundant
+  - state-avoid-duplication
+estMinutes: 11
+status: published
+assessment: null
+prereqs: []
+---
+
+Once you're comfortable *using* state, the next skill is *shaping* it. The structure you pick
+decides how easy the component is to keep correct. A handful of principles head off the most
+common state bugs before they happen. The overarching goal: **make impossible states
+impossible.**
+
+## Principle 1: Avoid redundant state
+
+If a value can be **calculated** from existing props or state during render, don't store it in
+state — just compute it. Storing it means keeping two things in sync, and they *will* drift.
+
+```jsx
+// ❌ fullName is redundant — now three things must stay in sync
+const [first, setFirst] = useState('Ada');
+const [last, setLast] = useState('Lovelace');
+const [fullName, setFullName] = useState('Ada Lovelace');
+
+// ✅ derive it during render — one source of truth
+const [first, setFirst] = useState('Ada');
+const [last, setLast] = useState('Lovelace');
+const fullName = first + ' ' + last;
+```
+
+## Principle 2: Avoid contradictions
+
+Don't use multiple booleans that can disagree. `isSending` and `isSent` can both be `true` at
+once — a meaningless, buggy state. Collapse them into a single value that can only be one thing
+at a time:
+
+```jsx
+// ❌ can contradict: what does isSending=true AND isSent=true mean?
+const [isSending, setIsSending] = useState(false);
+const [isSent, setIsSent] = useState(false);
+
+// ✅ one status, only one value at a time
+const [status, setStatus] = useState('typing'); // 'typing' | 'sending' | 'sent'
+```
+
+## Principle 3: Avoid duplication
+
+Don't store the same data in two places. Keeping a `selectedItem` object *and* the same object
+inside an `items` array means editing one leaves the other stale. Store an **id** and look the
+object up:
+
+```jsx
+// ❌ selectedItem duplicates an object already in items
+const [selectedItem, setSelectedItem] = useState(items[0]);
+
+// ✅ store the id; derive the object
+const [selectedId, setSelectedId] = useState(items[0].id);
+const selectedItem = items.find((i) => i.id === selectedId);
+```
+
+<Callout type="note" title="The guiding question">
+  For any combination of your state values, ask: "could this combination be nonsense?" If yes,
+  restructure so it *can't* exist — usually by collapsing booleans into one status, or replacing
+  a duplicated object with an id you look up. State you can't get into a bad shape is state you
+  can't write bugs against.
+</Callout>
+
+## Principle 4: Group what changes together
+
+If two state variables always change at the same time, consider grouping them into one object
+(like `position: { x, y }`). If they're independent, keep them separate. Grouping avoids
+forgetting to update one of a matched pair.
+
+## A quick decision guide
+
+<Mermaid
+  chart={`flowchart TD
+    Q1{"Can I compute it<br/>from other state/props?"} -->|yes| Derive["Don't store it — derive it"]
+    Q1 -->|no| Q2{"Do these booleans<br/>ever contradict?"}
+    Q2 -->|yes| Status["Use one status value"]
+    Q2 -->|no| Q3{"Is this the same data<br/>stored elsewhere?"}
+    Q3 -->|yes| Id["Store an id, look it up"]
+    Q3 -->|no| Keep["Keep it as state"]`}
+  caption="A quick checklist for deciding what actually belongs in state."
+/>
+
+## Recap
+
+- **Don't store what you can derive** — compute it during render.
+- **Avoid contradictory booleans** — use a single status value.
+- **Don't duplicate** data — store an id and look the object up.
+- **Group** values that always change together.
+
+Read this, then mark it complete — next, sharing state between components.

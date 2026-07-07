@@ -1,0 +1,85 @@
+---
+id: synchronizing-with-effects
+title: Synchronizing with Effects
+order: 3
+module: escape-hatches
+summary: Effects let a component synchronize with systems outside React — the document title, a subscription, a server connection. Learn useEffect, its dependency array, and cleanup.
+concepts:
+  - effect-purpose
+  - effect-dependencies
+  - effect-cleanup
+estMinutes: 14
+status: published
+assessment: title-effect
+prereqs: []
+---
+
+Some code needs to run because the component **rendered and is on screen**, not because of a
+specific click. Examples: connecting to a chat server, setting up a subscription, syncing the
+document title to state. That's an **Effect** — code that runs *after* render to synchronize
+React with an external system.
+
+<Callout type="important" title="First, do you even need an Effect?">
+  Effects are frequently overused. If you're transforming data for rendering, or handling a
+  user event, you do **not** need an Effect (that's the whole next chapter). Effects are only
+  for synchronizing with systems **outside** React. Keep that filter in mind as you learn them.
+</Callout>
+
+## useEffect
+
+```jsx
+import { useEffect } from 'react';
+
+useEffect(() => {
+  document.title = `Count: ${count}`; // the "setup" — synchronize with the outside world
+}, [count]);                          // the dependency array — when to re-run
+```
+
+Two parts: the **setup function** (what to synchronize) and the **dependency array** (which
+values, when changed, should re-run it).
+
+## The dependency array controls when it runs
+
+<Mermaid
+  chart={`flowchart TD
+    Dep["Dependency array"] --> D1["[count] → run after mount, and whenever count changes"]
+    Dep --> D2["[] → run only once, after the first render"]
+    Dep --> D3["(omitted) → run after EVERY render (rarely what you want)"]`}
+  caption="The dependency array decides how often the Effect re-runs."
+/>
+
+<Callout type="gotcha" title="Don't lie about dependencies">
+  The array must include **every reactive value the Effect reads** (props, state, values derived
+  from them). Leaving one out causes stale-value bugs, and React's linter will flag it. The fix
+  for "it runs too often" is never to delete a dependency — it's to change the code so the
+  dependency genuinely isn't needed (two chapters from now).
+</Callout>
+
+## Cleanup: undo what the Effect set up
+
+If your Effect starts something ongoing — a subscription, a timer, a connection — it must be
+able to **stop** it. Return a **cleanup function**; React runs it before the next Effect run
+and when the component unmounts:
+
+```jsx
+useEffect(() => {
+  const id = setInterval(tick, 1000);
+  return () => clearInterval(id); // cleanup: stop the interval
+}, []);
+```
+
+Think of each Effect as a pair: **start syncing** (setup) and **stop syncing** (cleanup).
+
+<Callout type="note" title="Why Effects run twice in development">
+  In development (Strict Mode), React runs each Effect **setup → cleanup → setup** once, on
+  purpose, to reveal missing cleanup. If your chat shows two connections or a timer doubles,
+  that's the missing-cleanup bug surfacing early — a feature, not a glitch. In production it
+  runs once.
+</Callout>
+
+## Your turn
+
+Add an Effect that syncs the document title to `Count: <count>` — on mount and whenever the
+count changes. Run the checks.
+
+<Assessment id="title-effect" />

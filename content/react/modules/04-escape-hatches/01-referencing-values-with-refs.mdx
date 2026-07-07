@@ -1,0 +1,85 @@
+---
+id: referencing-values-with-refs
+title: Referencing Values with Refs
+order: 1
+module: escape-hatches
+summary: A ref lets a component remember a value that isn't used for rendering and shouldn't trigger a re-render. Learn useRef, how it differs from state, and when to use each.
+concepts:
+  - ref-useref
+  - ref-vs-state
+  - ref-no-rerender
+estMinutes: 10
+status: published
+assessment: null
+prereqs: []
+---
+
+So far, everything a component remembers has been **state** — because it affects what's on
+screen. But sometimes a component needs to remember something that has **nothing to do with the
+UI**: a timer's id, whether it's the first render, the previous value of something. Storing that
+in state would cause pointless re-renders. That's what a **ref** is for.
+
+## useRef
+
+```jsx
+import { useRef } from 'react';
+
+const ref = useRef(0);   // create a ref with an initial value
+ref.current;             // read it
+ref.current = 5;         // write it — no re-render happens
+```
+
+`useRef` returns a plain, stable object: `{ current: <value> }`. React keeps this same object
+across renders. You read and write `ref.current` directly — and crucially, changing it does
+**not** trigger a re-render. The value just quietly persists.
+
+## Ref vs. state — the key difference
+
+Both let a component "remember" across renders. The difference is what happens when they change:
+
+<Mermaid
+  chart={`flowchart LR
+    SC["Change STATE (setValue)"] --> Re["React re-renders ✓"]
+    RC["Change REF (ref.current = x)"] --> No["No re-render ✗ (value just persists)"]`}
+  caption="Changing state re-renders; changing a ref does not — it's silent memory."
+/>
+
+|  | State | Ref |
+|---|---|---|
+| Changing it re-renders | ✅ yes | ❌ no |
+| Fixed snapshot per render | ✅ yes | ❌ no — always current |
+| Read/write during render | read only | ❌ avoid during render |
+| Use it for… | anything shown on screen | values *not* shown — timer ids, previous values, flags |
+
+<Callout type="gotcha" title="Don't read or write refs during render">
+  Refs are an escape from React's flow, so touching `ref.current` *while rendering* makes your
+  output depend on something outside the render — impure (Module 1). Read and write refs in
+  **event handlers** and **Effects**, not in the render body. And the deciding question: if a
+  value should be reflected on screen, it belongs in **state**, not a ref.
+</Callout>
+
+## A typical use: a timer id
+
+```jsx
+const intervalRef = useRef(null);
+
+function start() {
+  intervalRef.current = setInterval(tick, 1000); // remember the id, no re-render
+}
+function stop() {
+  clearInterval(intervalRef.current); // read it back later
+}
+```
+
+The interval id isn't shown anywhere — it's just bookkeeping between clicks. A ref is perfect;
+state would re-render for nothing.
+
+## Recap
+
+- `useRef(initial)` returns a stable `{ current }` object React keeps across renders.
+- Reading/writing `ref.current` does **not** re-render — it's silent memory.
+- Use **state** for values shown on screen; use a **ref** for values that aren't (timer ids,
+  previous values, flags).
+- Don't touch refs during render — use them in handlers and Effects.
+
+Read this, then mark it complete — next, using a ref to reach a real DOM node.

@@ -1,0 +1,71 @@
+---
+id: using-the-editor
+title: How the Exercises Work
+order: 3
+module: getting-started
+summary: A tour of the in-browser workspace you'll use for every exercise — the editor, the live preview, and the automated checks — plus how a chapter gets marked complete and how your progress is saved.
+concepts:
+  - editor-live-preview
+  - editor-tests
+  - editor-completion
+estMinutes: 6
+status: published
+assessment: null
+prereqs: []
+---
+
+Every graded chapter ends with a hands-on **workspace** that runs real React right in your
+browser — nothing to install, no setup. This short chapter shows you how it's laid out so the
+exercises feel comfortable from the first one.
+
+## The three panels
+
+When you launch an exercise, you get three panels working together:
+
+<Mermaid
+  chart={`flowchart LR
+    E["Editor — you write code"] -->|"as you type"| P["Live preview — your component runs"]
+    E -->|"run the checks"| T["Automated checks — one per requirement"]
+    T -->|"all pass"| D["Chapter complete"]`}
+  caption="Write in the editor, see it live in the preview, and let the checks verify each requirement."
+/>
+
+- **Editor** — where you write your code, with syntax highlighting. It's a real editor; type
+  as you would anywhere.
+- **Live preview** — your component, rendered and running. It updates as you type, so you can
+  *see* what you're building, not just imagine it.
+- **Automated checks** — a list of tests, each verifying one requirement. Green means that
+  requirement passes; red tells you exactly what's still off.
+
+<Callout type="tip" title="Examples are runnable too">
+  The blue "Runnable example" boxes inside chapters work the same way — edit the code and
+  watch the preview change. Poke at them; there's a **⤢ Full screen** button in the corner
+  when an example needs more room.
+</Callout>
+
+## How a chapter becomes complete
+
+There are two ways a chapter turns to ✓ **complete**:
+
+1. **Pass its exercise.** When every required check goes green, the chapter is marked complete
+   and the concepts you demonstrated are recorded.
+2. **Mark it by hand.** Concept chapters like this one have no exercise — read them and click
+   **Mark chapter as complete**. You can always reverse it with **Mark as not done**.
+
+## Nothing is locked; your progress is saved
+
+<Callout type="note" title="Learn in any order">
+  No chapter is gated behind another — jump around freely. Your progress (which chapters are
+  done, which is in progress, and where you left off) is saved locally in your browser, and the
+  **Resume** button on the home page always brings you back to where you stopped.
+</Callout>
+
+## Reading the checks
+
+The checks are written in plain language — "renders the avatar image with the correct alt
+text", not internal jargon. Each maps to a concept the chapter teaches, so a red check points
+you straight at the idea to revisit. (You'll even learn *why* they're written that way in the
+final chapter on testing.)
+
+That's the whole loop: **read, build, run the checks, move on.** Mark this complete and let's
+write your first component.

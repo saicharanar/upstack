@@ -1,0 +1,84 @@
+---
+id: you-might-not-need-an-effect
+title: You Might Not Need an Effect
+order: 4
+module: escape-hatches
+summary: Effects are the most overused hook. Learn the two big cases where you don't need one — transforming data for rendering, and handling user events — and what to do instead.
+concepts:
+  - no-effect-derive-during-render
+  - no-effect-event-logic
+  - no-effect-expensive-memo
+estMinutes: 11
+status: published
+assessment: null
+prereqs: []
+---
+
+Effects are an escape hatch for synchronizing with **external** systems. If no external system
+is involved, you almost certainly don't need one — and removing unnecessary Effects makes code
+simpler, faster, and less buggy. This chapter is a filter you should run on every Effect you're
+tempted to write.
+
+## The decision
+
+<Mermaid
+  chart={`flowchart TD
+    Q{"Why does this code run?"} -->|"to compute something<br/>from props/state"| Derive["Calculate it during render — no Effect"]
+    Q -->|"because the user did<br/>a specific action"| Event["Put it in the event handler — no Effect"]
+    Q -->|"to sync with an external<br/>system (server, DOM API, subscription)"| Effect["OK — use an Effect"]`}
+  caption="Run this filter before writing an Effect. Only external synchronization truly needs one."
+/>
+
+## Case 1: You don't need an Effect to transform data
+
+If you can compute a value from existing props/state, do it **during render** — not in an
+Effect that sets extra state:
+
+```jsx
+// ❌ redundant state + an Effect to keep it in sync
+const [fullName, setFullName] = useState('');
+useEffect(() => { setFullName(first + ' ' + last); }, [first, last]);
+
+// ✅ just calculate during render
+const fullName = first + ' ' + last;
+```
+
+The Effect version renders once with a stale value, *then* re-renders after the Effect — extra
+work and a flash. Deriving during render is simpler and correct.
+
+## Case 2: You don't need an Effect for user events
+
+Logic that runs because the user **did something specific** belongs in the **event handler**,
+not an Effect. "Buy this product" should happen in the `onClick`, not in an Effect watching a
+`bought` flag — Effects run on render, so they lose the "this happened because they clicked"
+context (and can fire at the wrong time, like on a page refresh).
+
+<Callout type="tip" title="The quick test">
+  Ask: does this run because the component was **displayed**, or because the user did a
+  **specific action**? Displayed → maybe an Effect. Specific action → an event handler. Can be
+  **computed** from existing data → neither; just calculate it.
+</Callout>
+
+## Expensive calculations: useMemo, not an Effect
+
+If a derived value is genuinely expensive to recompute every render, cache it with `useMemo`
+during render — still not an Effect:
+
+```jsx
+const visible = useMemo(() => filterHugeList(items, query), [items, query]);
+```
+
+## Why this matters
+
+Every unnecessary Effect is a source of extra renders, dependency bugs, and confusion. "Do I
+actually need this Effect?" is one of the highest-leverage questions you can ask while writing
+React — and the answer is "no" more often than beginners expect.
+
+## Recap
+
+- Effects are only for **synchronizing with external systems**.
+- To **transform data for rendering** → calculate during render (or `useMemo` if expensive).
+- To **respond to a user action** → put it in the event handler.
+- Fewer Effects = simpler, faster, less buggy code.
+
+Read this, then mark it complete — next, how an Effect's lifecycle actually works.

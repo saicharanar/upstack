@@ -1,0 +1,84 @@
+---
+id: usecallback
+title: Caching Functions with useCallback
+order: 7
+module: modern-react
+summary: useCallback caches a function's identity between renders so that memoized children don't re-render just because a new function was created. Learn how it relates to useMemo.
+concepts:
+  - usecallback-stable-function
+  - usecallback-for-memo
+  - usecallback-dependencies
+estMinutes: 9
+status: published
+assessment: null
+prereqs: []
+---
+
+Here's a subtle React fact: functions defined inside a component are **created fresh on every
+render**. Usually that's harmless. But if you pass such a function as a prop to a `memo`-wrapped
+child, the child sees a "new" prop every render — and its memoization is defeated.
+**`useCallback`** fixes this by caching the function's identity.
+
+## The problem
+
+```jsx
+function Parent() {
+  const [count, setCount] = useState(0);
+  const handleClick = () => doSomething(); // a NEW function object every render
+  return <MemoizedButton onClick={handleClick} />; // memo sees a "new" onClick each time → re-renders
+}
+```
+
+`MemoizedButton` is wrapped in `memo`, but it re-renders on every parent render anyway, because
+`handleClick` is a different function object each time.
+
+## useCallback
+
+`useCallback` returns the **same function** between renders, as long as its dependencies don't
+change:
+
+```jsx
+import { useCallback } from 'react';
+
+const handleClick = useCallback(() => {
+  doSomething(itemId);
+}, [itemId]); // same function identity until itemId changes
+```
+
+Now `MemoizedButton` receives a stable `onClick` and its `memo` works.
+
+<Callout type="note" title="useCallback is just useMemo for functions">
+  `useCallback(fn, deps)` is equivalent to `useMemo(() => fn, deps)` — one memoizes a value, the
+  other memoizes a function. Same idea, same dependency-array rules; `useCallback` is the
+  convenient form for functions.
+</Callout>
+
+<Mermaid
+  chart={`flowchart LR
+    UM["useMemo(fn, deps)"] -->|"caches a VALUE"| V["a computed result"]
+    UC["useCallback(fn, deps)"] -->|"caches a FUNCTION"| F["a stable function identity"]`}
+  caption="useMemo caches a value; useCallback caches a function. Same dependency mechanism."
+/>
+
+## When to use it
+
+The only reason to reach for `useCallback` is **stability that something depends on**:
+
+- Passing a function to a **`memo`**-wrapped child (so its memo isn't defeated).
+- Passing a function as an **Effect dependency** (so the Effect doesn't re-run every render).
+
+<Callout type="gotcha" title="Not needed by default">
+  If a function isn't passed to a memoized child or an Effect, wrapping it in `useCallback` buys
+  you nothing — creating a function each render is cheap. Only reach for it to preserve identity
+  that a `memo` or an Effect relies on.
+</Callout>
+
+## Recap
+
+- Functions are **re-created every render**, which can defeat a child's `memo` or re-trigger an
+  Effect.
+- **`useCallback(fn, deps)`** returns a **stable function identity** until `deps` change.
+- It's just **`useMemo` for functions**.
+- Use it only when a **memoized child** or an **Effect** depends on the function's identity.
+
+Read this, then mark it complete — next, why a compiler is making all this manual work optional.

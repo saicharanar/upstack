@@ -1,0 +1,118 @@
+---
+id: sharing-state
+title: Sharing State Between Components
+order: 3
+module: managing-state
+summary: When two components need the same data, lift the state up to their closest common parent and pass it down. Learn the lifting-state-up pattern and controlled children.
+concepts:
+  - lift-common-parent
+  - lift-props-down
+  - lift-controlled-children
+estMinutes: 12
+status: published
+assessment: lift-up
+prereqs: []
+---
+
+Often two components need to reflect the same value, or one needs to change what another shows.
+Since data only flows **down** (Module 1's tree), the answer is **lifting state up**: move the
+state to the closest common parent, then pass it down to both children.
+
+## The problem, visually
+
+Say two `Panel`s each track their own "isActive," but you want only one open at a time. Each
+panel owning its own state can't coordinate. Lift the "which one is active" state to their
+parent:
+
+<Mermaid
+  chart={`flowchart TD
+    subgraph Before["Before: each child owns state (can't coordinate)"]
+      A1["Panel (own isActive)"]
+      A2["Panel (own isActive)"]
+    end
+    subgraph After["After: parent owns state, passes down"]
+      P["Accordion (activeIndex)"] -->|"isActive + onShow"| C1["Panel"]
+      P -->|"isActive + onShow"| C2["Panel"]
+    end`}
+  caption="Lift shared state to the closest common parent; pass the value and a handler down."
+/>
+
+## The three steps
+
+1. **Remove** the state from the child components.
+2. **Add** it to their closest common parent.
+3. **Pass it down** — the value as one prop, and a handler (also a prop) so children can request
+   changes.
+
+```jsx
+function Accordion() {
+  const [activeIndex, setActiveIndex] = useState(0);
+  return (
+    <>
+      <Panel isActive={activeIndex === 0} onShow={() => setActiveIndex(0)}>First</Panel>
+      <Panel isActive={activeIndex === 1} onShow={() => setActiveIndex(1)}>Second</Panel>
+    </>
+  );
+}
+```
+
+Now the children are **controlled** by the parent: they don't own the state, they just receive
+the value and call the handler the parent gave them. The parent is the single source of truth.
+
+<Callout type="note" title="Single source of truth">
+  For any piece of state, exactly **one** component should own it. Everyone else who needs it
+  receives it (and a way to change it) via props. When unsure where state goes, put it at the
+  **lowest common ancestor** of every component that needs it.
+</Callout>
+
+## Why this is the fundamental pattern
+
+Most "how do I get data from this component over to that one?" questions are answered by
+lifting to a shared parent. It keeps data flow one-directional and predictable. (When the
+common ancestor is very far up and you'd be threading props through many middle layers that
+don't care, that's the signal for **Context** — later this module.)
+
+## See it run
+
+<LiveExample
+  code={`import { useState } from 'react';
+
+function Panel({ title, isActive, onShow, children }) {
+  return (
+    <section style={{ border: '1px solid #ccc', padding: 8, margin: 4 }}>
+      <h3>{title}</h3>
+      {isActive ? <p>{children}</p> : <button onClick={onShow}>Show</button>}
+    </section>
+  );
+}
+
+export default function Accordion() {
+  const [active, setActive] = useState(0);
+  return (
+    <div>
+      <Panel title="About" isActive={active === 0} onShow={() => setActive(0)}>
+        Only one panel is open at a time — the parent owns that state.
+      </Panel>
+      <Panel title="Etymology" isActive={active === 1} onShow={() => setActive(1)}>
+        Click the other panel and this one closes.
+      </Panel>
+    </div>
+  );
+}`}
+/>
+
+Open one panel, then the other — only one stays open, because a single parent owns the "active"
+state.
+
+## Recap
+
+- Two components need the same state → **lift it up** to their closest common parent.
+- Remove it from children, add it to the parent, **pass down** the value + a handler.
+- The parent is the **single source of truth**; children become **controlled**.
+
+## Your turn
+
+Build a `StarBoard` where an "Add star" button and a star count live in separate child
+components but share one count lifted into the parent. Run the checks.
+
+<Assessment id="lift-up" />

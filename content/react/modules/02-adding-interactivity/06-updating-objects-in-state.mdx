@@ -1,0 +1,110 @@
+---
+id: updating-objects-in-state
+title: Updating Objects in State
+order: 6
+module: adding-interactivity
+summary: State objects must be treated as read-only. Learn why mutating them breaks React, and how to update a field by making a new object with the spread syntax.
+concepts:
+  - object-treat-readonly
+  - object-spread-update
+  - object-nested-update
+estMinutes: 12
+status: published
+assessment: edit-profile
+prereqs: []
+---
+
+State can hold objects and arrays, not just numbers and strings. But there's a firm rule:
+**treat state as read-only.** You never change an object that's already in state — instead you
+make a **new** object and set that. This chapter is about objects; the next is arrays (same
+idea).
+
+## Why not just mutate it?
+
+It's tempting to write:
+
+```jsx
+user.role = 'admin'; // ❌ mutating the object that's in state
+setUser(user);
+```
+
+Two things go wrong:
+
+1. **React may not re-render.** React decides whether to re-render by checking if the state
+   *reference* changed. You handed it the **same** object, so it can conclude "nothing changed"
+   and skip the update.
+2. **You've corrupted the past.** Features like the snapshot model, undo/redo, and the React
+   Compiler rely on previous state objects staying untouched. Mutating one breaks those.
+
+<Mermaid
+  chart={`flowchart TD
+    M["Mutate: user.role = 'admin'"] -->|"same object reference"| Skip["React may skip re-render ❌"]
+    C["Copy: { ...user, role: 'admin' }"] -->|"new object reference"| Rerender["React re-renders ✅"]`}
+  caption="Mutating keeps the same reference (React may skip); a new object triggers a re-render."
+/>
+
+## The spread pattern
+
+Make a copy with `...`, override the field you want, and set the new object:
+
+```jsx
+setUser({
+  ...user,       // copy every existing field
+  role: 'admin', // override just this one
+});
+```
+
+`...user` copies all existing properties; the later `role` wins. The original object is
+untouched, and React sees a brand-new reference, so it re-renders. This "copy, then change the
+copy" move is exactly the spread you practiced in Module 0.
+
+## Nested objects
+
+For nested data, spread at **each level** you change — because copying the outer object still
+shares the inner ones:
+
+```jsx
+setUser({
+  ...user,
+  address: { ...user.address, city: 'Paris' }, // new inner object too
+});
+```
+
+<Callout type="tip" title="When nesting gets deep">
+  Deeply nested spreads get verbose and error-prone. That's usually a sign to **flatten your
+  state** (Module 3's "choosing state structure") or reach for a helper library like **Immer**,
+  which lets you "mutate" a safe draft while producing a proper immutable update under the hood.
+</Callout>
+
+## See it run
+
+<LiveExample
+  code={`import { useState } from 'react';
+
+export default function Form() {
+  const [form, setForm] = useState({ first: 'Ada', last: 'Lovelace' });
+  return (
+    <div>
+      <p>{form.first} {form.last}</p>
+      <button onClick={() => setForm({ ...form, last: 'Byron' })}>Change last name</button>
+      <button onClick={() => setForm({ ...form, first: 'Grace', last: 'Hopper' })}>
+        Change both
+      </button>
+    </div>
+  );
+}`}
+/>
+
+## Recap
+
+- Treat state objects as **read-only** — never mutate what's already in state.
+- Update by **copying with spread** and overriding fields: `setUser({ ...user, role: 'admin' })`.
+- For **nested** objects, spread at each level you change.
+- New reference → React re-renders; same reference → it may not.
+
+## Your turn
+
+Build a profile that starts as a "member" and a "Promote" button that updates only the role to
+"admin" — immutably, with spread. Run the checks.
+
+<Assessment id="edit-profile" />

@@ -1,0 +1,108 @@
+---
+id: rendering-lists
+title: Rendering Lists
+order: 7
+module: describing-ui
+summary: Most UIs are lists — feeds, tables, menus. Learn to turn an array of data into an array of elements with map, and why every list item needs a stable key.
+concepts:
+  - list-map
+  - list-keys
+  - list-from-data
+estMinutes: 12
+status: published
+assessment: skill-list
+prereqs: []
+---
+
+Look at almost any screen: a feed of posts, a list of search results, a nav menu, a table of
+rows. A huge share of every UI is **a list rendered from data**. In React you build these with
+the same `.map()` you learned in Module 0 — you *map* each piece of data to a piece of markup.
+
+## From an array of data to an array of elements
+
+The core move: take an array, call `.map()` on it, and return a JSX element for each item.
+JSX happily renders an array of elements.
+
+<Mermaid
+  chart={`flowchart LR
+    D["['Ada', 'Alan', 'Grace']"] -->|".map(name => &lt;li&gt;)"| E["[&lt;li&gt;Ada&lt;/li&gt;, &lt;li&gt;Alan&lt;/li&gt;, &lt;li&gt;Grace&lt;/li&gt;]"] --> UI["Rendered list"]`}
+  caption="map() turns an array of data into an array of elements, which JSX renders."
+/>
+
+```jsx
+const people = ['Ada', 'Alan', 'Grace'];
+
+function PeopleList() {
+  return (
+    <ul>
+      {people.map((name) => (
+        <li key={name}>{name}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+The `{people.map(...)}` sits inside curly braces (Chapter 4 — it's a JavaScript expression),
+and returns three `<li>` elements that React renders in order.
+
+## Keys: how React tells items apart
+
+Notice `key={name}`. Every element in a list needs a **key** — a string or number that's
+**unique among its siblings** and **stable** over time. React uses keys to track which item is
+which when the list changes: items added, removed, or reordered. Without keys, React warns you
+in the console and can update the wrong rows (losing input focus, showing stale content).
+
+Where does a good key come from? Your data. Use a database `id`, a unique slug, or any stable
+unique field:
+
+```jsx
+{products.map((product) => (
+  <li key={product.id}>{product.name}</li>
+))}
+```
+
+<Callout type="gotcha" title="Don't use the array index as the key">
+  It's tempting to write `key={index}`. It works *only* if the list never reorders and items
+  are never inserted or removed from the middle — otherwise indexes shift, and React mismatches
+  items, causing subtle bugs (wrong data in a row, lost focus). Prefer a stable id from your
+  data. Reach for the index only for a truly static list.
+</Callout>
+
+## See it run
+
+Add a person to the array, or render an object's fields instead of a plain string. Watch the
+list grow.
+
+<LiveExample
+  code={`const scientists = [
+  { id: 1, name: 'Ada Lovelace', field: 'Computing' },
+  { id: 2, name: 'Alan Turing', field: 'Computation' },
+  { id: 3, name: 'Grace Hopper', field: 'Compilers' },
+];
+
+export default function Directory() {
+  return (
+    <ul>
+      {scientists.map((person) => (
+        <li key={person.id}>
+          <strong>{person.name}</strong> — {person.field}
+        </li>
+      ))}
+    </ul>
+  );
+}`}
+/>
+
+## Recap
+
+- Render lists by calling **`.map()`** on an array and returning one element per item.
+- Every list item needs a **`key`** that's unique among siblings and stable over time.
+- Get keys from your **data** (an `id`), not the array **index** (except for static lists).
+
+## Your turn
+
+Turn an array of skills into a `<ul>` with one `<li>` per skill, each with a unique key. Run
+the checks to confirm every item renders.
+
+<Assessment id="skill-list" />

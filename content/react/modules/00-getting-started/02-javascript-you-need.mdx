@@ -1,0 +1,149 @@
+---
+id: javascript-you-need
+title: The JavaScript You Need First
+order: 2
+module: getting-started
+summary: React is just JavaScript. A handful of modern features appear on nearly every line — this chapter gives each one a clear, from-scratch explanation so React code reads easily later.
+concepts:
+  - js-arrow-functions
+  - js-destructuring
+  - js-spread
+  - js-array-methods
+estMinutes: 14
+status: published
+assessment: js-warmup
+prereqs: []
+---
+
+Here's a reassuring truth: **React has almost no syntax of its own.** What can *look* like
+"React syntax" is usually just modern JavaScript being used heavily. So a little fluency with
+five JavaScript features will make every React chapter that follows read smoothly instead of
+looking like noise. Let's build each one up from scratch, and note where React leans on it.
+
+## 1. Arrow functions
+
+Arrow functions are a shorter way to write a function. These two are equivalent:
+
+```js
+// traditional
+function add(a, b) {
+  return a + b;
+}
+
+// arrow function
+const add = (a, b) => {
+  return a + b;
+};
+```
+
+When the body is just a single expression to return, you can drop the braces and the
+`return` — this is the **implicit return**, and it's everywhere in React:
+
+```js
+const add = (a, b) => a + b;         // returns a + b
+const greet = (name) => `Hi ${name}`; // returns the string
+```
+
+**Where React uses it:** inline event handlers and list rendering.
+
+```jsx
+<button onClick={() => setCount(count + 1)}>+1</button>
+{items.map((item) => <li>{item}</li>)}
+```
+
+That `() => setCount(count + 1)` is just a tiny arrow function you're handing to `onClick` to
+run later.
+
+## 2. Destructuring
+
+Destructuring pulls values *out* of an object or array into named variables, in one line.
+Instead of:
+
+```js
+const user = { first: 'Ada', last: 'Lovelace' };
+const first = user.first;
+const last = user.last;
+```
+
+you write:
+
+```js
+const { first, last } = user; // first = 'Ada', last = 'Lovelace'
+```
+
+Arrays destructure by **position** instead of name:
+
+```js
+const [a, b] = ['x', 'y']; // a = 'x', b = 'y'
+```
+
+**Where React uses it:** reading props, and `useState` (which returns a two-item array):
+
+```jsx
+function Avatar({ name, size }) { /* props destructured right in the parameter */ }
+const [count, setCount] = useState(0); // array destructuring
+```
+
+This is why `useState` gives you `[value, setter]` — you destructure the pair into two names.
+
+## 3. Template strings
+
+Backtick strings let you embed values with `${…}` instead of clumsy `+` concatenation:
+
+```js
+const name = 'Ada';
+const oldWay = 'Hi ' + name + '!';
+const better = `Hi ${name}!`; // same result, far easier to read
+```
+
+**Where React uses it:** building classNames, URLs, and labels from data —
+`` `$${price.toFixed(2)}` ``, `` `/users/${id}` ``.
+
+## 4. Spread and rest (`...`)
+
+The `...` operator copies the contents of an object or array. This matters *enormously* in
+React, because you update state by making **copies**, never by mutating the original:
+
+```js
+const user = { name: 'Ada', role: 'member' };
+const promoted = { ...user, role: 'admin' }; // copy every field, override role
+// user is untouched; promoted is a new object
+
+const list = [1, 2, 3];
+const longer = [...list, 4]; // [1, 2, 3, 4], list untouched
+```
+
+**Where React uses it:** immutable state updates (a whole chapter in Module 2). Get
+comfortable with "copy, then change the copy" now and that chapter will feel obvious.
+
+## 5. Array methods: `map` and `filter`
+
+`map` transforms **every** item in an array into something new; `filter` keeps only the items
+that pass a test. Both return a **new** array and leave the original alone:
+
+```js
+const nums = [1, 2, 3, 4];
+const doubled = nums.map((n) => n * 2);     // [2, 4, 6, 8]
+const evens = nums.filter((n) => n % 2 === 0); // [2, 4]
+```
+
+**Where React uses it:** `map` is *the* way to render a list of things (turn an array of data
+into an array of elements), and `filter` is how you remove an item from state immutably.
+
+<Callout type="tip" title="None of these are React">
+  Arrow functions, destructuring, template strings, spread, `map`, and `filter` are plain,
+  standard JavaScript — you could use them with no framework at all. React just uses them a
+  lot. Being comfortable here is the single biggest thing that makes later chapters feel easy
+  instead of cryptic.
+</Callout>
+
+## Your turn
+
+Let's put two of these together in a tiny exercise. You'll write:
+
+- `fullName(user)` — using **destructuring** and a **template string** to return `"First Last"`.
+- `topScores(scores)` — using **filter** and **sort** to keep scores above 50, highest first.
+
+The live preview shows your functions' output as you go; run the tests to check them.
+
+<Assessment id="js-warmup" />

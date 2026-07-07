@@ -1,0 +1,104 @@
+---
+id: transitions
+title: Transitions and Deferred Values
+order: 4
+module: modern-react
+summary: Not all state updates are equally urgent. useTransition and useDeferredValue keep the UI responsive by marking heavy updates as low-priority so typing and clicks stay snappy.
+concepts:
+  - transition-urgent-vs-transition
+  - transition-use-transition
+  - transition-use-deferred-value
+estMinutes: 11
+status: published
+assessment: null
+prereqs: []
+---
+
+Typing in a search box should feel instant — even if each keystroke triggers filtering a huge
+list. React's **concurrent** features let you mark the expensive work as *non-urgent* so the
+input stays responsive. Two hooks do this, and both work in React 18 and 19 (so the example
+below runs live).
+
+## Urgent vs. non-urgent updates
+
+Some updates should feel immediate (the letter appearing as you type). Others can afford to lag
+a beat (re-filtering 10,000 rows). React lets you label the second kind as a **transition** so
+it never blocks the first:
+
+<Mermaid
+  chart={`flowchart TD
+    Type["User types a letter"] --> Urgent["Urgent: input shows the letter immediately"]
+    Type --> Trans["Transition: heavy list re-render (interruptible, can lag)"]
+    Urgent -.->|"stays responsive"| OK["UI never feels stuck"]`}
+  caption="Mark heavy updates as transitions so urgent updates (like typing) stay instant."
+/>
+
+## useTransition
+
+`useTransition` gives you a way to mark updates as low-priority, plus an `isPending` flag for
+feedback:
+
+```jsx
+const [isPending, startTransition] = useTransition();
+
+function selectTab(nextTab) {
+  startTransition(() => {
+    setTab(nextTab); // React can interrupt this heavy update to keep the UI responsive
+  });
+}
+```
+
+The urgent stuff (the tab button highlighting) happens immediately; the heavy re-render runs as
+an interruptible transition, so clicks never feel frozen.
+
+## useDeferredValue
+
+`useDeferredValue` lets a value "lag behind" so expensive work driven by it doesn't block the
+urgent update:
+
+```jsx
+const deferredQuery = useDeferredValue(query);
+// the <input> uses `query` (instant); the heavy list uses `deferredQuery` (allowed to lag)
+```
+
+## See it run
+
+Type quickly in the box — the input stays responsive even though a 500-item list re-renders
+from the deferred value.
+
+<LiveExample
+  code={`import { useState, useDeferredValue } from 'react';
+
+function SlowList({ text }) {
+  const items = [];
+  for (let i = 0; i < 500; i++) items.push(<li key={i}>{text} #{i}</li>);
+  return <ul style={{ maxHeight: 140, overflow: 'auto' }}>{items}</ul>;
+}
+
+export default function Search() {
+  const [text, setText] = useState('item');
+  const deferred = useDeferredValue(text);
+  return (
+    <div>
+      <input value={text} onChange={(e) => setText(e.target.value)} />
+      <p>Filtering for: {deferred}</p>
+      <SlowList text={deferred} />
+    </div>
+  );
+}`}
+/>
+
+<Callout type="tip" title="When to reach for these">
+  Use transitions when a state update triggers heavy rendering that could make the UI feel
+  janky — search filtering, tab switches over large content, big data grids. Most updates don't
+  need them; they're a targeted tool for responsiveness, not something to sprinkle everywhere.
+</Callout>
+
+## Recap
+
+- Some updates are **urgent** (typing); others can be **transitions** (heavy re-renders).
+- **`useTransition`** marks updates low-priority and gives an `isPending` flag.
+- **`useDeferredValue`** lets a value lag so expensive work doesn't block urgent updates.
+- Both keep the UI responsive under heavy rendering; use them where you'd otherwise feel jank.
+
+Read this and try the example, then mark it complete.

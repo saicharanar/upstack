@@ -1,0 +1,70 @@
+---
+id: react-compiler
+title: The React Compiler
+order: 8
+module: modern-react
+summary: React 19 ships an optional compiler that automatically inserts memoization for you — making most manual memo, useMemo, and useCallback unnecessary. Learn what it does and what it needs from your code.
+concepts:
+  - compiler-auto-memoization
+  - compiler-requires-purity
+  - compiler-future
+estMinutes: 8
+status: published
+assessment: null
+prereqs: []
+---
+
+You just spent three chapters learning `memo`, `useMemo`, and `useCallback` — the manual tools
+for skipping wasted work. Here's the twist: React 19 ships an optional **compiler** that applies
+those optimizations **for you, automatically**. Learning the manual tools still matters (you'll
+read older code, and understand *what* the compiler does), but the direction of travel is clear.
+
+## What the compiler does
+
+The React Compiler analyzes your components at **build time** and inserts the right memoization
+automatically — so you write plain, straightforward code and get the performance of
+hand-tuned `memo`/`useMemo`/`useCallback` without writing any of them:
+
+<Mermaid
+  chart={`flowchart LR
+    You["You write plain components<br/>(no memo/useMemo/useCallback)"] --> Compiler["React Compiler (build time)"]
+    Compiler --> Out["Optimized code with memoization inserted automatically"]`}
+  caption="The compiler adds memoization at build time, so you don't hand-write it."
+/>
+
+It's already used in production at large apps (including at Meta), and it's opt-in today via a
+build plugin.
+
+## What it needs from your code
+
+The compiler can only safely optimize code that follows React's rules — which is exactly what
+this whole course has been teaching:
+
+- **Pure components** (Module 1): same props → same output, no side effects during render.
+- **The rules of Hooks** (Module 2): Hooks called at the top level, in order.
+- **No mutation of props or state** (Module 2): treat them as read-only.
+
+<Callout type="note" title="Write correct code; get speed for free">
+  This is the payoff of purity and immutability. If your components follow the rules, the
+  compiler can optimize them automatically. Break the rules (mutate state, impure render) and
+  the compiler must bail out — another reason those rules matter beyond correctness.
+</Callout>
+
+## What this means for you
+
+- **Today:** you'll still see and sometimes write `memo`/`useMemo`/`useCallback`, especially in
+  codebases not yet on the compiler. Knowing them (previous three chapters) is essential.
+- **Increasingly:** in compiler-enabled projects, manual memoization becomes the **exception**,
+  reserved for the rare case the compiler can't handle. You write clean code and let the tool
+  optimize.
+
+## Recap
+
+- The **React Compiler** auto-inserts memoization at build time, making most manual
+  `memo`/`useMemo`/`useCallback` unnecessary.
+- It relies on your components being **pure** and following the **rules of Hooks** — write
+  correct code, get performance for free.
+- Manual memoization still matters for existing code and edge cases, but it's becoming the
+  exception.
+
+Read this, then mark it complete.

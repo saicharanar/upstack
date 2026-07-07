@@ -1,0 +1,96 @@
+---
+id: memo
+title: Skipping Re-renders with memo
+order: 5
+module: modern-react
+summary: When a parent re-renders, its children re-render too — even if their props didn't change. memo lets a component skip re-rendering when its props are the same.
+concepts:
+  - memo-skip-rerender
+  - memo-shallow-props
+  - memo-when-to-use
+estMinutes: 10
+status: published
+assessment: null
+prereqs: []
+---
+
+By default, when a component re-renders, **all of its children re-render too** — React re-runs
+their functions to see if their output changed. Usually that's fast and fine. But when a child
+is expensive to render and its props *didn't* change, that work is wasted. **`memo`** lets a
+component skip re-rendering in exactly that case.
+
+## The default behavior
+
+<Mermaid
+  chart={`flowchart TD
+    P["Parent re-renders (its state changed)"] --> C1["Child re-renders"]
+    P --> C2["Child re-renders"]
+    P --> C3["Child re-renders — even if its props are identical"]`}
+  caption="By default a re-render cascades to every child, whether or not their props changed."
+/>
+
+## Wrapping a component in memo
+
+`memo` wraps a component so React **skips re-rendering it when its props are unchanged** (by a
+shallow comparison of each prop):
+
+```jsx
+import { memo } from 'react';
+
+const Row = memo(function Row({ item }) {
+  // only re-renders when `item` actually changes
+  return <li>{item.name}</li>;
+});
+```
+
+Now if the parent re-renders but passes `Row` the same `item`, React reuses the previous render
+and doesn't call `Row` again.
+
+## When to use it — and when not
+
+<Callout type="gotcha" title="Don't wrap everything in memo">
+  `memo` isn't free — React still has to compare props every render, and it clutters code.
+  Wrap a component in `memo` only when you've **measured** a real problem: an expensive
+  component that re-renders often with the same props. For most components the default
+  re-render is cheap and `memo` adds cost for no benefit.
+</Callout>
+
+Also note: `memo` only helps if the props actually *stay the same* between renders. If a parent
+passes a **new object or function every render** (a fresh `{}` or `() => {}`), the shallow
+comparison sees a change and `memo` does nothing — which is exactly why the next two chapters
+(`useMemo`, `useCallback`) exist: to keep those props stable.
+
+## See it run
+
+Click the counter (parent state) and watch: the memoized child logs/re-renders only when *its*
+prop changes, not on every parent click.
+
+<LiveExample
+  code={`import { useState, memo } from 'react';
+
+const Expensive = memo(function Expensive({ label }) {
+  return <p>Rendered with label: {label}</p>;
+});
+
+export default function App() {
+  const [count, setCount] = useState(0);
+  return (
+    <div>
+      <button onClick={() => setCount(count + 1)}>Clicked {count} times</button>
+      <Expensive label="I only re-render when my label prop changes" />
+    </div>
+  );
+}`}
+/>
+
+The button's clicks re-render `App`, but `Expensive` is memoized and its `label` never changes,
+so React skips it.
+
+## Recap
+
+- By default, a re-render **cascades** to all children.
+- **`memo(Component)`** skips re-rendering when props are unchanged (shallow compare).
+- Use it only for **measured** hotspots — expensive components re-rendering with the same props.
+- `memo` needs **stable** props to help — enter `useMemo` and `useCallback` next.
+
+Read this, then mark it complete.

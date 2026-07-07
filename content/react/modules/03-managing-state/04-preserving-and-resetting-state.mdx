@@ -1,0 +1,81 @@
+---
+id: preserving-resetting-state
+title: Preserving and Resetting State
+order: 4
+module: managing-state
+summary: React keeps state as long as a component stays at the same position in the tree. Learn what preserves state, what resets it, and how to force a reset on purpose with a key.
+concepts:
+  - state-tied-to-position
+  - state-same-position-preserved
+  - state-key-to-reset
+estMinutes: 11
+status: published
+assessment: null
+prereqs: []
+---
+
+Here's something that surprises people: state isn't really stored "inside" a component. React
+stores it **externally, tied to the component's position in the render tree**. This single fact
+explains a whole family of "why did my input clear / why did state leak?" mysteries.
+
+## State follows the position in the tree
+
+React identifies a component by *where it sits* in the tree, not by any name. Keep a component
+at the same position across renders and React keeps its state — even if props change:
+
+<Mermaid
+  chart={`flowchart TD
+    Same["Same position across renders"] --> Keep["React keeps the state ✓"]
+    Diff["Different position, different type,<br/>or removed from the tree"] --> Reset["React resets the state ✗"]`}
+  caption="State is preserved while a component stays put; it resets when its tree position changes."
+/>
+
+```jsx
+{isFancy ? <Counter isFancy={true} /> : <Counter isFancy={false} />}
+```
+
+Both branches render a `<Counter>` at the **same position**, so toggling `isFancy` keeps the
+count — to React it's the same slot, just different props.
+
+## What resets state
+
+State resets when a component leaves its position:
+
+- Rendering a **different component type** at that position.
+- Rendering the component at a **different position** in the tree.
+- Removing it (rendering `null`) and bringing it back — it left the tree, so it starts fresh.
+
+## Resetting on purpose with `key`
+
+Sometimes you *want* a reset in the same position — say, a fresh form for each selected contact.
+Give the component a different **`key`** and React treats it as a different instance, discarding
+the old state:
+
+```jsx
+<Chat key={selectedContactId} contact={selectedContact} />
+```
+
+When `selectedContactId` changes, the `key` changes, so the old `Chat`'s state (the half-typed
+message) is thrown away and a fresh one begins. (Same `key` mechanism as lists — here used
+deliberately to control identity.)
+
+<Callout type="gotcha" title="Never declare a component inside another component">
+  If you define a component *function inside* another component, a brand-new function (a new
+  "type") is created on every render — so React resets that subtree's state every single time,
+  and inputs mysteriously clear. Always declare components at the **top level** of a module.
+</Callout>
+
+## Why this matters
+
+Nearly every "my input keeps clearing" or "state leaked between two items" bug is a position
+issue. Knowing that state follows **tree position**, and that **`key` forces a reset**, turns
+these from baffling into a two-second fix.
+
+## Recap
+
+- State is tied to a component's **position in the tree**, not stored inside it.
+- **Same position → state preserved**; different type/position, or leaving the tree → reset.
+- Force a reset in the same position with a different **`key`**.
+- Don't define components inside components (it resets their state every render).
+
+Read this, then mark it complete — next, consolidating update logic with a reducer.

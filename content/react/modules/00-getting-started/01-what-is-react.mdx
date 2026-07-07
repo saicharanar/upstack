@@ -1,0 +1,123 @@
+---
+id: what-is-react
+title: What React Is and Why It Exists
+order: 1
+module: getting-started
+summary: Before any syntax, the big picture — what React is, the real problem it solves, and the single idea (UI is a function of state) that the entire library is built on.
+concepts:
+  - react-declarative
+  - react-components
+  - react-state-to-ui
+estMinutes: 10
+status: published
+assessment: null
+prereqs: []
+---
+
+You already use React every day. Instagram's feed, the Facebook comment box, big parts of
+WhatsApp Web, Netflix, and countless dashboards and admin panels are built with it. By the
+end of this course you'll be able to build interfaces like those. But before a single line of
+code, it's worth understanding *what React actually is* and *why it was invented* — because
+that "why" is the thread that ties every later chapter together.
+
+## What React is, in one sentence
+
+> **React is a JavaScript library for building user interfaces out of reusable pieces called
+> components.**
+
+Let's unpack that:
+
+- **JavaScript library** — not a whole framework or a new language. It's a package you add to
+  a JavaScript project. If you know some JavaScript, you already know most of React.
+- **User interfaces** — the visual, interactive part of an app: what the user sees and clicks.
+- **Components** — small, reusable building blocks (a button, a search bar, a whole page). You
+  build big UIs by composing small components, the way you build with LEGO bricks.
+
+The skills transfer, too: the same ideas power **React Native** (real mobile apps) and
+server frameworks like **Next.js**. Learn React once, use it in many places.
+
+## The problem React was invented to solve
+
+To appreciate React, picture life *without* it. Say you have a counter on a page and you want
+a button to increase it. In plain JavaScript you'd write something like:
+
+```js
+let count = 0;
+const label = document.getElementById('label');
+button.addEventListener('click', () => {
+  count = count + 1;
+  label.textContent = 'Count: ' + count; // manually find the element and update it
+});
+```
+
+That's manageable for one number. But real apps have hundreds of pieces that depend on data:
+"if the user is logged in, show their name here, enable this button, hide that banner, and
+update the cart total." Doing all of that by hand — **finding DOM elements and updating them
+one by one every time data changes** — is where bugs breed. You forget to update one place,
+or update it twice, or in the wrong order, and the screen no longer matches the data.
+
+## The one big idea: UI is a function of state
+
+React flips the whole thing around. Instead of writing steps to *change* the screen, you
+write a description of what the screen should *look like* for your current data — and React
+figures out the changes for you.
+
+<Mermaid
+  chart={`flowchart LR
+    S["Your data<br/>(state)"] -->|"you describe<br/>the UI"| R["React"]
+    R -->|"updates<br/>the DOM"| U["What the<br/>user sees"]
+    U -->|"data changes"| S`}
+  caption="UI = f(state): you describe the UI for the current data; React makes the screen match."
+/>
+
+This is called **declarative** programming, and it's easiest to feel with an analogy:
+
+- **Imperative** (the old way) is like giving a taxi driver turn-by-turn directions: "left
+  here, right there, stop at the third light." If you miss a step, you end up somewhere wrong.
+- **Declarative** (React's way) is like telling a rideshare app your destination and letting
+  it handle the route. You state the *what* ("show the count as 5"); React handles the *how*
+  (which DOM nodes to change).
+
+<Callout type="note" title="The idea to hold onto for the whole course">
+  A React UI is a **function of state**: `UI = f(state)`. When your data changes, you don't
+  hunt down DOM elements — you describe the new UI for the new data, and React efficiently
+  updates the screen to match. Almost everything else in React is a detail in service of this
+  one idea.
+</Callout>
+
+## What you'll actually write
+
+Three words will recur constantly, and each gets its own chapters later — here's just the
+shape:
+
+- **Components** — functions that return markup (the LEGO bricks).
+- **Props** — how a parent passes data *down* into a component to configure it.
+- **State** — how a component remembers data that changes over time (and drives re-rendering).
+
+That's the whole model. The rest of the course is learning each piece and how they fit.
+
+## Which React is this course?
+
+This course targets **React 19**, the current major version, and uses **function components
+and Hooks** throughout — no legacy class components. Later modules cover the newest additions
+(Actions and form hooks, the `use()` API, the React Compiler, Server Components). Whenever you
+want the authoritative reference, the official docs at [react.dev](https://react.dev) are
+excellent, and this course mirrors their learning path.
+
+## Where does React code actually run?
+
+One subtle but useful point: React itself only produces a *description* of the UI. A separate
+**renderer** turns that description into something real — `react-dom` renders to the browser's
+DOM, while React Native renders to native mobile views. In this course, every example and
+exercise runs `react-dom` right here in your browser.
+
+## Recap
+
+- React is a JavaScript **library** for building UIs from reusable **components**.
+- It exists to replace fragile, manual DOM updates with a **declarative** model.
+- The core idea is **`UI = f(state)`**: describe the UI for your data; React updates the screen.
+- You'll write **components**, pass data with **props**, and remember changing data with
+  **state** — each covered in depth ahead.
+
+Next up is a quick JavaScript warm-up, then you'll write your very first component. Read this,
+then mark it complete.
