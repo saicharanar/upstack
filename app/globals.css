@@ -746,6 +746,11 @@ a.sidebar__chapter:hover {
   overflow: auto;
 }
 
+.live-example .sp-code-editor [role='textbox'] {
+  block-size: 100%;
+  overflow: auto;
+}
+
 /* Full-screen overlay: the example takes over the viewport. */
 .live-example[data-fullscreen='true'] {
   position: fixed;
