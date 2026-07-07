@@ -11,6 +11,7 @@ import {
 import { useMemo, useState, type ReactNode } from 'react';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import type { AssessmentBundle } from '@/content-layer/loader';
+import { AssessmentFormatButton } from './AssessmentFormatButton';
 import type { GradeResult } from './grade';
 import { ResultPanel } from './ResultPanel';
 import { toSandpackFiles } from './sandpackFiles';
@@ -49,7 +50,10 @@ function Lab({ nextHref, onComplete, result }: LabProps): ReactNode {
   return (
     <PanelGroup direction="horizontal" className="lab" autoSaveId="upstack-lab-columns">
       <Panel defaultSize={56} minSize={28} className="lab__editor">
-        <SandpackCodeEditor showTabs showLineNumbers />
+        <AssessmentFormatButton />
+        <div className="lab__editor-body">
+          <SandpackCodeEditor showTabs showLineNumbers />
+        </div>
       </Panel>
 
       <PanelResizeHandle className="lab__handle lab__handle--vertical" />
