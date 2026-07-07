@@ -686,6 +686,7 @@ a.sidebar__chapter:hover {
 
 /* ---- Live example (inline, run-only) ------------------------------------ */
 .live-example {
+  --live-example-body-height: 420px;
   margin-block: var(--space-6);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -726,15 +727,22 @@ a.sidebar__chapter:hover {
 }
 
 /* Give the inline editor a comfortable default height (Sandpack defaults are short). */
-.live-example .sp-layout {
-  min-block-size: 420px;
+.live-example .sp-wrapper,
+.live-example .sp-layout,
+.live-example .sp-stack,
+.live-example .sp-code-editor,
+.live-example .sp-preview {
+  block-size: var(--live-example-body-height);
+  min-block-size: var(--live-example-body-height);
+}
+
+.live-example .sp-layout,
+.live-example .sp-stack {
   align-items: stretch;
 }
 
 .live-example .sp-code-editor,
 .live-example .sp-preview {
-  block-size: 420px;
-  min-block-size: 420px;
   overflow: auto;
 }
 
@@ -752,7 +760,8 @@ a.sidebar__chapter:hover {
 }
 
 .live-example[data-fullscreen='true'] .sp-wrapper,
-.live-example[data-fullscreen='true'] .sp-layout {
+.live-example[data-fullscreen='true'] .sp-layout,
+.live-example[data-fullscreen='true'] .sp-stack {
   flex: 1 1 auto;
   block-size: auto;
   min-block-size: 0;
