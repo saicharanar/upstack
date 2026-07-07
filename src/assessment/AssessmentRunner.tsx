@@ -13,6 +13,7 @@ import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import type { AssessmentBundle } from '@/content-layer/loader';
 import type { GradeResult } from './grade';
 import { ResultPanel } from './ResultPanel';
+import { AssessmentAutoFormatter } from './AssessmentAutoFormatter';
 import { toSandpackFiles } from './sandpackFiles';
 import { useAssessmentResult, type SandpackSpecs } from './useAssessmentResult';
 
@@ -36,14 +37,16 @@ function toAssessmentSpecs(specs: Record<string, unknown>): SandpackSpecs {
 export interface AssessmentRunnerProps {
   readonly bundle: AssessmentBundle;
   readonly chapterId: string;
+  readonly nextHref: string | null;
 }
 
 interface LabProps {
+  readonly nextHref: string | null;
   readonly onComplete: (specs: SandpackSpecs) => void;
   readonly result: GradeResult | null;
 }
 
-function Lab({ onComplete, result }: LabProps): ReactNode {
+function Lab({ nextHref, onComplete, result }: LabProps): ReactNode {
   return (
     <PanelGroup direction="horizontal" className="lab" autoSaveId="upstack-lab-columns">
       <Panel defaultSize={56} minSize={28} className="lab__editor">
@@ -67,7 +70,7 @@ function Lab({ onComplete, result }: LabProps): ReactNode {
 
           <Panel defaultSize={52} minSize={20} className="lab__tests">
             {/* Status summary pinned at the top; the real test output scrolls below it. */}
-            <ResultPanel result={result} />
+            <ResultPanel result={result} nextHref={nextHref} />
             <div className="lab__tests-output">
               <SandpackTests onComplete={(specs) => onComplete(toAssessmentSpecs(specs))} verbose />
             </div>
@@ -78,7 +81,7 @@ function Lab({ onComplete, result }: LabProps): ReactNode {
   );
 }
 
-export default function AssessmentRunner({ bundle, chapterId }: AssessmentRunnerProps): ReactNode {
+export default function AssessmentRunner({ bundle, chapterId, nextHref }: AssessmentRunnerProps): ReactNode {
   const { result, onComplete } = useAssessmentResult(bundle.meta, chapterId);
   const files = useMemo(() => toSandpackFiles(bundle.files), [bundle.files]);
   const options = useMemo(
@@ -95,7 +98,8 @@ export default function AssessmentRunner({ bundle, chapterId }: AssessmentRunner
         files={files}
         options={options}
       >
-        <Lab onComplete={onComplete} result={result} />
+        <AssessmentAutoFormatter />
+        <Lab nextHref={nextHref} onComplete={onComplete} result={result} />
       </SandpackProvider>
     </div>
   );

@@ -49,6 +49,8 @@ export default async function ChapterPage({
   const index = chapterIndex(manifest, entry.chapterId);
   const source = getChapterSource(entry.filePath);
   const headings = extractHeadings(source);
+  const next = manifest.chaptersInOrder[index + 1];
+  const nextHref = next ? chapterHref(next.moduleId, next.chapterId) : null;
 
   return (
     <div className="chapter-layout">
@@ -64,12 +66,12 @@ export default async function ChapterPage({
         </div>
 
         <div className="chapter-actions">
-          <ChapterActions chapterId={entry.chapterId} />
+          <ChapterActions chapterId={entry.chapterId} nextHref={nextHref} />
         </div>
 
         <ChapterNav
           previous={toNavLink(manifest.chaptersInOrder[index - 1])}
-          next={toNavLink(manifest.chaptersInOrder[index + 1])}
+          next={toNavLink(next)}
         />
       </article>
 

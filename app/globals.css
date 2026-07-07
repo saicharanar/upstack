@@ -728,11 +728,14 @@ a.sidebar__chapter:hover {
 /* Give the inline editor a comfortable default height (Sandpack defaults are short). */
 .live-example .sp-layout {
   min-block-size: 420px;
+  align-items: stretch;
 }
 
 .live-example .sp-code-editor,
 .live-example .sp-preview {
+  block-size: 420px;
   min-block-size: 420px;
+  overflow: auto;
 }
 
 /* Full-screen overlay: the example takes over the viewport. */
@@ -1038,6 +1041,10 @@ a.sidebar__chapter:hover {
 .lab__tests > .result-panel .result-panel__headline {
   margin-block-end: var(--space-2);
   font-size: var(--font-size-sm);
+}
+
+.lab__tests > .result-panel .result-panel__next {
+  margin-block-end: var(--space-2);
 }
 
 .lab__tests > .result-panel .result-panel__concepts {

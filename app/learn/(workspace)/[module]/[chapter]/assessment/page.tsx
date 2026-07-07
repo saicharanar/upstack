@@ -3,7 +3,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { AssessmentWorkspace } from '@/assessment/AssessmentWorkspace';
 import { getAssessmentBundle, getManifest } from '@/content-layer/loader';
-import { findChapter } from '@/content-layer/manifest';
+import { chapterIndex, findChapter } from '@/content-layer/manifest';
 import { chapterHref } from '@/content-layer/nav';
 import type { AssessmentMeta } from '@/content-layer/schema';
 
@@ -49,9 +49,13 @@ export default async function AssessmentWorkspacePage({
   params: Promise<AssessmentParams>;
 }): Promise<ReactNode> {
   const { module: moduleId, chapter: chapterId } = await params;
-  const entry = findChapter(getManifest(), moduleId, chapterId);
+  const manifest = getManifest();
+  const entry = findChapter(manifest, moduleId, chapterId);
   if (!entry || entry.frontmatter.assessment === null) notFound();
 
+  const index = chapterIndex(manifest, entry.chapterId);
+  const next = manifest.chaptersInOrder[index + 1];
+  const nextHref = next ? chapterHref(next.moduleId, next.chapterId) : null;
   const bundle = await getAssessmentBundle(entry.frontmatter.assessment);
 
   return (
@@ -70,6 +74,7 @@ export default async function AssessmentWorkspacePage({
             bundle={bundle}
             chapterId={entry.chapterId}
             backHref={chapterHref(moduleId, chapterId)}
+            nextHref={nextHref}
           />
         </div>
       </div>

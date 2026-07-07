@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { ReactNode } from 'react';
 import type { GradeResult } from './grade';
 
@@ -12,12 +13,23 @@ function statusKey(result: GradeResult | null): keyof typeof STATUS_LABELS {
   return result.passed ? 'passed' : 'failed';
 }
 
-export function ResultPanel({ result }: { result: GradeResult | null }): ReactNode {
+export function ResultPanel({
+  result,
+  nextHref,
+}: {
+  result: GradeResult | null;
+  nextHref: string | null;
+}): ReactNode {
   const status = statusKey(result);
 
   return (
     <section className="result-panel" data-status={status} aria-live="polite">
       <p className="result-panel__headline">{STATUS_LABELS[status]}</p>
+      {result?.passed && nextHref ? (
+        <Link className="button button--primary result-panel__next" href={nextHref}>
+          Continue to next chapter
+        </Link>
+      ) : null}
       {result ? (
         <ul className="result-panel__concepts">
           {result.concepts.map((concept) => (

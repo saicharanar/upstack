@@ -18,9 +18,15 @@ export interface AssessmentWorkspaceProps {
   readonly bundle: AssessmentBundle;
   readonly chapterId: string;
   readonly backHref: string;
+  readonly nextHref: string | null;
 }
 
-export function AssessmentWorkspace({ bundle, chapterId, backHref }: AssessmentWorkspaceProps): ReactNode {
+export function AssessmentWorkspace({
+  bundle,
+  chapterId,
+  backHref,
+  nextHref,
+}: AssessmentWorkspaceProps): ReactNode {
   const [wideEnough, setWideEnough] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -54,5 +60,5 @@ export function AssessmentWorkspace({ bundle, chapterId, backHref }: AssessmentW
     );
   }
 
-  return <AssessmentRunner bundle={bundle} chapterId={chapterId} />;
+  return <AssessmentRunner bundle={bundle} chapterId={chapterId} nextHref={nextHref} />;
 }
