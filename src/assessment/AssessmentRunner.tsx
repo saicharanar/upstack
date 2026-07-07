@@ -13,7 +13,6 @@ import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import type { AssessmentBundle } from '@/content-layer/loader';
 import type { GradeResult } from './grade';
 import { ResultPanel } from './ResultPanel';
-import { AssessmentAutoFormatter } from './AssessmentAutoFormatter';
 import { toSandpackFiles } from './sandpackFiles';
 import { useAssessmentResult, type SandpackSpecs } from './useAssessmentResult';
 
@@ -98,7 +97,6 @@ export default function AssessmentRunner({ bundle, chapterId, nextHref }: Assess
         files={files}
         options={options}
       >
-        <AssessmentAutoFormatter />
         <Lab nextHref={nextHref} onComplete={onComplete} result={result} />
       </SandpackProvider>
     </div>
