@@ -1,0 +1,118 @@
+---
+id: usesyncexternalstore
+title: Subscribing to an External Store
+order: 13
+module: escape-hatches
+summary: Some state lives outside React entirely — the browser's online status, the window size, a third-party store. useSyncExternalStore subscribes to those sources safely, so your component re-renders when they change.
+concepts:
+  - external-store-what
+  - external-store-api
+  - external-store-when
+estMinutes: 10
+status: published
+assessment: external-store
+prereqs: []
+---
+
+Not all state lives in React. The browser knows whether you're **online**, how wide the
+**window** is, and what's in **localStorage**. State libraries like Redux and Zustand keep their
+data in their own store. To render any of that, a component has to **subscribe** to the external
+source and re-render when it changes — and do it in a way that's safe during React's concurrent
+rendering. That's what **`useSyncExternalStore`** is for.
+
+## The shape of an external store
+
+An external store needs two things React can use: a way to **subscribe** (be told when it
+changes) and a way to read its **current value** (a "snapshot"):
+
+<Mermaid
+  chart={`flowchart LR
+    Store["External store (outside React)"] -->|"getSnapshot()"| Val["current value"]
+    Store -->|"change happens"| Notify["notify subscribers"]
+    Notify --> RR["React re-renders the component"]
+    Comp["Component"] -->|"subscribe(listener)"| Store`}
+  caption="React reads the store with getSnapshot and re-renders whenever the store notifies its subscribers."
+/>
+
+## useSyncExternalStore
+
+You give the hook two functions — `subscribe` and `getSnapshot` — and it returns the current
+value, keeping the component in sync:
+
+```jsx
+import { useSyncExternalStore } from 'react';
+
+function OnlineStatus() {
+  const isOnline = useSyncExternalStore(
+    (callback) => {
+      window.addEventListener('online', callback);
+      window.addEventListener('offline', callback);
+      return () => {
+        window.removeEventListener('online', callback);
+        window.removeEventListener('offline', callback);
+      };
+    },
+    () => navigator.onLine, // read the current value
+  );
+
+  return <p>{isOnline ? '✅ Online' : '❌ Offline'}</p>;
+}
+```
+
+`subscribe` wires up (and tears down) the listeners; `getSnapshot` reads the current value. When
+the browser fires an `online`/`offline` event, React re-reads the snapshot and re-renders.
+
+<Callout type="note" title="Most state should NOT use this">
+  This hook is for genuinely **external** sources — browser APIs, third-party stores. For your own
+  app state, stick with `useState` and `useReducer`. If you use Redux or Zustand, they call
+  `useSyncExternalStore` for you under the hood.
+</Callout>
+
+## See it run
+
+The store below lives outside React. `useSyncExternalStore` keeps the component in sync, so
+clicking **+1** (which mutates the external store) re-renders the count:
+
+<LiveExample
+  code={`import { useSyncExternalStore } from 'react';
+
+const store = {
+  count: 0,
+  listeners: new Set(),
+  increment() {
+    store.count += 1;
+    store.listeners.forEach((listener) => listener());
+  },
+  subscribe(listener) {
+    store.listeners.add(listener);
+    return () => store.listeners.delete(listener);
+  },
+  getSnapshot() {
+    return store.count;
+  },
+};
+
+export default function Counter() {
+  const count = useSyncExternalStore(store.subscribe, store.getSnapshot);
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={() => store.increment()}>+1</button>
+    </div>
+  );
+}`}
+/>
+
+## Recap
+
+- Some state lives **outside React**: browser APIs, external stores.
+- **`useSyncExternalStore(subscribe, getSnapshot)`** subscribes to it and returns the current value.
+- `subscribe` adds/removes listeners; `getSnapshot` reads the current value.
+- Use it only for **external** sources — normal app state stays in `useState`/`useReducer`.
+
+## Your turn
+
+Wire the component to the external store with `useSyncExternalStore` so it shows the live count
+and re-renders every time the store changes.
+
+<Assessment id="external-store" />

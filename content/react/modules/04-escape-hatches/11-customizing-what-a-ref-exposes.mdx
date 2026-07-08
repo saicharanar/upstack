@@ -1,0 +1,95 @@
+---
+id: useimperativehandle
+title: Customizing What a Ref Exposes
+order: 11
+module: escape-hatches
+summary: Forwarding a ref hands the parent your raw DOM node — often more power than you want to give. useImperativeHandle lets a component expose a small, deliberate set of methods instead.
+concepts:
+  - imperative-why-limit
+  - imperative-handle-api
+  - imperative-when
+estMinutes: 9
+status: published
+assessment: imperative-handle
+prereqs: []
+---
+
+Forwarding a ref gives the parent the **whole DOM node** — it can call anything on it, change its
+styles, even remove it. Usually you want to expose *less*: a couple of safe actions, not the raw
+element. **`useImperativeHandle`** lets a component decide exactly what its ref exposes — a small,
+purpose-built API instead of the DOM node.
+
+## Exposing a handle, not a node
+
+<Mermaid
+  chart={`flowchart LR
+    P["Parent's ref"] --> H["Custom handle: { clear, focus }"]
+    H -.->|"hides"| DOM["raw &lt;textarea&gt; node"]`}
+  caption="Instead of the raw node, the parent receives a handle exposing only the methods you chose."
+/>
+
+You call `useImperativeHandle(ref, createHandle)` inside the component. The function you pass
+returns the object the parent's `ref.current` will point to:
+
+```jsx
+import { useRef, useState, useImperativeHandle, forwardRef } from 'react';
+
+const MessageBox = forwardRef(function MessageBox(props, ref) {
+  const [text, setText] = useState('');
+
+  useImperativeHandle(ref, () => ({
+    clear: () => setText(''),          // expose only this — not the textarea itself
+  }));
+
+  return <textarea value={text} onChange={(e) => setText(e.target.value)} />;
+});
+```
+
+Now the parent can call `messageRef.current.clear()`, but it **can't** reach the textarea node to
+do anything else. You've handed out a remote control with exactly the buttons you chose.
+
+<Callout type="tip" title="Reach for it rarely">
+  Most communication should flow through **props**, not imperative calls. `useImperativeHandle` is
+  for genuinely imperative actions a parent must trigger — focus, scroll, play/pause, reset a form
+  — where there's no natural declarative prop.
+</Callout>
+
+## See it run
+
+The parent only has a `clear()` method on its ref — type something, then clear it from outside:
+
+<LiveExample
+  code={`import { useRef, useState, useImperativeHandle, forwardRef } from 'react';
+
+const MessageBox = forwardRef(function MessageBox(props, ref) {
+  const [text, setText] = useState('');
+  useImperativeHandle(ref, () => ({
+    clear: () => setText(''),
+  }));
+  return <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} />;
+});
+
+export default function App() {
+  const boxRef = useRef(null);
+  return (
+    <div>
+      <MessageBox ref={boxRef} />
+      <div><button onClick={() => boxRef.current.clear()}>Clear</button></div>
+    </div>
+  );
+}`}
+/>
+
+## Recap
+
+- Plain ref forwarding exposes the **raw DOM node** — often more than you want.
+- **`useImperativeHandle(ref, () => ({ ... }))`** exposes a **chosen set of methods** instead.
+- The parent's `ref.current` becomes that handle object, not the element.
+- Use it **sparingly** — prefer props; reserve it for imperative actions like focus/scroll/reset.
+
+## Your turn
+
+Give `MessageBox` a ref handle with a `clear()` method that empties its textarea, so the parent's
+"Clear" button works — without exposing the textarea node itself.
+
+<Assessment id="imperative-handle" />

@@ -1,0 +1,161 @@
+---
+id: redux-toolkit
+title: Scaling State with Redux Toolkit
+order: 8
+module: managing-state
+summary: When app-wide state grows large and many components read and change it, a dedicated store helps. Redux centralizes state with the exact reducer pattern you already know — and Redux Toolkit makes it low-boilerplate.
+concepts:
+  - redux-why
+  - redux-one-way-flow
+  - redux-toolkit-parts
+estMinutes: 12
+status: published
+assessment: null
+prereqs: []
+---
+
+Reducer + context (last chapter) carries you a long way. But as an app grows — lots of shared
+state, many components reading and updating it, several teams touching it — a dedicated **store**
+starts to earn its keep: one predictable place for state, powerful devtools (including
+time-travel debugging), and a standard way to handle async and side effects. **Redux** is the
+best-known such store, and the good news is you already understand its core: it's the **reducer
+pattern** from this module, scaled to the whole app.
+
+## The same one-way flow you already know
+
+Redux is built on one rule: state is read-only, and the only way to change it is to **dispatch an
+action**, which a **reducer** turns into the next state. Sound familiar? It's `useReducer` at app
+scale.
+
+<Mermaid
+  chart={`flowchart LR
+    UI["Component"] -->|"dispatch(action)"| Store["Store"]
+    Store -->|"reducer(state, action)"| Next["next state"]
+    Next --> Store
+    Store -->|"notifies subscribers"| Sel["useSelector re-renders the components that use that slice"]`}
+  caption="Dispatch an action, the reducer computes the next state, and components subscribed to that state re-render — the reducer pattern, app-wide."
+/>
+
+## Redux Toolkit: the modern way
+
+Old Redux had a lot of boilerplate. **Redux Toolkit (RTK)** is the official, recommended
+package that removes almost all of it. You write a **slice** (state + reducers together), build a
+**store**, wrap the app in a **`<Provider>`**, and read/write with **`useSelector`** and
+**`useDispatch`**:
+
+```jsx
+import { configureStore, createSlice } from '@reduxjs/toolkit';
+import { Provider, useSelector, useDispatch } from 'react-redux';
+
+const counterSlice = createSlice({
+  name: 'counter',
+  initialState: { value: 0 },
+  reducers: {
+    increment: (state) => { state.value += 1; }, // RTK uses Immer, so "mutating" is safe here
+    decrement: (state) => { state.value -= 1; },
+  },
+});
+
+export const { increment, decrement } = counterSlice.actions;
+const store = configureStore({ reducer: { counter: counterSlice.reducer } });
+
+function Counter() {
+  const value = useSelector((state) => state.counter.value); // read one slice
+  const dispatch = useDispatch();                             // get the dispatcher
+  return <button onClick={() => dispatch(increment())}>Count: {value}</button>;
+}
+
+export default function App() {
+  return (
+    <Provider store={store}>
+      <Counter />
+    </Provider>
+  );
+}
+```
+
+`createSlice` generates the action creators (`increment()`, `decrement()`) for you; `useSelector`
+subscribes a component to just the piece of state it reads, so it only re-renders when that piece
+changes.
+
+<Callout type="note" title="How react-redux keeps components in sync">
+  Under the hood, `useSelector` subscribes to the store with **`useSyncExternalStore`** — the very
+  hook from the Escape Hatches module. Redux *is* an external store, and that hook is how React
+  reads it safely. You've already seen the machinery.
+</Callout>
+
+## It's a mini-Redux you could build yourself
+
+To prove the idea isn't magic, here's a **~15-line** store with `dispatch`, `subscribe`, and a
+`useSelector` built on `useSyncExternalStore`. It behaves exactly like Redux in miniature — and
+it runs:
+
+<LiveExample
+  code={`import { useSyncExternalStore } from 'react';
+
+function createStore(reducer, initial) {
+  let state = initial;
+  const listeners = new Set();
+  return {
+    getState: () => state,
+    dispatch: (action) => {
+      state = reducer(state, action);
+      listeners.forEach((l) => l());
+    },
+    subscribe: (l) => {
+      listeners.add(l);
+      return () => listeners.delete(l);
+    },
+  };
+}
+
+function counter(state, action) {
+  if (action.type === 'inc') return state + 1;
+  if (action.type === 'dec') return state - 1;
+  return state;
+}
+
+const store = createStore(counter, 0);
+
+function useSelector(select) {
+  return useSyncExternalStore(store.subscribe, () => select(store.getState()));
+}
+
+export default function App() {
+  const count = useSelector((s) => s);
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={() => store.dispatch({ type: 'dec' })}>-1</button>{' '}
+      <button onClick={() => store.dispatch({ type: 'inc' })}>+1</button>
+    </div>
+  );
+}`}
+/>
+
+Real Redux Toolkit adds the ergonomics (slices, Immer, devtools, async "thunks", performance
+tuning), but the heart is exactly what you see above.
+
+<Callout type="tip" title="Do you even need Redux?">
+  Often not. For most apps, `useState` plus reducer + context is plenty. Reach for Redux when
+  global state is **large and shared widely**, when you want **time-travel devtools**, or when a
+  big team benefits from one strict, predictable pattern. Smaller alternatives like **Zustand**
+  and **Jotai** cover the middle ground.
+</Callout>
+
+<Callout type="note" title="Shown as code (not a live editor)">
+  Redux Toolkit lives in the `@reduxjs/toolkit` and `react-redux` packages, which this in-browser
+  sandbox doesn't bundle — so the RTK example is here to read. The mini-Redux demo above runs live
+  because it needs nothing but React.
+</Callout>
+
+## Recap
+
+- **Redux** is the reducer pattern as a single app-wide **store**: dispatch an action → reducer →
+  next state → subscribed components re-render.
+- **Redux Toolkit** is the modern, low-boilerplate way: `createSlice`, `configureStore`,
+  `<Provider>`, `useSelector`, `useDispatch`.
+- `react-redux` subscribes components with **`useSyncExternalStore`** — the store is external state.
+- Reach for it for **large, widely-shared** state; otherwise reducer + context is often enough.
+
+Read this, try the mini-Redux demo, then mark it complete.

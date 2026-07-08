@@ -1,0 +1,107 @@
+---
+id: passing-ref-to-component
+title: Passing a Ref to a Component
+order: 10
+module: escape-hatches
+summary: Getting a ref to a DOM node is easy when the node is in the same component. But when the input lives inside a child component you wrote, the ref needs to be forwarded down to reach it.
+concepts:
+  - ref-forward-why
+  - ref-forward-how
+  - ref-encapsulation
+estMinutes: 10
+status: published
+assessment: forward-ref-input
+prereqs: []
+---
+
+Last chapter you focused an `<input>` with a ref — and it worked because the input was right
+there in the same component. But real apps wrap inputs in their own components: a `<FancyInput>`,
+a `<SearchBox>`. If a parent puts a ref on `<FancyInput ref={…}>`, does it reach the real
+`<input>` inside? **Not automatically.** Components hide their internals, so the ref has to be
+*forwarded* to the node you actually want.
+
+## Two trees, one ref to pass down
+
+The parent owns the ref; the child owns the DOM node. Forwarding is how the ref travels from one
+to the other:
+
+<Mermaid
+  chart={`flowchart LR
+    P["Parent: inputRef = useRef(null)"] -->|"ref={inputRef}"| C["FancyInput"]
+    C -->|"forwards ref to its input"| I["real &lt;input&gt; DOM node"]
+    I -.->|"inputRef.current"| P`}
+  caption="The parent's ref is forwarded through the child component onto the real DOM node."
+/>
+
+## React 19: ref is a normal prop
+
+In React 19, a component can simply **accept `ref` as a prop** and put it on the element it
+wants to expose:
+
+```jsx
+function FancyInput({ ref }) {           // ref arrives like any other prop
+  return <input ref={ref} className="fancy" />;
+}
+
+// Parent:
+<FancyInput ref={inputRef} />            // inputRef.current becomes the <input>
+```
+
+## Older React (and this sandbox): forwardRef
+
+Before React 19 — and in the in-browser sandbox here, which runs React 18 — `ref` isn't passed
+through as a prop. You wrap the component in **`forwardRef`**, which hands you the `ref` as a
+second argument:
+
+```jsx
+import { forwardRef } from 'react';
+
+const FancyInput = forwardRef(function FancyInput(props, ref) {
+  return <input ref={ref} className="fancy" />;
+});
+```
+
+Either way the idea is identical: the child decides *which* inner node the parent's ref lands on.
+You'll see `forwardRef` all over existing codebases and libraries, so it's worth recognizing.
+
+<Callout type="note" title="Components don't expose their DOM by default">
+  This is on purpose. A component's internal DOM is private, so a parent can't accidentally reach
+  in and break it. Forwarding a ref is the component **opting in** to expose one specific node.
+</Callout>
+
+## See it run
+
+Clicking the button focuses the input — even though the input lives inside `FancyInput`, because
+the ref is forwarded to it.
+
+<LiveExample
+  code={`import { useRef, forwardRef } from 'react';
+
+const FancyInput = forwardRef(function FancyInput(props, ref) {
+  return <input ref={ref} placeholder="Type here" style={{ padding: 6 }} />;
+});
+
+export default function Form() {
+  const inputRef = useRef(null);
+  return (
+    <div>
+      <FancyInput ref={inputRef} />{' '}
+      <button onClick={() => inputRef.current.focus()}>Focus the input</button>
+    </div>
+  );
+}`}
+/>
+
+## Recap
+
+- A ref put on **your own component** doesn't reach its inner DOM node by default.
+- **React 19:** accept `ref` as a prop and place it on the node to expose.
+- **React 18 / older:** wrap the component in **`forwardRef`** to receive and forward the ref.
+- Components keep their DOM **private**; forwarding is an explicit opt-in.
+
+## Your turn
+
+Make `FancyInput` forward the ref it receives to its real `<input>`, so clicking the parent's
+button focuses it. (This sandbox is React 18, so use `forwardRef`.)
+
+<Assessment id="forward-ref-input" />

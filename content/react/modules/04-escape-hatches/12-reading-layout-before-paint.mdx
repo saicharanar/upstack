@@ -1,0 +1,99 @@
+---
+id: uselayouteffect
+title: Reading Layout Before Paint
+order: 12
+module: escape-hatches
+summary: A normal Effect runs after the browser paints, so measuring the DOM there can cause a visible flicker. useLayoutEffect runs after the DOM changes but before paint — the moment to measure and adjust invisibly.
+concepts:
+  - layout-effect-timing
+  - layout-effect-measure
+  - layout-effect-cost
+estMinutes: 9
+status: published
+assessment: null
+prereqs: []
+---
+
+Most of the time `useEffect` is exactly right: it runs *after* React updates the DOM **and after
+the browser paints**. But that "after paint" is a problem in one specific situation — when you
+need to **measure** an element and then adjust the layout based on the measurement. The user
+would see the first (wrong) version flash, then the corrected one. `useLayoutEffect` closes that
+gap: it runs after the DOM is updated but **before** the browser paints.
+
+## When each one fires
+
+<Mermaid
+  chart={`flowchart LR
+    R["Render"] --> DOM["React updates the DOM"]
+    DOM --> LE["useLayoutEffect runs (measure + adjust)"]
+    LE --> Paint["Browser paints — user sees the final result"]
+    Paint --> E["useEffect runs (after the user already saw it)"]`}
+  caption="useLayoutEffect runs before paint, so measurements and adjustments happen before the user sees anything."
+/>
+
+The classic case is a **tooltip** that must know its own height to decide whether to open above
+or below the thing it points at. Measure in `useEffect` and it opens in the wrong spot for one
+frame, then jumps. Measure in `useLayoutEffect` and the correct position is there from the first
+paint — no flicker.
+
+## Measuring a node
+
+```jsx
+import { useRef, useState, useLayoutEffect } from 'react';
+
+function Tooltip() {
+  const ref = useRef(null);
+  const [height, setHeight] = useState(0);
+
+  useLayoutEffect(() => {
+    setHeight(ref.current.offsetHeight); // read layout synchronously, before paint
+  }, []);
+
+  // ...use height to position the tooltip
+}
+```
+
+<Callout type="warning" title="Prefer useEffect — this one has a cost">
+  `useLayoutEffect` runs **synchronously before paint**, so heavy work here delays what the user
+  sees and can make the app feel janky. Reach for it *only* when you measure layout and adjust
+  before paint. For everything else — subscriptions, fetching, syncing external systems — use
+  `useEffect`.
+</Callout>
+
+## See it run
+
+The label below reports the green box's real width, measured right after layout:
+
+<LiveExample
+  code={`import { useRef, useState, useLayoutEffect } from 'react';
+
+export default function Measure() {
+  const boxRef = useRef(null);
+  const [width, setWidth] = useState(0);
+
+  useLayoutEffect(() => {
+    setWidth(boxRef.current.offsetWidth);
+  }, []);
+
+  return (
+    <div>
+      <div ref={boxRef} style={{ width: '60%', height: 40, background: '#0b7a4b' }} />
+      <p>The green box is {width}px wide.</p>
+    </div>
+  );
+}`}
+/>
+
+<Callout type="note" title="No auto-graded exercise here">
+  Measuring real layout needs a real browser, and the automated checker runs your code without a
+  layout engine (every element reports a size of 0). So this chapter has a runnable demo but no
+  graded checks — read it, try the demo, and mark it complete.
+</Callout>
+
+## Recap
+
+- **`useEffect`** runs *after* paint; **`useLayoutEffect`** runs *before* paint.
+- Use `useLayoutEffect` when you **measure the DOM and adjust layout** — it prevents the flicker.
+- It runs **synchronously** and can hurt performance, so prefer `useEffect` for everything else.
+
+Read this, try the demo, then mark it complete.
