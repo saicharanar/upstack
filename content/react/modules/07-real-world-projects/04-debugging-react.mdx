@@ -1,0 +1,82 @@
+---
+id: debugging-react
+title: Debugging React
+order: 4
+module: real-world-projects
+summary: The bugs you'll hit again and again in React have recognizable shapes. Learn the tools — React DevTools, error messages, Strict Mode — and the handful of classic mistakes so you can spot them fast.
+concepts:
+  - debug-devtools
+  - debug-common-bugs
+  - debug-strict-mode
+estMinutes: 11
+status: published
+assessment: null
+prereqs: []
+---
+
+Most React bugs aren't mysterious once you've seen them — they repeat. This chapter gives you the
+**tools** to inspect what's happening and a field guide to the **classic mistakes**, most of which
+you've already met as they came up.
+
+## React DevTools
+
+Install the **React Developer Tools** browser extension. It adds two panels:
+
+- **Components** — inspect the component tree, and see each component's current **props** and
+  **state** live. When the UI is wrong, this tells you instantly whether the *data* is wrong or
+  the *rendering* is.
+- **Profiler** — record an interaction and see which components re-rendered and how long they
+  took. This is how you find performance problems *before* reaching for `memo`.
+
+## The classic bugs
+
+<Mermaid
+  chart={`flowchart TD
+    A["UI doesn't update after a change"] --> A1["You mutated state instead of replacing it"]
+    B["'Objects are not valid as a child'"] --> B1["You rendered an object; render a field like obj.name"]
+    C["List items behave oddly when reordered"] --> C1["Wrong keys — use a stable id, not the array index"]
+    D["Effect runs too often / infinite loop"] --> D1["Missing or unstable dependency in the array"]
+    E["Stale value inside a handler/effect"] --> E1["A closure captured an old render's value"]`}
+  caption="Five bugs you'll see repeatedly — and their usual cause."
+/>
+
+- **State change but no re-render** → you **mutated** state (`arr.push(x)`, `obj.x = 1`) instead of
+  creating a new value. React compares by reference and sees no change. (Updating Objects/Arrays.)
+- **"Objects are not valid as a React child"** → you put an object directly in JSX. Render a
+  string field (`user.name`), not `user`.
+- **List glitches on reorder/delete** → you used the array **index** as `key`. Use a stable id.
+- **Effect loops or over-runs** → the dependency array is wrong: a missing dep, or a value
+  (object/function) recreated every render. (Removing Effect Dependencies, `useCallback`.)
+- **Stale value** → a handler or Effect closed over an old render's variable. Use the **updater
+  form** of `setState`, or add the value to the dependency array.
+
+## Read the error message
+
+React's development errors are unusually good — they name the component, describe the problem, and
+often **link to a docs page** with the fix. Before guessing, read the whole message and follow the
+link. The red overlay in dev is your friend, not noise.
+
+<Callout type="note" title="Strict Mode double-runs are intentional">
+  In development, `<StrictMode>` renders components and runs Effects **twice** on purpose, to
+  surface bugs like missing Effect cleanup or impure render logic. If something happens twice in
+  dev (a double log, a doubled request), that's Strict Mode revealing a real issue to fix — and it
+  does **not** happen in production.
+</Callout>
+
+## A quick workflow
+
+1. **Reproduce** it reliably, then narrow to the smallest case.
+2. **Inspect** with DevTools: is the *data* (props/state) wrong, or the *rendering*?
+3. **Read** the error message and its linked docs.
+4. Check the usual suspects above — mutation, keys, dependencies, stale closures.
+
+## Recap
+
+- **React DevTools**: Components panel for live props/state; Profiler for re-renders.
+- Learn the **five classic bugs** — mutation, object-as-child, index keys, bad Effect deps, stale
+  closures — and you'll recognize most problems on sight.
+- **Read the error message** and follow its link; dev errors are detailed on purpose.
+- **Strict Mode** double-runs in dev to expose bugs — a feature, not a glitch.
+
+Read this, then mark it complete. That's the module — you now have a method for building and a
+method for fixing.

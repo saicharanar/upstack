@@ -1,0 +1,109 @@
+---
+id: data-dashboard
+title: "Project: A Data Dashboard"
+order: 2
+module: real-world-projects
+summary: Real apps fetch data — and fetching has four states, not one. Build a dashboard that handles loading, error, empty, and success, the pattern behind every list, feed, and table you'll write.
+concepts:
+  - dashboard-four-states
+  - dashboard-fetch-effect
+  - dashboard-render-per-state
+estMinutes: 14
+status: published
+assessment: dashboard-states
+prereqs: []
+---
+
+Almost every real screen shows data that comes from somewhere else — an API, a database. The
+mistake beginners make is thinking about only the happy path ("show the list"). Fetching actually
+has **four** outcomes you must render, and forgetting any one is a real, visible bug.
+
+## The four states of fetched data
+
+<Mermaid
+  chart={`flowchart TD
+    Start["Component mounts → start fetching"] --> Loading["1. Loading — show a spinner/placeholder"]
+    Loading --> OK{"Request result?"}
+    OK -->|"failed"| Error["2. Error — show a message, maybe a retry"]
+    OK -->|"succeeded, no rows"| Empty["3. Empty — 'nothing here yet'"]
+    OK -->|"succeeded, has rows"| Data["4. Data — render the list"]`}
+  caption="Every data screen has four states. Handle all four, not just the last one."
+/>
+
+## Fetching in an Effect
+
+The classic way to load data on mount is a `useEffect` that fetches and stores the result in
+state. Track the **status** so you can render the right branch, and clean up so a result that
+arrives after the component unmounts is ignored:
+
+```jsx
+import { useState, useEffect } from 'react';
+
+function Dashboard() {
+  const [state, setState] = useState({ status: 'loading', users: [], error: '' });
+
+  useEffect(() => {
+    let active = true;
+    fetchUsers()
+      .then((users) => active && setState({ status: 'success', users, error: '' }))
+      .catch((err) => active && setState({ status: 'error', users: [], error: err.message }));
+    return () => { active = false; }; // ignore a late result after unmount
+  }, []);
+
+  if (state.status === 'loading') return <p>Loading…</p>;
+  if (state.status === 'error') return <p>{state.error}</p>;
+  if (state.users.length === 0) return <p>No users found.</p>;
+  return <ul>{state.users.map((u) => <li key={u.id}>{u.name}</li>)}</ul>;
+}
+```
+
+<Callout type="tip" title="In real apps, use a data library">
+  Hand-written fetch-in-`useEffect` is fine to understand the states, but production apps usually
+  use **TanStack Query (React Query)** or a framework's data layer. They hand you the same
+  `{ isLoading, error, data }` shape — plus caching, retries, and refetching — so you still render
+  exactly these four states.
+</Callout>
+
+## See it run
+
+This dashboard fetches (a simulated) list and shows **Loading…** first, then the data:
+
+<LiveExample
+  code={`import { useState, useEffect } from 'react';
+
+function fakeFetchUsers() {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve([{ id: 1, name: 'Ada Lovelace' }, { id: 2, name: 'Grace Hopper' }]), 1200);
+  });
+}
+
+export default function Dashboard() {
+  const [state, setState] = useState({ status: 'loading', users: [] });
+
+  useEffect(() => {
+    let active = true;
+    fakeFetchUsers().then((users) => {
+      if (active) setState({ status: 'success', users });
+    });
+    return () => { active = false; };
+  }, []);
+
+  if (state.status === 'loading') return <p>Loading…</p>;
+  if (state.users.length === 0) return <p>No users found.</p>;
+  return <ul>{state.users.map((u) => <li key={u.id}>{u.name}</li>)}</ul>;
+}`}
+/>
+
+## Recap
+
+- Fetched data has **four states**: loading, error, empty, and success — render all four.
+- Load on mount with **`useEffect`**, track a **status**, and **clean up** to ignore late results.
+- Derive the UI from the status; don't forget the **empty** case.
+- Real apps use a data library, but it hands you the same states to render.
+
+## Your turn
+
+Build the `Dashboard` component's rendering: given a `request` that is loading, errored, empty,
+or successful, show the right UI for each of the four states.
+
+<Assessment id="dashboard-states" />

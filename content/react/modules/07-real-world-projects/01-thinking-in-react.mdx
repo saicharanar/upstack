@@ -1,0 +1,102 @@
+---
+id: thinking-in-react
+title: Thinking in React
+order: 1
+module: real-world-projects
+summary: A repeatable, five-step method for turning any design or mockup into a working React UI — break it into components, build it static, then add the minimal state in the right place.
+concepts:
+  - tir-component-hierarchy
+  - tir-static-first
+  - tir-minimal-state
+  - tir-state-location
+estMinutes: 12
+status: published
+assessment: null
+prereqs: []
+---
+
+Given a design, how do you turn it into React? There's a reliable recipe the React team itself
+teaches — five steps that take you from a static mockup to a fully interactive UI. Once you've
+done it a few times it becomes second nature, and it scales from a small widget to a whole page.
+
+## The five steps
+
+<Mermaid
+  chart={`flowchart TD
+    S1["1. Break the UI into a component tree"] --> S2["2. Build a static version (props only, no state)"]
+    S2 --> S3["3. Find the minimal set of state"]
+    S3 --> S4["4. Decide where each piece of state lives"]
+    S4 --> S5["5. Add inverse data flow (events change state)"]`}
+  caption="From mockup to interactive UI in five steps — structure first, state last."
+/>
+
+### 1. Break the UI into a component hierarchy
+
+Draw boxes around the pieces of the design and name them. A good component does **one thing**; if
+it grows too big, split it. Nested boxes become nested components (a `Page` holds a `SearchBar`
+and a `ProductTable`, which holds `ProductRow`s).
+
+### 2. Build a static version first
+
+Build it with **props only — no state yet**. Data flows down from parent to child; nothing is
+interactive. This gets the structure and rendering right before you add the trickier part. For
+small UIs, build top-down; for large ones, bottom-up.
+
+### 3. Find the minimal state
+
+List every piece of data in the UI, then ask of each: does it **change over time**? Can it be
+**computed** from props or other state? Is it **duplicated**? Whatever's left — the data that
+genuinely changes and can't be derived — is your state. Keep it as small as possible; derive the
+rest during render.
+
+### 4. Decide where each piece of state lives
+
+For each piece of state, find the **closest common parent** of all the components that use it,
+and put the state there (or higher). This is the "lift state up" idea from Managing State,
+applied deliberately.
+
+### 5. Add inverse data flow
+
+State lives up in a parent, but the inputs that change it live down in children. Pass **event
+handlers** down so children can ask the parent to update state — data down, events up.
+
+<Callout type="tip" title="Structure first, state last">
+  The order matters. Most beginner tangles come from adding state too early. Get the components
+  and static rendering right, then add the *smallest* amount of state, in the *right* place.
+</Callout>
+
+## See it run
+
+Here's step 2→3 in miniature: a searchable list with exactly **one** piece of state (the query).
+The visible list isn't state — it's **derived** from the query during render:
+
+<LiveExample
+  code={`import { useState } from 'react';
+
+const PRODUCTS = ['Apple', 'Banana', 'Cherry', 'Date', 'Elderberry'];
+
+export default function SearchableList() {
+  const [query, setQuery] = useState(''); // the ONLY state
+
+  const visible = PRODUCTS.filter((p) =>
+    p.toLowerCase().includes(query.toLowerCase()),
+  ); // derived, not stored
+
+  return (
+    <div>
+      <input placeholder="Search…" value={query} onChange={(e) => setQuery(e.target.value)} />
+      <ul>{visible.map((p) => <li key={p}>{p}</li>)}</ul>
+    </div>
+  );
+}`}
+/>
+
+## Recap
+
+- **1. Components:** break the design into a tree of single-purpose components.
+- **2. Static first:** build with props only, no state.
+- **3. Minimal state:** keep only data that changes and can't be derived.
+- **4. Location:** put each piece of state in the closest common parent.
+- **5. Inverse flow:** pass handlers down so children can update state.
+
+Read this, try the demo, then mark it complete — next, a project that fetches real data.

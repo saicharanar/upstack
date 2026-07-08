@@ -1,0 +1,120 @@
+---
+id: form-with-validation
+title: "Project: A Sign-up Form with Validation"
+order: 3
+module: real-world-projects
+summary: Forms are where most real apps live. Build a sign-up form with controlled inputs, validation on submit, clear error messages, and a success state — the pattern behind every form you'll write.
+concepts:
+  - form-controlled-inputs
+  - form-validate-on-submit
+  - form-error-messages
+estMinutes: 13
+status: published
+assessment: form-validation
+prereqs: []
+---
+
+Forms are everywhere — sign-up, checkout, settings — and they're where sloppy UIs show. A solid
+form has **controlled inputs** (React owns the values), **validation** with **clear error
+messages**, and a **success state**. Let's build one.
+
+## Controlled inputs, validated on submit
+
+Each input's value lives in state, so React is the single source of truth. On submit, you
+**validate**, collect any error messages, and only proceed when there are none:
+
+<Mermaid
+  chart={`flowchart TD
+    Type["User types"] --> State["Controlled state (email, password)"]
+    Submit["Submit"] --> Validate{"All fields valid?"}
+    Validate -->|"no"| Errors["Show error messages, don't submit"]
+    Validate -->|"yes"| Success["Show success / send to server"]`}
+  caption="React owns the input values; on submit you validate, then either show errors or succeed."
+/>
+
+```jsx
+import { useState } from 'react';
+
+function SignupForm() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState({});
+  const [done, setDone] = useState(false);
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    const next = {};
+    if (!email.includes('@')) next.email = 'Enter a valid email';
+    if (password.length < 8) next.password = 'Password must be at least 8 characters';
+    setErrors(next);
+    if (Object.keys(next).length === 0) setDone(true); // all valid
+  }
+
+  if (done) return <p>Account created!</p>;
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input value={email} onChange={(e) => setEmail(e.target.value)} />
+      {errors.email && <p className="error">{errors.email}</p>}
+      <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+      {errors.password && <p className="error">{errors.password}</p>}
+      <button type="submit">Sign up</button>
+    </form>
+  );
+}
+```
+
+<Callout type="tip" title="preventDefault, and validate on submit">
+  Call `event.preventDefault()` so the browser doesn't reload the page. Validating on **submit**
+  (rather than on every keystroke) is the friendliest default — you can add
+  on-blur or on-change validation later for instant feedback.
+</Callout>
+
+## See it run
+
+Try submitting with a bad email or a short password, then with valid values:
+
+<LiveExample
+  code={`import { useState } from 'react';
+
+export default function SignupForm() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState({});
+  const [done, setDone] = useState(false);
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    const next = {};
+    if (!email.includes('@')) next.email = 'Enter a valid email';
+    if (password.length < 8) next.password = 'Password must be at least 8 characters';
+    setErrors(next);
+    if (Object.keys(next).length === 0) setDone(true);
+  }
+
+  if (done) return <p>✅ Account created!</p>;
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div><input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
+      {errors.email && <p style={{ color: 'crimson' }}>{errors.email}</p>}
+      <div><input placeholder="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} /></div>
+      {errors.password && <p style={{ color: 'crimson' }}>{errors.password}</p>}
+      <button type="submit">Sign up</button>
+    </form>
+  );
+}`}
+/>
+
+## Recap
+
+- **Controlled inputs**: each value lives in state; React is the source of truth.
+- **Validate on submit**: `preventDefault`, collect errors, only proceed when there are none.
+- Show **clear error messages** next to the fields, and a **success state** when valid.
+
+## Your turn
+
+Implement the form's `handleSubmit`: validate the email (must contain `@`) and password (at
+least 8 characters), show the right error messages, and only show success when both are valid.
+
+<Assessment id="form-validation" />
