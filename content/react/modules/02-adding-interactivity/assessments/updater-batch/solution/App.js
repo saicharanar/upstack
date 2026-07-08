@@ -9,5 +9,10 @@ export default function Stepper() {
     setCount((c) => c + 1);
   }
 
-  return <button onClick={addThree}>+3 (now {count})</button>;
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={addThree}>+3</button>
+    </div>
+  );
 }

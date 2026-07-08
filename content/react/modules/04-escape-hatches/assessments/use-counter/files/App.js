@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-// Turn this into a real custom Hook. It should use useState internally and
-// return an object { count, increment }, where increment adds 1.
+// Turn this into a real custom Hook: it must return { count, increment },
+// where `count` is the current number and calling `increment` adds 1.
 export function useCounter(initial = 0) {
   return { count: 0, increment: () => {} };
 }

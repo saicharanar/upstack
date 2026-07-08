@@ -1,7 +1,6 @@
 function StatusBadge({ online }) {
   // Return a <span> that reads "Online" when `online` is true,
-  // and "Offline" when it is false. (A ternary is the usual way:
-  //   {online ? 'Online' : 'Offline'} )
+  // and "Offline" when it is false.
   return null;
 }
 

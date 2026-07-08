@@ -1,6 +1,6 @@
 function Cupcake({ guest }) {
-  // A pure component computes its output only from its props — no shared
-  // variables, no mutation. Return an <li> reading: "Cupcake for guest #<guest>".
+  // Return an <li> that reads "Cupcake for guest #<guest>", using only the
+  // `guest` prop (guest 1 -> "Cupcake for guest #1").
   return null;
 }
 

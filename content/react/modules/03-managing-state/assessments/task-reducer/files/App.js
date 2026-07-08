@@ -1,10 +1,10 @@
 import { useReducer } from 'react';
 
 function reducer(state, action) {
-  // Return the next state based on action.type:
-  //   'increment' -> state + 1
-  //   'reset'     -> 0
-  // Any other action -> return state unchanged.
+  // Return the next state for each action.type:
+  //   - 'increment': one more than the current count
+  //   - 'reset': back to zero
+  //   - anything else: the state unchanged
   return state;
 }
 

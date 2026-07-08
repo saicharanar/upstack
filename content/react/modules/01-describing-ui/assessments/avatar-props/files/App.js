@@ -1,8 +1,7 @@
 function Avatar({ name, size }) {
-  // Read the `name` and `size` props:
-  //   1. Render an <img> with alt={name} and width={size} and height={size}.
-  //      (Any src works, e.g. "https://i.imgur.com/MK3eW3As.jpg".)
-  //   2. Render a <figcaption> showing the name.
+  // Render an <img> whose alt text is the name and whose width and height
+  // both equal the size (any src works). Then render a <figcaption> that
+  // shows the name.
   return null;
 }
 

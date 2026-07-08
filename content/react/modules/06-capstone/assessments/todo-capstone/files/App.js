@@ -12,17 +12,17 @@ export default function TodoApp() {
 
   function addTask(event) {
     event.preventDefault();
-    // TODO: If `draft` (trimmed) is not empty, add a new task to `tasks` immutably:
-    //   { id: nextId++, text: draft.trim(), done: false }
-    // Then clear the draft. Ignore empty or whitespace-only input.
+    // TODO: Add a new task with the trimmed draft text (starting undone), then
+    // clear the draft. Ignore empty or whitespace-only input. Each task needs a
+    // unique id (nextId is available above).
   }
 
   function toggleTask(id) {
-    // TODO: Flip the `done` flag of the task with this id, immutably (use map).
+    // TODO: Flip the done/undone state of the task with this id.
   }
 
   function deleteTask(id) {
-    // TODO: Remove the task with this id, immutably (use filter).
+    // TODO: Remove the task with this id from the list.
   }
 
   const remaining = tasks.filter((task) => !task.done).length;
@@ -50,7 +50,7 @@ export default function TodoApp() {
         ))}
       </ul>
 
-      {/* TODO: When there are no tasks left, show a <p> containing the words "All done". */}
+      {/* TODO: When no tasks remain, show a <p> that contains the words "All done". */}
     </div>
   );
 }

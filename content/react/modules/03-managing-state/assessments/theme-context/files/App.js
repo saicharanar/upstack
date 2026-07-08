@@ -3,14 +3,14 @@ import { createContext, useContext } from 'react';
 const ThemeContext = createContext('light');
 
 function DeepLabel() {
-  // Read the theme from ThemeContext with useContext and render:
-  //   <p>Theme: {theme}</p>
+  // Show the current theme here as "Theme: <theme>", reading the value from
+  // ThemeContext rather than receiving it as a prop.
   return <p>Theme: ?</p>;
 }
 
 export default function App() {
-  // Provide the value "dark" to the whole tree with <ThemeContext.Provider>,
-  // then render <DeepLabel /> somewhere inside it (a few levels deep is fine).
+  // Make the theme "dark" available to everything in this tree, then render
+  // <DeepLabel /> somewhere inside it (a few levels deep is fine).
   return (
     <div>
       <section>

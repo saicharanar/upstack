@@ -7,15 +7,15 @@ const meta = {
   readOnlyFiles: [],
   concepts: [
     {
-      id: 'context-provide',
-      label: 'Provides a value to the tree',
-      tests: ['makes the theme available deep in the tree'],
+      id: 'context-consume',
+      label: 'Reads the value from context',
+      tests: ['reads the theme from context instead of the placeholder'],
       required: true,
     },
     {
-      id: 'context-consume',
-      label: 'Reads the value with useContext',
-      tests: ['reads the theme without prop drilling'],
+      id: 'context-provide',
+      label: 'Provides a value to the tree',
+      tests: ['shows the provided dark theme deep in the tree'],
       required: true,
     },
   ],

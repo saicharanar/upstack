@@ -11,12 +11,19 @@ function mountApp() {
 }
 
 describe('Theme context', () => {
-  test('makes the theme available deep in the tree', () => {
+  test('reads the theme from context instead of the placeholder', () => {
+    // The deep label should show a real theme value it pulled from context,
+    // not the "?" placeholder it started with.
     const container = mountApp();
-    expect(container.querySelector('p')).not.toBeNull();
+    const label = container.querySelector('p');
+    expect(label).not.toBeNull();
+    expect(label.textContent).not.toContain('?');
+    expect(label.textContent).toMatch(/Theme: (light|dark)/);
   });
 
-  test('reads the theme without prop drilling', () => {
+  test('shows the provided dark theme deep in the tree', () => {
+    // Reaching "dark" only happens when a provider supplies it — the context's
+    // own default is "light", so this fails if nothing provides a value.
     const container = mountApp();
     expect(container.textContent).toContain('Theme: dark');
   });

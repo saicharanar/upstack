@@ -3,9 +3,8 @@ import { useState, useEffect } from 'react';
 export default function Ticker() {
   const [count, setCount] = useState(0);
 
-  // Add an Effect that syncs the document title to "Count: <count>",
-  // both on first render and whenever count changes.
-  // (useEffect(() => { ... }, [count]))
+  // Keep the browser tab's title in sync with the count: it should read
+  // "Count: <count>" on first render and update whenever the count changes.
 
   return (
     <div>

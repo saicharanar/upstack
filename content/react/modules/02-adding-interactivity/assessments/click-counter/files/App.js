@@ -1,9 +1,8 @@
 import { useState } from 'react';
 
 export default function LikeButton() {
-  // Make a like button, like on a social post.
-  // 1. Track a like count in state, starting at 0 (useState).
-  // 2. Render a <button> whose label shows the count, e.g. "♥ 0 likes".
-  // 3. Each click adds one like.
+  // A like button, like on a social post. It shows a like count that starts
+  // at 0, and each click adds one like. Show the count in the button label
+  // (e.g. "♥ 0 likes").
   return <button>♥ 0 likes</button>;
 }

@@ -9,10 +9,8 @@ function StarCount({ count }) {
 }
 
 export default function StarBoard() {
-  // Lift the shared state UP into this parent so both children see it:
-  //   1. Hold the star count in state here.
-  //   2. Pass an `onAdd` handler to <AddButton /> that increments it.
-  //   3. Pass the current count to <StarCount />.
+  // Both children need to share one star count. Make clicking the button
+  // increase the count, and make <StarCount /> display the current value.
   return (
     <div>
       <AddButton onAdd={() => {}} />

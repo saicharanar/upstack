@@ -23,13 +23,15 @@ function click(node) {
 describe('Batched stepper', () => {
   test('starts at zero', () => {
     const container = setup();
-    expect(container.textContent).toContain('0');
+    expect(container.textContent).toContain('Count: 0');
   });
 
   test('adds three in a single click', () => {
-    // Only passes if all three updates stack — i.e. updater functions were used.
+    // A single click must move the count from 0 to 3. This only works when the
+    // three updates stack instead of all reading the same starting value — so a
+    // naive "add one, three times" leaves the count at 1 and fails here.
     const container = setup();
     click(container.querySelector('button'));
-    expect(container.textContent).toContain('3');
+    expect(container.textContent).toContain('Count: 3');
   });
 });

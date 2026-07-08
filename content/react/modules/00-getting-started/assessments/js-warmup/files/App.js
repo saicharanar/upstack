@@ -1,14 +1,13 @@
-// These are the modern-JS moves you'll use constantly in React.
+// Two small functions to warm up. Make each one return the right value.
 
 export function fullName(user) {
-  // Use destructuring and a template string to return "First Last".
-  // e.g. fullName({ first: 'Ada', last: 'Lovelace' }) === 'Ada Lovelace'
+  // Given a user with `first` and `last`, return their full name as
+  // "First Last" (a single space between the two).
   return '';
 }
 
 export function topScores(scores) {
-  // Return only the scores greater than 50, sorted highest first.
-  // e.g. topScores([42, 88, 51, 30, 95]) === [95, 88, 51]
+  // Return the scores greater than 50, ordered from highest to lowest.
   return [];
 }
 
