@@ -119,13 +119,22 @@ export function Home({ stacks, available }: HomeProps): ReactNode {
           and ends with a graded, in-browser exercise — write real code, run real tests, mark your
           progress. Jump around freely; nothing is locked.
         </p>
+        {featured.length > 0 ? (
+          <p className="home__meta">
+            {featured.length} {featured.length === 1 ? 'track' : 'tracks'} available · free · runs in
+            your browser
+          </p>
+        ) : null}
       </section>
 
       {featured.length > 0 ? (
-        <section className="home__featured" aria-label="Your tracks">
-          {featured.map(({ stack, data }) => (
-            <FeaturedStack key={stack.id} stack={stack} data={data} />
-          ))}
+        <section aria-label="Available tracks">
+          <h2 className="home__section-title">Available tracks</h2>
+          <div className="home__featured">
+            {featured.map(({ stack, data }) => (
+              <FeaturedStack key={stack.id} stack={stack} data={data} />
+            ))}
+          </div>
         </section>
       ) : null}
 
