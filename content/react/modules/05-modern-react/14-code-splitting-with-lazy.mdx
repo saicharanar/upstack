@@ -1,0 +1,107 @@
+---
+id: code-splitting
+title: Code-Splitting with lazy
+order: 14
+module: modern-react
+summary: Shipping your whole app as one big JavaScript file makes the first load slow. lazy plus Suspense splits code into chunks that download only when they're actually needed.
+concepts:
+  - lazy-why-split
+  - lazy-how
+  - lazy-with-suspense
+estMinutes: 9
+status: published
+assessment: null
+prereqs: []
+---
+
+By default a bundler packs your entire app into one JavaScript file, so the browser downloads
+*everything* — including the settings page, the giant chart library, the rarely-used admin
+screen — before showing anything. **Code-splitting** breaks that bundle into smaller **chunks**
+that load on demand. React's **`lazy`** makes a component its own chunk, fetched the first time
+it's actually rendered.
+
+## Load it only when it's needed
+
+<Mermaid
+  chart={`flowchart LR
+    Start["First load: small main chunk only"] --> Use["User opens the chart"]
+    Use --> Fetch["Chart chunk downloads on demand"]
+    Fetch -->|"while downloading"| FB["Suspense shows a fallback"]
+    Fetch -->|"loaded"| Show["Chart renders"]`}
+  caption="The heavy component isn't in the first download — it arrives only when the user needs it, with a fallback while it loads."
+/>
+
+## lazy + Suspense
+
+`lazy` takes a function that returns a dynamic `import()`. Because loading is asynchronous, the
+lazy component **suspends** while its code downloads — so it needs a **`<Suspense>`** boundary
+above it for the fallback:
+
+```jsx
+import { lazy, Suspense } from 'react';
+
+const Chart = lazy(() => import('./Chart')); // its own chunk, loaded on demand
+
+function Dashboard() {
+  return (
+    <Suspense fallback={<p>Loading chart…</p>}>
+      <Chart />
+    </Suspense>
+  );
+}
+```
+
+The most common use is **route-level** splitting — each page is a lazy chunk, so visiting the app
+downloads only the current page — plus heavy, occasional UI like charts, editors, or big modals.
+
+<Callout type="tip" title="lazy always needs a Suspense boundary">
+  A lazy component suspends while its chunk downloads, so there must be a `<Suspense>` above it to
+  show the fallback. Pair them together.
+</Callout>
+
+## See it run
+
+Here the "heavy" component is loaded on demand when you click. While its (simulated) chunk loads,
+the Suspense fallback shows — then the component appears:
+
+<LiveExample
+  code={`import { lazy, Suspense, useState } from 'react';
+
+// In a real app this is: lazy(() => import('./Chart'))
+// Here we simulate a chunk that takes a moment to download.
+const Chart = lazy(
+  () =>
+    new Promise((resolve) => {
+      setTimeout(() => resolve({ default: () => <p>📊 Heavy chart loaded!</p> }), 1200);
+    }),
+);
+
+export default function App() {
+  const [show, setShow] = useState(false);
+  return (
+    <div>
+      <button onClick={() => setShow(true)}>Load the chart</button>
+      {show && (
+        <Suspense fallback={<p>Loading chart…</p>}>
+          <Chart />
+        </Suspense>
+      )}
+    </div>
+  );
+}`}
+/>
+
+## Recap
+
+- **Code-splitting** breaks one big bundle into **chunks** loaded on demand — a faster first load.
+- **`lazy(() => import('./X'))`** makes a component its own chunk, fetched when first rendered.
+- A lazy component **suspends** while loading, so wrap it in **`<Suspense>`** with a fallback.
+- Split by **route** first, then heavy occasional components.
+
+<Callout type="note" title="No auto-graded exercise here">
+  Real code-splitting needs a separate module file and a bundler, and the split isn't something
+  the automated checker can observe — so this chapter has a runnable demo but no graded checks.
+  Read it, try the demo, and mark it complete.
+</Callout>
+
+Read this, try the demo, then mark it complete.

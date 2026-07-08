@@ -1,0 +1,106 @@
+---
+id: suspense
+title: Loading States with Suspense
+order: 13
+module: modern-react
+summary: Instead of every component tracking its own isLoading flag, Suspense lets a component say "I'm not ready yet" and lets a parent boundary show one fallback for the whole region — declarative loading states.
+concepts:
+  - suspense-what
+  - suspense-fallback
+  - suspense-nesting
+estMinutes: 10
+status: published
+assessment: suspense-boundary
+prereqs: []
+---
+
+The old way to show a loading spinner was for every component to track its own `isLoading`
+boolean and render a spinner while it waited. **Suspense** flips that around: a component can
+**suspend** — signal "I'm not ready to render yet" — and the nearest **`<Suspense>`** boundary
+above it shows a **fallback** for that whole region until everything inside is ready. Loading
+becomes something you declare in one place, not wire up in ten.
+
+## A boundary with a fallback
+
+<Mermaid
+  chart={`flowchart TD
+    S["Suspense (fallback= Loading…)"] --> C["Profile"]
+    C -->|"reads data that isn't ready → suspends"| S
+    S -->|"while suspended"| F["Show the fallback"]
+    S -->|"once ready"| R["Show Profile with its data"]`}
+  caption="If anything inside the boundary suspends, the fallback shows until it's ready — then the real content appears."
+/>
+
+You wrap the part of the UI that might not be ready:
+
+```jsx
+import { Suspense } from 'react';
+
+<Suspense fallback={<p>Loading…</p>}>
+  <Profile />   {/* if Profile suspends, the fallback shows */}
+</Suspense>
+```
+
+## What makes a component suspend?
+
+A component suspends when it tries to read something that isn't ready yet:
+
+- **`use(promise)`** reading a promise that hasn't resolved (the previous chapter).
+- A **lazily-loaded** component whose code is still downloading (the next chapter).
+- Data fetching in **frameworks** built on Suspense (Next.js and friends).
+
+You rarely throw the "not ready" signal yourself — these APIs do it for you. Your job is to place
+the `<Suspense>` boundary where you want the fallback to appear.
+
+<Callout type="tip" title="Nest boundaries for granular loading">
+  One boundary near the top gives a whole-page spinner. Add smaller boundaries around independent
+  sections (a sidebar, a comments list) and each shows its own fallback — the rest of the page
+  renders immediately instead of waiting for the slowest part.
+</Callout>
+
+## See it run
+
+`Profile` reads a value that arrives after a short delay, so it suspends — and the boundary shows
+"Loading…" until the name is ready:
+
+<LiveExample
+  code={`import { Suspense } from 'react';
+
+let data = null;
+let promise = null;
+function readName() {
+  if (data) return data;
+  if (!promise) {
+    promise = new Promise((resolve) => {
+      setTimeout(() => { data = 'Ada Lovelace'; resolve(); }, 1200);
+    });
+  }
+  throw promise; // "not ready" — this suspends the component
+}
+
+function Profile() {
+  return <p>Name: {readName()}</p>;
+}
+
+export default function App() {
+  return (
+    <Suspense fallback={<p>Loading…</p>}>
+      <Profile />
+    </Suspense>
+  );
+}`}
+/>
+
+## Recap
+
+- **Suspense** replaces scattered `isLoading` flags with one declarative **boundary + fallback**.
+- A component **suspends** when it reads something not ready — `use(promise)`, a lazy component, framework data.
+- `<Suspense fallback={…}>` shows the fallback until everything inside is ready.
+- **Nest** boundaries so independent sections load (and show fallbacks) on their own.
+
+## Your turn
+
+Wrap a component that suspends in a `<Suspense>` boundary with a `Loading…` fallback, so the page
+shows the fallback instead of crashing while the content isn't ready.
+
+<Assessment id="suspense-boundary" />
