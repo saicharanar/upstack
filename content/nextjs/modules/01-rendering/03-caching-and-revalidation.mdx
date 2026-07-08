@@ -1,0 +1,76 @@
+---
+id: caching
+title: Caching and Revalidation
+order: 3
+module: rendering
+summary: Next caches server work aggressively for speed, then lets you say how fresh data must be — revalidate on a timer, or on demand after a change. Understanding this is the key to correct, fast Next apps.
+concepts:
+  - caching-why
+  - caching-time-based
+  - caching-on-demand
+estMinutes: 12
+status: published
+assessment: null
+prereqs: []
+---
+
+Next.js is fast because it **caches** server work — rendered segments and data fetches — and
+reuses them instead of recomputing on every request. The skill is telling Next **how fresh** each
+piece of data needs to be.
+
+## Time-based revalidation
+
+Tell a fetch (or a whole route) to be re-fetched at most every N seconds with **`revalidate`**.
+Between refreshes, users get the fast cached copy; after the window, the next request refreshes it:
+
+```jsx
+// re-fetch this data at most once every 60 seconds
+const res = await fetch('https://api.example.com/posts', { next: { revalidate: 60 } });
+
+// or for the whole route:
+export const revalidate = 60;
+```
+
+<Mermaid
+  chart={`flowchart LR
+    Req["Request"] --> Fresh{"Cached copy younger than revalidate?"}
+    Fresh -->|"yes"| Cache["Serve cached (fast)"]
+    Fresh -->|"no"| Refetch["Refetch, update cache, serve fresh"]`}
+  caption="Time-based revalidation serves cached data until it ages past the window, then refreshes."
+/>
+
+## On-demand revalidation
+
+When you *change* data (a new post, an edited product), you don't want to wait for a timer. Call
+**`revalidatePath`** or **`revalidateTag`** to invalidate exactly what changed — usually right
+after a Server Action:
+
+```jsx
+import { revalidatePath } from 'next/cache';
+
+async function addPost(formData) {
+  'use server';
+  await savePost(formData);
+  revalidatePath('/blog'); // the blog list is now stale — refresh it
+}
+```
+
+## Opting out
+
+For truly per-request data (a dashboard that must always be live), opt out of caching with
+`{ cache: 'no-store' }` on the fetch, or `export const dynamic = 'force-dynamic'` on the route.
+
+<Callout type="warning" title="Caching is the #1 Next.js gotcha">
+  "Why is my data stale?" is almost always a caching question. Decide per data source: static
+  content can cache for a long time; a user's dashboard should be `no-store`; content that changes
+  occasionally fits time-based or on-demand revalidation.
+</Callout>
+
+## Recap
+
+- Next **caches** server renders and fetches for speed; you control **freshness**.
+- **Time-based**: `revalidate: N` refreshes at most every N seconds.
+- **On-demand**: `revalidatePath` / `revalidateTag` invalidate after a change.
+- **Opt out** with `no-store` / `force-dynamic` for always-live data.
+
+Read this, then mark it complete — next, streaming.

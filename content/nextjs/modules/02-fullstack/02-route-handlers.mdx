@@ -1,0 +1,68 @@
+---
+id: route-handlers
+title: Route Handlers (API Endpoints)
+order: 2
+module: fullstack
+summary: A route.ts file exports GET/POST functions and becomes a real HTTP endpoint. Use route handlers for webhooks, third-party callers, and anything that isn't a form-driven UI mutation.
+concepts:
+  - handler-route-file
+  - handler-methods
+  - handler-vs-action
+estMinutes: 10
+status: published
+assessment: null
+prereqs: []
+---
+
+Sometimes you need an actual **HTTP endpoint** — for a webhook, a mobile client, or a public API.
+A **`route.ts`** file (instead of `page.tsx`) does that: export functions named after HTTP methods
+and Next serves them at that path.
+
+## Methods as exports
+
+```jsx
+// app/api/posts/route.ts  →  GET/POST /api/posts
+export async function GET() {
+  const posts = await db.post.findMany();
+  return Response.json(posts);
+}
+
+export async function POST(request) {
+  const body = await request.json();
+  const post = await db.post.create({ data: body });
+  return Response.json(post, { status: 201 });
+}
+```
+
+You work with the standard **Web `Request`/`Response`** objects — `request.json()`,
+`Response.json(...)`, status codes.
+
+<Mermaid
+  chart={`flowchart LR
+    Client["Any HTTP client / webhook"] --> Route["app/api/posts/route.ts"]
+    Route --> Method["GET / POST / … export"]
+    Method --> Resp["Response.json(...)"]`}
+  caption="A route.ts turns a path into an HTTP endpoint; each method is a named export."
+/>
+
+## Route handler vs Server Action
+
+Both run on the server — pick by *who calls it*:
+
+- **Server Action** — called from **your own** components/forms to mutate data. Prefer this for UI
+  mutations; it integrates with forms, pending state, and revalidation.
+- **Route Handler** — a real **URL** for **external** callers: webhooks (Stripe, GitHub), a mobile
+  app, cron jobs, public APIs.
+
+<Callout type="tip" title="Default to Server Actions for your own UI">
+  If it's your form saving your data, use a Server Action — less plumbing. Reach for a Route
+  Handler when something *outside* your React app needs to call it over HTTP.
+</Callout>
+
+## Recap
+
+- **`route.ts`** makes a path an **HTTP endpoint**; export **`GET`/`POST`/…** functions.
+- Use standard **`Request`/`Response`** (`request.json()`, `Response.json()`).
+- **Server Actions** for your own UI mutations; **Route Handlers** for external HTTP callers.
+
+Read this, then mark it complete — next, rendering strategies and metadata.

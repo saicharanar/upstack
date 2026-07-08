@@ -1,0 +1,71 @@
+---
+id: dynamic-routes
+title: Dynamic Routes and Params
+order: 4
+module: routing
+summary: A folder named [slug] matches any value in that position and passes it to the page as params. Learn dynamic segments, catch-all routes, and generateStaticParams for pre-rendering.
+concepts:
+  - dynamic-segment-params
+  - dynamic-catch-all
+  - dynamic-generate-static-params
+estMinutes: 11
+status: published
+assessment: breadcrumbs
+prereqs: []
+---
+
+Most apps have pages like `/blog/my-post` where the last part varies. A folder named with square
+brackets — **`[slug]`** — matches any value there and hands it to the page as **`params`**.
+
+## Dynamic segments
+
+```jsx
+// app/blog/[slug]/page.tsx  →  matches /blog/anything
+export default async function Post({ params }) {
+  const { slug } = await params;   // e.g. "hello-world"
+  return <article>Post: {slug}</article>;
+}
+```
+
+<Mermaid
+  chart={`flowchart LR
+    URL["/blog/hello-world"] --> Seg["[slug] matches 'hello-world'"]
+    Seg --> Params["params = { slug: 'hello-world' }"]
+    Params --> Page["page renders with the value"]`}
+  caption="A [slug] folder captures that URL segment and passes it to the page as params."
+/>
+
+## Catch-all segments
+
+- **`[...slug]`** matches *multiple* segments (`/docs/a/b/c` → `slug: ['a', 'b', 'c']`).
+- **`[[...slug]]`** is the same but also matches the base path with no segments.
+
+## Pre-rendering with generateStaticParams
+
+For dynamic routes you want built ahead of time (blog posts, docs), export
+**`generateStaticParams`** to list the values — Next pre-renders a static page for each:
+
+```jsx
+export function generateStaticParams() {
+  return [{ slug: 'hello-world' }, { slug: 'second-post' }];
+}
+```
+
+<Callout type="tip" title="A breadcrumb is just the path, split up">
+  Route segments and breadcrumbs are the same data seen two ways: `/blog/react/hooks` is three
+  segments, and a breadcrumb trail is those segments with a cumulative link each. Turning a path
+  into that trail is plain string work — which is your exercise.
+</Callout>
+
+## Recap
+
+- **`[slug]`** captures a URL segment into **`params`**; `await params` in the page.
+- **`[...slug]`** (catch-all) captures multiple segments as an array.
+- **`generateStaticParams`** lists dynamic values to **pre-render** at build time.
+
+## Your turn
+
+Write `toBreadcrumbs(pathname)`: turn a path like `/blog/react/hooks` into breadcrumb items —
+one per segment, each with its label and the cumulative href (`/blog`, `/blog/react`, …).
+
+<Assessment id="breadcrumbs" />

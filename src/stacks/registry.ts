@@ -34,7 +34,7 @@ export const STACKS: readonly StackSummary[] = [
     name: 'Next.js',
     tagline: 'The React framework — App Router, Server Components, and server actions for full-stack apps.',
     icon: '▲',
-    status: 'coming-soon',
+    status: 'available',
   },
   {
     id: 'go',

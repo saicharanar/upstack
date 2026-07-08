@@ -1,0 +1,69 @@
+---
+id: server-client
+title: Server and Client Components
+order: 1
+module: rendering
+summary: In the App Router, components render on the server by default. You opt a component into the browser with 'use client' when it needs interactivity — state, effects, or event handlers.
+concepts:
+  - sc-server-default
+  - sc-use-client
+  - sc-boundary
+estMinutes: 12
+status: published
+assessment: null
+prereqs: []
+---
+
+The defining idea of the App Router: components are **Server Components by default**. They run on
+the server, can fetch data directly, and send only HTML (no JS) for that part — smaller, faster
+pages. You opt into the browser only where you need interactivity.
+
+## Server by default, client on demand
+
+- **Server Components** (the default) run on the server. They can `await` data directly and access
+  server resources, but they **can't** use state, effects, or event handlers — there's no browser.
+- **Client Components** run in the browser. Add **`'use client'`** at the top of the file to opt
+  in. Now you can use `useState`, `useEffect`, `onClick` — everything from the React course.
+
+```jsx
+// Server Component (default) — can fetch, no interactivity
+async function ProductList() {
+  const products = await getProducts(); // runs on the server
+  return <ul>{products.map((p) => <li key={p.id}>{p.name}</li>)}</ul>;
+}
+
+// Client Component — interactivity
+'use client';
+import { useState } from 'react';
+function AddToCart() {
+  const [count, setCount] = useState(0);
+  return <button onClick={() => setCount(count + 1)}>In cart: {count}</button>;
+}
+```
+
+<Mermaid
+  chart={`flowchart TD
+    Q{"Does it need state, effects,<br/>or event handlers?"} -->|"no"| S["Server Component (default) — can fetch data"]
+    Q -->|"yes"| C["'use client' → Client Component"]`}
+  caption="Default to Server Components; add 'use client' only where you need browser interactivity."
+/>
+
+## The boundary
+
+`'use client'` marks a **boundary**: that component and everything it imports run in the browser.
+So keep client components **small and at the leaves** — a Server Component can render Client
+Components (pass data down as props), but a Client Component can't render a Server Component.
+
+<Callout type="tip" title="Push 'use client' down">
+  Don't put `'use client'` at the top of a big page — you'd ship the whole tree to the browser.
+  Keep pages and layouts as Server Components and mark only the interactive leaves (a like button,
+  a search box) as client. Server does the data; client does the clicks.
+</Callout>
+
+## Recap
+
+- App Router components are **Server Components by default** — they render on the server and can `await` data.
+- Add **`'use client'`** to opt a component into the browser for state/effects/handlers.
+- `'use client'` is a **boundary**; keep client components **small and at the leaves**.
+
+Read this, then mark it complete — next, fetching data on the server.

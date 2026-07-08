@@ -1,0 +1,80 @@
+---
+id: app-router
+title: The App Router
+order: 1
+module: routing
+summary: In Next.js, routes come from your folder structure. A folder under app/ is a URL segment, and a page.tsx inside it is the page. No route config — the file system IS the router.
+concepts:
+  - approuter-file-based
+  - approuter-special-files
+  - approuter-route-groups
+estMinutes: 11
+status: published
+assessment: null
+prereqs: []
+---
+
+Next.js's **App Router** turns your `app/` folder into your URLs. You don't register routes — you
+create folders and files, and Next maps them to paths. This is the biggest mental shift coming
+from React Router or a plain SPA.
+
+## Folders are segments, page.tsx is the page
+
+Each folder under `app/` is a **URL segment**; a **`page.tsx`** inside it makes that path
+renderable:
+
+<Mermaid
+  chart={`flowchart TD
+    App["app/"] --> P0["page.tsx → /"]
+    App --> Blog["blog/"]
+    Blog --> P1["page.tsx → /blog"]
+    Blog --> Post["[slug]/"]
+    Post --> P2["page.tsx → /blog/:slug"]
+    App --> Dash["dashboard/"]
+    Dash --> P3["page.tsx → /dashboard"]`}
+  caption="The folder structure under app/ is the route table; page.tsx makes a segment a page."
+/>
+
+```
+app/
+  page.tsx            →  /
+  blog/
+    page.tsx          →  /blog
+    [slug]/
+      page.tsx        →  /blog/hello   (dynamic segment)
+  dashboard/
+    page.tsx          →  /dashboard
+```
+
+## Special files
+
+Certain filenames have meaning in every segment:
+
+- **`page.tsx`** — the page UI for that route.
+- **`layout.tsx`** — shared UI that wraps this segment and everything nested under it.
+- **`loading.tsx`** — a fallback shown while the segment loads (a Suspense boundary).
+- **`error.tsx`** — an error boundary for the segment.
+- **`route.ts`** — an API endpoint (instead of a page).
+
+## Route groups
+
+Wrap a folder name in parentheses — `(marketing)` — to **group routes without adding a URL
+segment**. Great for giving sections their own layout without changing the path:
+
+```
+app/(marketing)/about/page.tsx   →  /about   (the "(marketing)" is not in the URL)
+```
+
+<Callout type="note" title="Next chapters are shown as code">
+  Next.js renders on a **server**, which the in-browser sandbox here doesn't run — so this stack
+  teaches by reading real, annotated code (like the React course does for Server Components). The
+  graded exercises focus on the framework-adjacent *logic* you can run anywhere.
+</Callout>
+
+## Recap
+
+- The **`app/` folder structure defines routes** — folders are segments, `page.tsx` is the page.
+- **Special files** (`layout`, `loading`, `error`, `route`) have meaning in every segment.
+- **Route groups** `(name)` organize routes without adding to the URL.
+
+Read this, then mark it complete — next, layouts.

@@ -1,0 +1,72 @@
+---
+id: nextjs-data-fetching
+title: Fetching Data on the Server
+order: 2
+module: rendering
+summary: Server Components can be async and await data directly — no useEffect, no loading state, no client fetch. You also read the URL's query via searchParams to drive what you fetch.
+concepts:
+  - data-async-server-component
+  - data-search-params
+  - data-no-effect
+estMinutes: 12
+status: published
+assessment: filter-params
+prereqs: []
+---
+
+Fetching data in a Server Component is refreshingly plain: the component is **`async`**, and you
+**`await`** your data right in the body. No `useEffect`, no `isLoading` state, no client round-trip
+— the HTML arrives with the data already in it.
+
+## Await data in the component
+
+```jsx
+async function ProductPage({ params }) {
+  const { id } = await params;
+  const product = await fetch(`https://api.example.com/products/${id}`).then((r) => r.json());
+  return <h1>{product.name}</h1>; // rendered on the server, with data
+}
+```
+
+Compare that to the client pattern (`useEffect` + `useState` + loading/error) from the React
+course — on the server it collapses to a single `await`.
+
+## Reading the query string with searchParams
+
+Pages receive **`searchParams`** — the `?q=…&sort=…` part of the URL — so filters, search, and
+pagination live in the URL and drive what you fetch:
+
+```jsx
+async function Search({ searchParams }) {
+  const { q, sort } = await searchParams;
+  const results = await search(q, sort);
+  return <Results items={results} />;
+}
+```
+
+<Mermaid
+  chart={`flowchart LR
+    URL["/search?q=react&sort=new"] --> SP["searchParams = { q, sort }"]
+    SP --> Fetch["fetch data for those params (on the server)"]
+    Fetch --> HTML["HTML with results"]`}
+  caption="The URL's query drives a server fetch; the page comes back with data already rendered."
+/>
+
+<Callout type="tip" title="Keep filters in the URL">
+  Putting search/sort/page in `searchParams` makes state **shareable and bookmarkable**, and lets
+  the server render the right results directly. Normalizing those raw params into a clean query is
+  plain logic — which is your exercise.
+</Callout>
+
+## Recap
+
+- **Server Components can be `async`** and **`await`** data directly — no effect, no loading state.
+- Pages read the query string via **`searchParams`** to drive what they fetch.
+- Keep filters in the URL: shareable, bookmarkable, and server-renderable.
+
+## Your turn
+
+Write `parseListParams(searchParams)`: normalize raw query params into a clean filter — a trimmed
+`q` string, a `sort` that defaults to `"new"`, and a `page` number that's at least 1.
+
+<Assessment id="filter-params" />

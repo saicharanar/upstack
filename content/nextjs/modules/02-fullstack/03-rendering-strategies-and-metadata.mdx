@@ -1,0 +1,66 @@
+---
+id: rendering-strategies
+title: Rendering Strategies and Metadata
+order: 3
+module: fullstack
+summary: The same App Router gives you static (SSG), dynamic (SSR), and revalidated (ISR) rendering — chosen by how you fetch, not by separate APIs. Plus generateMetadata for per-page SEO.
+concepts:
+  - strategy-ssg-ssr-isr
+  - strategy-how-chosen
+  - strategy-metadata
+estMinutes: 11
+status: published
+assessment: null
+prereqs: []
+---
+
+The old Next had separate functions for static vs server rendering. The App Router unifies them:
+you get **static**, **dynamic**, or **incrementally revalidated** pages depending on how a route
+fetches data — the caching model from earlier, seen from the rendering side.
+
+## Three strategies, one router
+
+- **Static (SSG)** — rendered at **build time**, served as static HTML. The default when a route
+  has no dynamic data. Fastest and cheapest; perfect for marketing pages and docs.
+- **Dynamic (SSR)** — rendered **per request**. You get this when a route reads request-specific
+  data (`cookies()`, `headers()`, uncached fetches, `force-dynamic`). Needed for personalized pages.
+- **Incremental (ISR)** — static, but **refreshed on a timer** via `revalidate`. Static speed with
+  data that stays reasonably fresh — great for a blog or catalog.
+
+<Mermaid
+  chart={`flowchart TD
+    Q{"How fresh must the data be?"} -->|"fixed at build"| SSG["Static (SSG)"]
+    Q -->|"refresh every N seconds"| ISR["Incremental (ISR) — revalidate"]
+    Q -->|"per request / personalized"| SSR["Dynamic (SSR) — no-store / cookies"]`}
+  caption="You don't call a special API — how you fetch (cached, revalidated, or dynamic) picks the strategy."
+/>
+
+## Metadata for SEO
+
+Export a **`metadata`** object (static) or a **`generateMetadata`** function (dynamic, per params)
+and Next renders the right `<title>`, description, and Open Graph tags:
+
+```jsx
+export const metadata = { title: 'Blog — Acme', description: 'Posts about React.' };
+
+// or per dynamic route:
+export async function generateMetadata({ params }) {
+  const { slug } = await params;
+  const post = await getPost(slug);
+  return { title: post.title, description: post.excerpt };
+}
+```
+
+<Callout type="tip" title="Static by default is the point">
+  Because routes are static unless they need to be dynamic, you get great performance for free and
+  only "pay" for SSR where a page truly needs per-request data. Choose the strategy by the data's
+  freshness needs, not by reaching for a different API.
+</Callout>
+
+## Recap
+
+- **SSG** (build-time), **SSR** (per-request), **ISR** (revalidated) — one router, chosen by how you fetch.
+- Request-specific data (`cookies`, `no-store`) makes a route **dynamic**; otherwise it's **static**.
+- Export **`metadata`** / **`generateMetadata`** for per-page **SEO** tags.
+
+Read this, then mark it complete — next, the capstone.

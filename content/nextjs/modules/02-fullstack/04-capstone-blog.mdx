@@ -1,0 +1,73 @@
+---
+id: nextjs-capstone
+title: "Capstone: A Full-Stack Blog"
+order: 4
+module: fullstack
+summary: Put the whole framework together — a blog with a static list, dynamic post pages, a Server Action to add posts, streaming, and metadata. A guided build you run locally with create-next-app.
+concepts:
+  - capstone-compose-next
+  - capstone-run-locally
+  - capstone-next-steps
+estMinutes: 20
+status: published
+assessment: null
+prereqs: []
+---
+
+This capstone ties the stack together into one small but complete app: a **blog**. Unlike the
+in-browser exercises, you'll build this **locally** — the most realistic way to learn Next, and
+the only way to run its server features for real.
+
+## Set up
+
+```bash
+npx create-next-app@latest my-blog   # choose the App Router
+cd my-blog
+npm run dev                          # http://localhost:3000
+```
+
+## What you'll build (and which chapter each piece comes from)
+
+<Mermaid
+  chart={`flowchart TD
+    Root["app/layout.tsx — shell + nav (Layouts)"] --> List["app/blog/page.tsx — post list (Server Component + data)"]
+    Root --> Post["app/blog/[slug]/page.tsx — a post (Dynamic routes + generateMetadata)"]
+    Root --> New["app/blog/new/page.tsx — form → Server Action (Mutations)"]
+    List --> Stream["Slow widget in <Suspense> (Streaming)"]`}
+  caption="Each part of the blog maps to a concept from the track — assemble them into one app."
+/>
+
+Build it step by step:
+
+1. **Layout & nav** — a root `layout.tsx` with a header linking Home and Blog, with an active link.
+2. **Post list** — `app/blog/page.tsx`, an `async` Server Component that fetches and lists posts.
+   Use **ISR** (`export const revalidate = 60`) so it's static but stays fresh.
+3. **Post page** — `app/blog/[slug]/page.tsx` reads `params`, fetches one post, and exports
+   `generateMetadata` for its title. Add `generateStaticParams` to pre-render known posts.
+4. **New post** — a form wired to a **Server Action** (`'use server'`) that saves the post and
+   calls `revalidatePath('/blog')`, then redirects.
+5. **Streaming** — put a slow "related posts" widget behind its own `<Suspense>` so the article
+   shows instantly.
+6. **States** — add `loading.tsx` and `error.tsx` to the blog segment.
+
+<Callout type="tip" title="Deploy it">
+  Push to GitHub and import into **Vercel** (the makers of Next) for a zero-config deploy — your
+  Server Actions, ISR, and streaming all run in production. Seeing your own app live is the best
+  motivation to keep going.
+</Callout>
+
+## Where to go next
+
+You've covered the App Router, the server/client boundary, data fetching, caching, streaming,
+Server Actions, route handlers, and rendering strategies — the core of modern Next.js. From here:
+authentication (NextAuth / Auth.js), a database (Prisma + Postgres), and a component library. You
+have the foundation they all build on.
+
+## Recap
+
+- The blog composes the **whole track**: layouts, dynamic routes, data + ISR, Server Actions,
+  streaming, and metadata.
+- Build and run it **locally** with `create-next-app` — that's how Next's server features run for real.
+- Deploy on **Vercel** to see it in production.
+
+Read this, build the blog locally, then mark it complete. 🚀

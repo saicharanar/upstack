@@ -1,0 +1,89 @@
+---
+id: nextjs-navigation
+title: Navigation and Active Links
+order: 3
+module: routing
+summary: Move between routes with the Link component for instant client-side navigation, read the current path with usePathname to highlight the active link, and navigate in code with useRouter.
+concepts:
+  - nav-link-component
+  - nav-active-pathname
+  - nav-programmatic
+estMinutes: 11
+status: published
+assessment: active-nav
+prereqs: []
+---
+
+Next gives you three tools for moving around: **`<Link>`** for declarative navigation,
+**`usePathname`** for knowing where you are, and **`useRouter`** for navigating from code.
+
+## Link — instant client navigation
+
+Use **`<Link>`** (from `next/link`) instead of `<a>`. It navigates on the client without a full
+page reload and prefetches the target in the background:
+
+```jsx
+import Link from 'next/link';
+
+<nav>
+  <Link href="/">Home</Link>
+  <Link href="/blog">Blog</Link>
+</nav>
+```
+
+## Highlighting the active link
+
+A nav usually marks the current page. **`usePathname`** (a client hook) returns the current path,
+which you compare against each link:
+
+```jsx
+'use client';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+function NavLink({ href, children }) {
+  const pathname = usePathname();
+  const active = pathname === href;
+  return <Link href={href} aria-current={active ? 'page' : undefined}>{children}</Link>;
+}
+```
+
+<Mermaid
+  chart={`flowchart LR
+    Path["usePathname() → '/blog'"] --> Compare{"href === pathname?"}
+    Compare -->|"yes"| Active["aria-current='page' (highlight)"]
+    Compare -->|"no"| Plain["normal link"]`}
+  caption="Compare each link's href to the current pathname to mark the active one."
+/>
+
+## Programmatic navigation
+
+For navigation in an event handler (after a form submit, say), use **`useRouter`**:
+
+```jsx
+'use client';
+import { useRouter } from 'next/navigation';
+
+const router = useRouter();
+router.push('/dashboard');   // navigate; also .replace(), .back()
+```
+
+<Callout type="note" title="The active-link logic is plain React">
+  Which link is "active" is just a comparison of the current path to each href — no framework
+  needed to reason about it. That's what the exercise below drills; in a real app the path comes
+  from `usePathname` and the links are `<Link>`s, but the logic is identical.
+</Callout>
+
+## Recap
+
+- **`<Link href>`** does instant, prefetched client-side navigation (use it over `<a>`).
+- **`usePathname()`** gives the current path — compare it to each link to mark the **active** one.
+- **`useRouter()`** navigates from code (`push`, `replace`, `back`).
+
+## Your turn
+
+Build a nav that renders a link per item and marks the one matching the current path as active
+(`aria-current="page"`). It takes the current path as a prop — the same comparison `usePathname`
+would feed you.
+
+<Assessment id="active-nav" />

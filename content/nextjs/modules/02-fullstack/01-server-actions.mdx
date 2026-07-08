@@ -1,0 +1,75 @@
+---
+id: server-actions
+title: Server Actions
+order: 1
+module: fullstack
+summary: Server Actions are functions that run on the server but are called from your components — the built-in way to mutate data. Mark a function 'use server', wire it to a form, and revalidate.
+concepts:
+  - action-use-server
+  - action-form
+  - action-revalidate
+estMinutes: 12
+status: published
+assessment: null
+prereqs: []
+---
+
+You've seen how to *read* data on the server. **Server Actions** are how you *write* it — mutate
+the database, then refresh the UI — without hand-building an API endpoint or a client fetch.
+
+## A function that runs on the server
+
+Mark a function **`'use server'`** and it runs on the server even when called from the client. Wire
+it straight to a form's `action`:
+
+```jsx
+export default function NewPost() {
+  async function createPost(formData) {
+    'use server';                       // runs on the server
+    const title = formData.get('title');
+    await db.post.create({ data: { title } });
+    revalidatePath('/blog');            // refresh the list
+  }
+
+  return (
+    <form action={createPost}>
+      <input name="title" />
+      <button type="submit">Publish</button>
+    </form>
+  );
+}
+```
+
+<Mermaid
+  chart={`flowchart LR
+    Submit["Form submits"] --> Action["Server Action runs (on the server)"]
+    Action --> DB["Mutate the database"]
+    DB --> Reval["revalidatePath → cache refreshed"]
+    Reval --> UI["UI shows the new data"]`}
+  caption="A Server Action mutates on the server, then revalidates so the UI reflects the change."
+/>
+
+## Pending and errors on the client
+
+These are the **React 19 Actions** from the React course — so `useActionState` and `useFormStatus`
+work here too, giving you pending state and results with no manual wiring:
+
+```jsx
+'use client';
+import { useActionState } from 'react';
+const [error, submit, isPending] = useActionState(createPost, null);
+```
+
+<Callout type="note" title="Server Actions build on what you know">
+  This is React's Actions feature (form `action`, `useActionState`, `useFormStatus`) with the
+  action running on the server. If you did the React "Forms and Actions" chapter, you already know
+  the client half — Next adds the server half and the `revalidate` step.
+</Callout>
+
+## Recap
+
+- A **Server Action** is a function marked **`'use server'`** that runs on the server.
+- Wire it to a **`<form action={fn}>`**; read fields from `formData`; then **revalidate**.
+- The client ergonomics are React 19 **Actions** — `useActionState` / `useFormStatus`.
+
+Read this, then mark it complete — next, route handlers.

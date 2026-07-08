@@ -1,0 +1,77 @@
+---
+id: loading-error
+title: Loading and Error UI
+order: 5
+module: routing
+summary: Drop a loading.tsx in a segment and Next wraps it in a Suspense boundary automatically; drop an error.tsx and it becomes an error boundary. Instant loading and error states, by convention.
+concepts:
+  - loading-file-suspense
+  - error-file-boundary
+  - not-found-file
+estMinutes: 9
+status: published
+assessment: null
+prereqs: []
+---
+
+Every route needs loading and error states. Next gives you both **by file convention** — no
+wiring, no boilerplate.
+
+## loading.tsx → an automatic Suspense boundary
+
+Add a **`loading.tsx`** to a segment and Next automatically wraps that segment's page in a
+`<Suspense>` with your loading file as the fallback. While the page (or its data) is loading, the
+fallback shows — then the real content streams in:
+
+```jsx
+// app/dashboard/loading.tsx
+export default function Loading() {
+  return <p>Loading the dashboard…</p>;
+}
+```
+
+<Mermaid
+  chart={`flowchart LR
+    Nav["Navigate to /dashboard"] --> Boundary["Next wraps page in Suspense (loading.tsx as fallback)"]
+    Boundary -->|"while loading"| Fallback["Show loading.tsx"]
+    Boundary -->|"ready"| Page["Show the page"]`}
+  caption="A loading.tsx becomes the Suspense fallback for its segment — automatic loading UI."
+/>
+
+## error.tsx → an automatic error boundary
+
+An **`error.tsx`** becomes an error boundary for its segment. It's a Client Component and receives
+the `error` plus a **`reset`** function to retry:
+
+```jsx
+'use client';
+export default function Error({ error, reset }) {
+  return (
+    <div>
+      <p>Something went wrong.</p>
+      <button onClick={reset}>Try again</button>
+    </div>
+  );
+}
+```
+
+Because each segment can have its own, an error in one section shows *its* fallback while the rest
+of the app keeps working — the error-boundary idea from React, wired up by convention.
+
+## not-found.tsx
+
+Call **`notFound()`** in a page and Next renders the nearest **`not-found.tsx`** (or a default
+404). Great for "this post doesn't exist" cases.
+
+<Callout type="tip" title="These build on what you know">
+  `loading.tsx` is Suspense and `error.tsx` is an error boundary — the same React primitives from
+  the React course, promoted to file conventions so every route gets them for free.
+</Callout>
+
+## Recap
+
+- **`loading.tsx`** = an automatic **Suspense** fallback for the segment.
+- **`error.tsx`** = an automatic **error boundary** (Client Component with `error` + `reset`).
+- **`not-found.tsx`** + `notFound()` render a 404 for missing resources.
+
+Read this, then mark it complete — next module: rendering and data.

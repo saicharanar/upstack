@@ -1,0 +1,68 @@
+---
+id: nextjs-layouts
+title: Layouts and Nesting
+order: 2
+module: routing
+summary: A layout.tsx wraps a segment and everything nested under it, and it persists across navigation within that segment — perfect for shared shells like a sidebar or nav that shouldn't re-render on every page change.
+concepts:
+  - layout-wraps-children
+  - layout-nesting
+  - layout-persists
+estMinutes: 10
+status: published
+assessment: null
+prereqs: []
+---
+
+A **`layout.tsx`** is shared UI that wraps a segment's `page.tsx` **and every route nested inside
+it**. It receives the page (or nested layout) as `children`.
+
+## A layout wraps its segment
+
+```jsx
+// app/dashboard/layout.tsx
+export default function DashboardLayout({ children }) {
+  return (
+    <div className="dashboard">
+      <Sidebar />
+      <main>{children}</main>  {/* the current page renders here */}
+    </div>
+  );
+}
+```
+
+Every route under `/dashboard` now renders inside this shell.
+
+## Layouts nest
+
+Layouts compose down the tree — the root layout wraps everything, and each segment can add its
+own:
+
+<Mermaid
+  chart={`flowchart TD
+    Root["app/layout.tsx (html, body, nav)"] --> Dash["app/dashboard/layout.tsx (sidebar)"]
+    Dash --> Page["app/dashboard/settings/page.tsx"]`}
+  caption="The root layout wraps every page; nested layouts add shells for their own subtree."
+/>
+
+The **root `app/layout.tsx`** is required and must render `<html>` and `<body>` — it's the shell
+for the whole app.
+
+## Layouts persist across navigation
+
+This is the key benefit: when you navigate *within* a segment, its layout **does not re-render or
+lose state**. Move between `/dashboard/settings` and `/dashboard/billing` and the sidebar stays
+put — only the `children` swap. Scroll position, focus, and layout state survive.
+
+<Callout type="tip" title="Layout vs template">
+  If you actually *want* a fresh instance on every navigation (re-run effects, reset state), use
+  `template.tsx` instead of `layout.tsx`. Layouts persist; templates remount.
+</Callout>
+
+## Recap
+
+- **`layout.tsx`** wraps a segment and all nested routes via **`children`**.
+- Layouts **nest**; the root layout renders `<html>`/`<body>` and is required.
+- A layout **persists across navigation** within its segment — shared shells keep their state.
+
+Read this, then mark it complete — next, moving between routes.

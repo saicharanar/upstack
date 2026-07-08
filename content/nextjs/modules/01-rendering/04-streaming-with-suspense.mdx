@@ -1,0 +1,67 @@
+---
+id: streaming
+title: Streaming with Suspense
+order: 4
+module: rendering
+summary: Instead of waiting for the slowest data before showing anything, Next streams the page in pieces — fast parts first, slow parts filled in behind a Suspense fallback as they're ready.
+concepts:
+  - streaming-why
+  - streaming-suspense-boundary
+  - streaming-loading-file
+estMinutes: 10
+status: published
+assessment: null
+prereqs: []
+---
+
+If one part of a page is slow (a report, a recommendations widget), you don't want it to hold up
+*everything*. Next **streams**: it sends the fast parts of the page immediately and fills in the
+slow parts as their data resolves — using the **Suspense** you already know.
+
+## Wrap the slow part in Suspense
+
+Give the slow component its own `<Suspense>` boundary with a fallback. The rest of the page renders
+right away; the boundary shows its fallback until the slow data is ready, then swaps in:
+
+```jsx
+import { Suspense } from 'react';
+
+export default function Dashboard() {
+  return (
+    <>
+      <Header />                          {/* instant */}
+      <Suspense fallback={<p>Loading report…</p>}>
+        <SlowReport />                    {/* streams in when ready */}
+      </Suspense>
+    </>
+  );
+}
+```
+
+<Mermaid
+  chart={`flowchart LR
+    Req["Request"] --> Fast["Send Header + shell immediately"]
+    Fast --> FB["Show report fallback"]
+    FB -->|"report data resolves"| Stream["Stream the report in, replace fallback"]`}
+  caption="The shell and fast content arrive first; slow sections stream in behind their Suspense fallback."
+/>
+
+## loading.tsx is streaming too
+
+Remember `loading.tsx` from the routing module? It's exactly this: Next wraps the whole page in a
+Suspense boundary using your `loading.tsx` as the fallback, so navigation shows instant loading UI
+while the server streams the page. Same primitive, whole-page scope.
+
+<Callout type="tip" title="Boundary placement is a design choice">
+  Where you put `<Suspense>` decides what the user sees first. Wrap only the genuinely slow parts so
+  the rest paints instantly; one boundary per independent slow section streams them in as each is
+  ready.
+</Callout>
+
+## Recap
+
+- **Streaming** sends fast content first and fills slow parts in as they resolve.
+- Wrap slow sections in **`<Suspense fallback>`** — the rest of the page renders immediately.
+- **`loading.tsx`** is page-level streaming with the same Suspense primitive.
+
+Read this, then mark it complete — next module: full-stack Next.js.
