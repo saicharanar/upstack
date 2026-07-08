@@ -8,7 +8,8 @@ concepts:
   - event-handler-function
   - event-pass-not-call
   - event-handler-props
-estMinutes: 11
+  - event-propagation
+estMinutes: 12
 status: published
 assessment: click-counter
 prereqs: []
@@ -68,6 +69,42 @@ function Button({ onClick, children }) {
 
 // parent decides the behavior:
 <Button onClick={() => alert('Saved!')}>Save</Button>
+```
+
+## Events bubble up the tree
+
+When you click a button inside a `<div>`, the click fires on the button **and then bubbles up**
+to every parent that's also listening. Often that's useful (a toolbar can catch clicks from any
+button inside it) — but sometimes an inner handler shouldn't trigger an outer one:
+
+<Mermaid
+  chart={`flowchart BT
+    B["Button — its onClick runs first"] --> D["div — its onClick runs next"]
+    D --> S["section — its onClick runs last"]
+    B -.->|"e.stopPropagation() stops it here"| X["parent handlers are skipped"]`}
+  caption="A click bubbles from the element up through its parents; stopPropagation halts that climb."
+/>
+
+Every React handler receives the **event object** `e` as its first argument, with two methods you
+reach for often:
+
+- **`e.stopPropagation()`** — stop the event bubbling to parent handlers. Use it when an inner
+  control (like a Delete button inside a clickable row) shouldn't also fire the parent's handler.
+- **`e.preventDefault()`** — stop the browser's *built-in* action: a `<form>` reloading the page
+  on submit, a link navigating. It's a different job from `stopPropagation` — one stops bubbling,
+  the other stops the browser's default behavior.
+
+```jsx
+function Row({ onOpen }) {
+  return (
+    <div onClick={onOpen}>                    {/* clicking the row opens it */}
+      <button onClick={(e) => {
+        e.stopPropagation();                  {/* ...but Delete shouldn't also open it */}
+        deleteRow();
+      }}>Delete</button>
+    </div>
+  );
+}
 ```
 
 ## From events to changing the screen
