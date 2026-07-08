@@ -10,7 +10,7 @@ concepts:
   - state-key-to-reset
 estMinutes: 11
 status: published
-assessment: null
+assessment: reset-with-key
 prereqs: []
 ---
 
@@ -78,4 +78,11 @@ these from baffling into a two-second fix.
 - Force a reset in the same position with a different **`key`**.
 - Don't define components inside components (it resets their state every render).
 
-Read this, then mark it complete — next, consolidating update logic with a reducer.
+## Your turn
+
+Make an editor **reset** its text whenever you switch users — using a `key`, without changing the
+editor component itself.
+
+<Assessment id="reset-with-key" />
+
+Next: consolidating update logic with a reducer.

@@ -1,0 +1,70 @@
+---
+id: project-shopping-cart
+title: "Project: Shopping Cart"
+order: 4
+module: real-world-projects
+summary: A shopping cart pulls together almost everything — array state, immutable add/update/remove, derived totals, and events. Build one and you've exercised the core of real app state.
+concepts:
+  - cart-immutable-array
+  - cart-add-or-increment
+  - cart-derived-total
+estMinutes: 16
+status: published
+assessment: shopping-cart
+prereqs: []
+---
+
+A cart is a deceptively rich exercise. It combines **array state** (the items), **immutable
+updates** (add, change quantity, remove), **derived data** (the total, computed not stored), and
+**events** (the buttons) — the exact skills real features are built from. If you can build this
+cleanly, you can build most app state.
+
+## The shape
+
+One piece of state — an **array of cart items** — and everything else derives from it:
+
+<Mermaid
+  chart={`flowchart TD
+    State["items: [ { id, name, price, qty } ]"] --> Add["Add → already in cart? qty + 1 : append { …, qty: 1 }"]
+    State --> Remove["Remove → filter out by id"]
+    State --> Total["Total → items.reduce(price × qty) — derived, not stored"]
+    Add --> Render["Re-render: item list + total"]
+    Remove --> Render
+    Total --> Render`}
+  caption="One array of items in state; add/remove are immutable updates, and the total is derived during render."
+/>
+
+## The tricky part: add *or* increment
+
+Adding an item isn't just an append. If the product is already in the cart, you bump its
+quantity instead — both done **immutably** (new array, new item object):
+
+```jsx
+function addItem(product) {
+  setItems((current) => {
+    const existing = current.find((it) => it.id === product.id);
+    if (existing) {
+      return current.map((it) =>
+        it.id === product.id ? { ...it, qty: it.qty + 1 } : it,
+      );
+    }
+    return [...current, { ...product, qty: 1 }];
+  });
+}
+```
+
+That's `map` to change one item (from Updating Arrays) combined with the find-or-append pattern.
+Removing is a plain `filter`, and the total is a `reduce` computed during render — never stored.
+
+<Callout type="tip" title="Derive the total, don't store it">
+  It's tempting to keep a `total` in state and update it on every change. Don't — that's redundant
+  state that will drift. Compute `items.reduce((sum, it) => sum + it.price * it.qty, 0)` during
+  render. One source of truth.
+</Callout>
+
+## Your turn
+
+Build the cart: implement `addItem` (add, or increment quantity if already present), `removeItem`,
+and the derived `total`. The scaffold gives you the catalog buttons and the list markup.
+
+<Assessment id="shopping-cart" />

@@ -1,0 +1,57 @@
+---
+id: project-star-rating
+title: "Project: Star Rating"
+order: 5
+module: real-world-projects
+summary: A star-rating widget is small but exercises the full loop — state, an event that sets it, and a list of stars rendered conditionally from that state. A perfect bite-sized composition drill.
+concepts:
+  - star-state
+  - star-render-from-state
+  - star-click-sets-rating
+estMinutes: 12
+status: published
+assessment: star-rating
+prereqs: []
+---
+
+The star rating you see on every product page is a tidy little composition: one piece of
+**state** (the current rating), a row of stars **rendered from** that state (filled or empty),
+and a **click** on each star that sets the rating. Small, but it's the whole React loop —
+state → render → event → new state.
+
+## Render the stars from state
+
+Make an array of star positions and map it to buttons. Each star is **filled** if its position is
+at or below the current rating, otherwise **empty** — a conditional driven purely by state:
+
+<Mermaid
+  chart={`flowchart LR
+    Rating["rating (state), e.g. 3"] --> Map["positions 1..5 → a star each"]
+    Map --> Fill["position ≤ rating → ★ (filled)"]
+    Map --> Empty["position > rating → ☆ (empty)"]
+    Click["Click star N"] -->|"setRating(N)"| Rating`}
+  caption="Each star reads the rating to decide filled vs empty; clicking a star sets the rating."
+/>
+
+```jsx
+{[1, 2, 3, 4, 5].map((n) => (
+  <button key={n} onClick={() => setRating(n)}>
+    {n <= rating ? '★' : '☆'}
+  </button>
+))}
+```
+
+That's rendering a list (Module 1), conditional rendering per item, and an event handler that
+updates state (Module 2) — all in five lines.
+
+<Callout type="tip" title="Positions come from the data, not the DOM">
+  Generate the stars from a range (`[1,2,3,4,5]` or `Array.from({ length: 5 })`) and let each one
+  know its own position. The rating is the single source of truth; the stars are just a view of it.
+</Callout>
+
+## Your turn
+
+Build the star rating: render five star buttons, fill them up to the clicked star, and show the
+rating as "N / 5".
+
+<Assessment id="star-rating" />

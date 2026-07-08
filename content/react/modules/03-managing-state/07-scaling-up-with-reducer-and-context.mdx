@@ -10,7 +10,7 @@ concepts:
   - scale-custom-hook
 estMinutes: 10
 status: published
-assessment: null
+assessment: reducer-context
 prereqs: []
 ---
 
@@ -78,5 +78,12 @@ reducer + shared-store shape.
 - Put **state** and **dispatch** in **two separate contexts** (fewer re-renders, clearer intent).
 - Wrap them in **custom Hooks** for a clean, guarded API.
 
-Read this and mark it complete. Next, one step further up: what a dedicated state library like
-**Redux** adds on top of this very same pattern.
+## Your turn
+
+Wire up **reducer + context**: hold the count with `useReducer`, then provide the state and the
+dispatch through two contexts so a nested label shows the count and a nested button updates it.
+
+<Assessment id="reducer-context" />
+
+Next, one step further up: what a dedicated state library like **Redux** adds on top of this very
+same pattern.
