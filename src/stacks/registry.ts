@@ -23,6 +23,20 @@ export const STACKS: readonly StackSummary[] = [
     status: 'available',
   },
   {
+    id: 'animation',
+    name: 'Web Animation',
+    tagline: 'Bring React UIs to life with Motion and GSAP — transitions, gestures, timelines, and scroll.',
+    icon: '🎬',
+    status: 'available',
+  },
+  {
+    id: 'nextjs',
+    name: 'Next.js',
+    tagline: 'The React framework — App Router, Server Components, and server actions for full-stack apps.',
+    icon: '▲',
+    status: 'coming-soon',
+  },
+  {
     id: 'go',
     name: 'Go',
     tagline: 'Goroutines, interfaces, and a batteries-included standard library — build fast, simple backend services.',
@@ -39,3 +53,7 @@ export const STACKS: readonly StackSummary[] = [
 ];
 
 export const AVAILABLE_STACK_ID = 'react';
+
+export function availableStackIds(): readonly string[] {
+  return STACKS.filter((stack) => stack.status === 'available').map((stack) => stack.id);
+}

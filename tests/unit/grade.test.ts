@@ -4,11 +4,13 @@ import type { AssessmentMeta } from '@/content-layer/schema';
 
 const META: AssessmentMeta = {
   id: 'demo',
+  runner: 'sandpack',
   template: 'react',
   entry: '/App.js',
   passRule: 'all-required',
   visibleFiles: [],
   readOnlyFiles: [],
+  dependencies: {},
   concepts: [
     { id: 'a', label: 'Concept A', tests: ['a1', 'a2'], required: true },
     { id: 'b', label: 'Concept B', tests: ['b1'], required: true },

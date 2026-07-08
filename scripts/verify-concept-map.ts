@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import fg from 'fast-glob';
 import { assessmentMetaSchema } from '../src/content-layer/schema';
-import { findAssessments, importMeta } from './lib';
+import { findAllAssessments, importMeta } from './lib';
 
 const TEST_NAME_PATTERN = /(?:test|it)\(\s*(['"`])((?:\\.|(?!\1).)*)\1/g;
 
@@ -20,7 +20,7 @@ function testNamesIn(dir: string): Set<string> {
 }
 
 async function run(): Promise<void> {
-  const assessments = findAssessments();
+  const assessments = findAllAssessments();
   let failures = 0;
 
   for (const assessment of assessments) {

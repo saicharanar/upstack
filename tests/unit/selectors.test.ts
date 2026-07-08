@@ -28,6 +28,7 @@ function chapter(id: string, order: number, prereqs: string[] = []): ChapterEntr
 const MANIFEST: Manifest = (() => {
   const chapters = [chapter('one', 1), chapter('two', 2), chapter('three', 3, ['one'])];
   return {
+    stack: 'react',
     modules: [{ moduleId: 'm', filePath: '_module.mdx', frontmatter: { id: 'm', title: 'M', order: 1, summary: 's', icon: '🧩' }, chapters }],
     chaptersInOrder: chapters,
   };

@@ -9,6 +9,11 @@ const CALLOUT_TYPES = ['note', 'tip', 'warning', 'important'] as const;
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 type CalloutType = (typeof CALLOUT_TYPES)[number];
 
+// npm packages a stack's live examples can import without declaring them each time.
+const STACK_DEPENDENCIES: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  animation: { motion: '^12', gsap: '^3', '@gsap/react': '^2' },
+};
+
 function withBasePath(src: string | Blob | undefined): string | Blob | undefined {
   if (typeof src !== 'string') return src;
   if (!src || !src.startsWith('/')) return src;
@@ -65,7 +70,11 @@ function Heading3({ children }: { children: ReactNode }): ReactNode {
   return <h3 id={slugify(reactChildrenToText(children))}>{children}</h3>;
 }
 
-export function createMdxComponents(chapterId: string, moduleId: string): MDXComponents {
+export function createMdxComponents(
+  chapterId: string,
+  moduleId: string,
+  stack: string,
+): MDXComponents {
   return {
     h2: Heading2,
     h3: Heading3,
@@ -74,9 +83,17 @@ export function createMdxComponents(chapterId: string, moduleId: string): MDXCom
     Example,
     Diagram,
     Mermaid,
-    LiveExample,
+    LiveExample: ({
+      dependencies,
+      ...rest
+    }: React.ComponentProps<typeof LiveExample>) => (
+      <LiveExample
+        dependencies={{ ...STACK_DEPENDENCIES[stack], ...dependencies }}
+        {...rest}
+      />
+    ),
     Assessment: ({ id }: { id: string }) => (
-      <LaunchAssessmentCard assessmentId={id} chapterId={chapterId} moduleId={moduleId} />
+      <LaunchAssessmentCard assessmentId={id} chapterId={chapterId} moduleId={moduleId} stack={stack} />
     ),
   };
 }

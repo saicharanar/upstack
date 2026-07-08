@@ -92,12 +92,18 @@ export default function AssessmentRunner({ bundle, chapterId, nextHref }: Assess
     [bundle.visibleFiles, bundle.activeFile],
   );
   const [theme] = useState<SandpackPredefinedTheme>(initialTheme);
+  const customSetup = useMemo(
+    () =>
+      Object.keys(bundle.dependencies).length > 0 ? { dependencies: { ...bundle.dependencies } } : undefined,
+    [bundle.dependencies],
+  );
 
   return (
     <div className="assessment">
       <SandpackProvider
         template={bundle.template as SandpackPredefinedTemplate}
         theme={theme}
+        customSetup={customSetup}
         files={files}
         options={options}
       >

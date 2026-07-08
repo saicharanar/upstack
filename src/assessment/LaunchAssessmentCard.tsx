@@ -9,17 +9,19 @@ export interface LaunchAssessmentCardProps {
   readonly assessmentId: string;
   readonly chapterId: string;
   readonly moduleId: string;
+  readonly stack: string;
 }
 
 export function LaunchAssessmentCard({
   chapterId,
   moduleId,
+  stack,
 }: LaunchAssessmentCardProps): ReactNode {
   const progress = useProgressState();
   const passed = progress.chapters[chapterId]?.assessment?.passed === true;
 
   return (
-    <Link className="launch-card" data-passed={passed} href={assessmentHref(moduleId, chapterId)}>
+    <Link className="launch-card" data-passed={passed} href={assessmentHref(stack, moduleId, chapterId)}>
       <span className="launch-card__eyebrow">Graded exercise</span>
       <span className="launch-card__title">Build it yourself</span>
       <p className="launch-card__body">

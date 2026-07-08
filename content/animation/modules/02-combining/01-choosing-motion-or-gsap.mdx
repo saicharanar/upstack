@@ -1,0 +1,63 @@
+---
+id: choosing-motion-gsap
+title: Motion vs GSAP — Choosing and Combining
+order: 1
+module: combining
+summary: Motion and GSAP overlap but shine at different things. Learn a simple rule for picking one, why it's fine to use both in the same app, and how they divide the work.
+concepts:
+  - choose-declarative-vs-imperative
+  - choose-by-task
+  - choose-combine
+estMinutes: 10
+status: published
+assessment: null
+prereqs: []
+---
+
+You now know both libraries. The question learners always ask is "which one?" — and the honest
+answer is *both have a home*. Here's how to decide quickly.
+
+## Declarative vs imperative
+
+- **Motion is declarative.** You describe states (`initial`/`animate`, variants) and it's deeply
+  integrated with React's render and mount/unmount lifecycle. Reach for it for **component state
+  transitions, gestures, layout animations, and exit animations**.
+- **GSAP is imperative.** You command a timeline step by step. It's framework-agnostic and
+  unmatched for **complex sequencing, fine-grained timing, and scroll-driven** work (ScrollTrigger).
+
+<Mermaid
+  chart={`flowchart TD
+    Q{"What are you animating?"} -->|"component enter/exit, gestures, layout shifts"| M["Motion"]
+    Q -->|"a precise multi-step sequence"| G["GSAP timeline"]
+    Q -->|"scroll-driven / scrollytelling"| G2["GSAP ScrollTrigger"]
+    Q -->|"a simple hover/tap feedback"| M2["Motion (whileHover / whileTap)"]`}
+  caption="Pick by the task: Motion for React-lifecycle and gestures, GSAP for sequencing and scroll."
+/>
+
+## It's fine to use both
+
+They don't conflict. A common, healthy split in one app:
+
+- **Motion** handles the React-y things: page/route transitions, a modal's enter/exit, a list's
+  staggered mount, hover states.
+- **GSAP** handles a **hero timeline** or a **scroll-scrubbed** section — the showpiece sequence.
+
+<Callout type="tip" title="Don't reach for animation first">
+  The best animation is often a CSS `transition` on a single property. Bring in Motion or GSAP when
+  you need coordinated states, sequencing, gestures, layout, or scroll — not for a one-property
+  hover. Libraries are for the animations CSS can't express cleanly.
+</Callout>
+
+## A quick rule of thumb
+
+- Animating **because a component's state/props changed**, or you want **gestures/layout/exit**? → **Motion**.
+- Building a **timeline**, need **precise sequencing**, or tying motion to **scroll**? → **GSAP**.
+- Not sure and it's a single property? → a **CSS transition**.
+
+## Recap
+
+- **Motion** = declarative, React-lifecycle, gestures, layout, exit.
+- **GSAP** = imperative, timelines, precise sequencing, scroll (ScrollTrigger).
+- **Use both** where each fits; reach for neither when a CSS transition will do.
+
+Read this, then mark it complete — next, a capstone that puts the track together.

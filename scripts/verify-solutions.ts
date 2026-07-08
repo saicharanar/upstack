@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import fg from 'fast-glob';
-import { PROJECT_ROOT, findAssessments } from './lib';
+import { PROJECT_ROOT, findAllAssessments } from './lib';
 
 const WORKSPACE = path.join(PROJECT_ROOT, '.tmp', 'solutions');
 
@@ -45,7 +45,7 @@ function runSolution(id: string, workDir: string): boolean {
 
 function run(): void {
   fs.rmSync(WORKSPACE, { recursive: true, force: true });
-  const assessments = findAssessments();
+  const assessments = findAllAssessments();
   let failures = 0;
 
   for (const assessment of assessments) {

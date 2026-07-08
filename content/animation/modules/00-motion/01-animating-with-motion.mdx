@@ -1,0 +1,88 @@
+---
+id: motion-basics
+title: Animating with Motion
+order: 1
+module: motion
+summary: Motion turns any element into an animatable one with motion.* components. You declare where it starts (initial), where it ends (animate), and how it gets there (transition) — Motion does the tweening.
+concepts:
+  - motion-component
+  - motion-initial-animate
+  - motion-transition
+estMinutes: 11
+status: published
+assessment: null
+prereqs: []
+---
+
+Motion (formerly Framer Motion) gives you a set of **`motion.*` components** — `motion.div`,
+`motion.button`, `motion.li` — that work exactly like their HTML counterparts but can animate.
+You don't step values over time by hand; you **declare** the start and end and let Motion tween
+between them.
+
+## initial → animate
+
+Three props do the core work:
+
+- **`initial`** — the values the element starts at (before it appears).
+- **`animate`** — the values it animates *to*.
+- **`transition`** — how the motion happens (duration, easing, spring).
+
+<Mermaid
+  chart={`flowchart LR
+    I["initial={{ opacity: 0, y: 20 }}"] -->|"transition (duration / spring)"| A["animate={{ opacity: 1, y: 0 }}"]
+    A --> Screen["Element eases into place"]`}
+  caption="Declare the start (initial) and end (animate); Motion tweens between them per the transition."
+/>
+
+```jsx
+import { motion } from 'motion/react';
+
+function Card() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}   // starts invisible, nudged down
+      animate={{ opacity: 1, y: 0 }}    // fades and slides into place
+      transition={{ duration: 0.5 }}
+    >
+      Hello, Motion
+    </motion.div>
+  );
+}
+```
+
+<Callout type="note" title="Springs are the Motion default">
+  Leave off `transition` and Motion uses a natural **spring**. Springs are defined by feel
+  (`stiffness`, `damping`) rather than a fixed duration, which is why Motion animations tend to
+  look alive rather than mechanical.
+</Callout>
+
+## See it run
+
+The box below animates from `initial` to `animate` on mount. Change the values and watch it:
+
+<LiveExample
+  code={`import { motion } from 'motion/react';
+
+export default function App() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      style={{ padding: 20, background: '#0b7a4b', color: 'white', borderRadius: 8 }}
+    >
+      Hello, Motion
+    </motion.div>
+  );
+}`}
+/>
+
+## Recap
+
+- Use **`motion.*`** components (`motion.div`, `motion.button`, …) to make an element animatable.
+- **`initial`** sets the start, **`animate`** the end, **`transition`** the how.
+- Omit `transition` for a natural **spring**; set `duration`/`ease` for a timed tween.
+
+Read this, edit the live example above (change the `initial`, the `animate`, the `transition`),
+then mark it complete. (Animation is a *visual* result, so this chapter teaches by demo rather
+than an auto-graded check — the graded exercises come where a test can fairly judge the outcome.)

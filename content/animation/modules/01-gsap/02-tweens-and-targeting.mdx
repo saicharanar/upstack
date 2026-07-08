@@ -1,0 +1,95 @@
+---
+id: gsap-tweens
+title: Tweens, Eases, and Targeting
+order: 2
+module: gsap
+summary: gsap.to and gsap.from tween to or from values; eases shape the motion; and function-based values plus stagger let one call animate many elements, each a little differently.
+concepts:
+  - gsap-to-from
+  - gsap-ease
+  - gsap-function-values
+estMinutes: 11
+status: published
+assessment: gsap-set-positions
+prereqs: []
+---
+
+A **tween** animates a target's properties over time. GSAP gives you two directions and rich
+control over feel and targeting.
+
+## to and from
+
+- **`gsap.to(target, {...})`** animates *to* the given values from wherever it is now.
+- **`gsap.from(target, {...})`** animates *from* the given values to its natural state — perfect
+  for entrances (start faded/offset, settle into place).
+
+```jsx
+gsap.to('.box', { x: 200, duration: 1, ease: 'power2.out' });
+gsap.from('.card', { y: 40, opacity: 0, duration: 0.6 }); // enters from below, fades in
+```
+
+## Eases shape the motion
+
+The **`ease`** controls the acceleration curve — the single biggest lever on how an animation
+*feels*. `power2.out` starts fast and settles; `back.out` overshoots slightly; `elastic` bounces.
+
+<Mermaid
+  chart={`flowchart LR
+    Linear["'none' (linear) — robotic"] --> Feel["ease shapes the feel"]
+    PowerOut["'power2.out' — fast then settle"] --> Feel
+    Back["'back.out' — slight overshoot"] --> Feel`}
+  caption="The ease is what makes motion feel mechanical or alive; GSAP ships dozens."
+/>
+
+## One call, many targets
+
+GSAP can target **many elements at once** (a selector or array), and **function-based values**
+give each its own value by index — the basis of staggered, per-element layout:
+
+```jsx
+gsap.set('.box', { x: (index) => index * 80 }); // box 0 → 0px, box 1 → 80px, box 2 → 160px
+gsap.to('.box', { y: -20, stagger: 0.1 });       // each box lifts 0.1s after the last
+```
+
+<Callout type="tip" title="Function-based values scale to any number of elements">
+  `x: (i) => i * 80` computes a value per target from its index — add or remove boxes and the
+  layout still works, no manual per-element code.
+</Callout>
+
+## See it run
+
+<LiveExample
+  code={`import { useRef } from 'react';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+
+export default function App() {
+  const scope = useRef(null);
+  useGSAP(
+    () => {
+      gsap.from('.box', { y: 30, opacity: 0, duration: 0.6, stagger: 0.15, ease: 'back.out(1.7)' });
+    },
+    { scope },
+  );
+  return (
+    <div ref={scope} style={{ display: 'flex', gap: 10 }}>
+      {[0, 1, 2, 3].map((n) => (
+        <div key={n} className="box" style={{ width: 48, height: 48, background: '#0b7a4b', borderRadius: 8 }} />
+      ))}
+    </div>
+  );
+}`}
+/>
+
+## Recap
+
+- **`gsap.to`** animates to values; **`gsap.from`** animates from them (great for entrances).
+- **`ease`** shapes the feel — the biggest lever on how motion reads.
+- Target **many elements** at once; **function-based values** (`(i) => …`) give each its own value.
+
+## Your turn
+
+Use **`gsap.set`** with a **function-based value** to lay four boxes out in a row — each one 80px
+further right than the last (0, 80, 160, 240).
+
+<Assessment id="gsap-set-positions" />

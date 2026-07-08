@@ -1,0 +1,89 @@
+---
+id: motion-gestures
+title: Gesture Animations
+order: 4
+module: motion
+summary: Motion has built-in gesture props — whileHover, whileTap, and drag — that animate an element in response to interaction, with no event handlers or state to manage.
+concepts:
+  - motion-while-hover-tap
+  - motion-drag
+  - motion-gesture-transition
+estMinutes: 9
+status: published
+assessment: null
+prereqs: []
+---
+
+Interactive motion — a button that grows on hover, sinks on press, or an element you can drag —
+usually means event handlers and state. Motion gives you **gesture props** that animate to a set
+of values *while* a gesture is active, then back when it ends, with nothing to wire up.
+
+## whileHover and whileTap
+
+```jsx
+import { motion } from 'motion/react';
+
+function LikeButton() {
+  return (
+    <motion.button
+      whileHover={{ scale: 1.1 }}   // grows while hovered
+      whileTap={{ scale: 0.95 }}    // sinks while pressed
+    >
+      ♥ Like
+    </motion.button>
+  );
+}
+```
+
+While the pointer is over the button it animates to `scale: 1.1`; while pressed, `0.95`; when the
+gesture ends, it springs back — all automatic.
+
+<Mermaid
+  chart={`flowchart LR
+    Rest["Resting state"] -->|"hover"| Hover["whileHover values"]
+    Rest -->|"press"| Tap["whileTap values"]
+    Hover -->|"leave"| Rest
+    Tap -->|"release"| Rest`}
+  caption="Gesture props animate to their values while active and spring back when the gesture ends."
+/>
+
+## drag
+
+Add **`drag`** to make an element draggable; `dragConstraints` keeps it within bounds:
+
+```jsx
+<motion.div drag dragConstraints={{ left: -100, right: 100, top: 0, bottom: 0 }} />
+```
+
+<Callout type="tip" title="Gestures compose with variants">
+  `whileHover`/`whileTap` can name variants too (`whileHover="active"`), and they propagate to
+  children just like `animate`. A card can lift on hover while its label brightens — one gesture,
+  coordinated children.
+</Callout>
+
+## See it run
+
+<LiveExample
+  code={`import { motion } from 'motion/react';
+
+export default function App() {
+  return (
+    <motion.button
+      whileHover={{ scale: 1.1 }}
+      whileTap={{ scale: 0.92 }}
+      style={{ padding: '10px 18px', border: 'none', borderRadius: 8, background: '#0b7a4b', color: 'white' }}
+    >
+      Hover and press me
+    </motion.button>
+  );
+}`}
+/>
+
+## Recap
+
+- **`whileHover`** / **`whileTap`** animate to values while the gesture is active, then spring back.
+- **`drag`** makes an element draggable; **`dragConstraints`** bounds it.
+- Gesture props can reference **variants** and propagate to children.
+
+Read this, try the demo, then mark it complete. (Gestures are interaction-driven, so this chapter
+has no auto-graded exercise — the demo is the place to feel them.)

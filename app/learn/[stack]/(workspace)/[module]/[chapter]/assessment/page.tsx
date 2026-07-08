@@ -5,17 +5,21 @@ import { AssessmentWorkspace } from '@/assessment/AssessmentWorkspace';
 import { getAssessmentBundle, getManifest } from '@/content-layer/loader';
 import { chapterIndex, findChapter } from '@/content-layer/manifest';
 import { chapterHref } from '@/content-layer/nav';
+import { availableStackIds } from '@/stacks/registry';
 import type { AssessmentMeta } from '@/content-layer/schema';
 
 interface AssessmentParams {
+  readonly stack: string;
   readonly module: string;
   readonly chapter: string;
 }
 
 export function generateStaticParams(): AssessmentParams[] {
-  return getManifest()
-    .chaptersInOrder.filter((entry) => entry.frontmatter.assessment !== null)
-    .map((entry) => ({ module: entry.moduleId, chapter: entry.chapterId }));
+  return availableStackIds().flatMap((stack) =>
+    getManifest(stack)
+      .chaptersInOrder.filter((entry) => entry.frontmatter.assessment !== null)
+      .map((entry) => ({ stack, module: entry.moduleId, chapter: entry.chapterId })),
+  );
 }
 
 function InstructionsPane({ title, meta }: { title: string; meta: AssessmentMeta }): ReactNode {
@@ -48,20 +52,20 @@ export default async function AssessmentWorkspacePage({
 }: {
   params: Promise<AssessmentParams>;
 }): Promise<ReactNode> {
-  const { module: moduleId, chapter: chapterId } = await params;
-  const manifest = getManifest();
+  const { stack, module: moduleId, chapter: chapterId } = await params;
+  const manifest = getManifest(stack);
   const entry = findChapter(manifest, moduleId, chapterId);
   if (!entry || entry.frontmatter.assessment === null) notFound();
 
   const index = chapterIndex(manifest, entry.chapterId);
   const next = manifest.chaptersInOrder[index + 1];
-  const nextHref = next ? chapterHref(next.moduleId, next.chapterId) : null;
-  const bundle = await getAssessmentBundle(entry.frontmatter.assessment);
+  const nextHref = next ? chapterHref(stack, next.moduleId, next.chapterId) : null;
+  const bundle = await getAssessmentBundle(entry.frontmatter.assessment, stack);
 
   return (
     <div className="workspace">
       <div className="workspace__bar">
-        <Link className="workspace__back" href={chapterHref(moduleId, chapterId)}>
+        <Link className="workspace__back" href={chapterHref(stack, moduleId, chapterId)}>
           ← Back to chapter
         </Link>
         <h2 className="workspace__heading">{entry.frontmatter.title}</h2>
@@ -73,7 +77,7 @@ export default async function AssessmentWorkspacePage({
           <AssessmentWorkspace
             bundle={bundle}
             chapterId={entry.chapterId}
-            backHref={chapterHref(moduleId, chapterId)}
+            backHref={chapterHref(stack, moduleId, chapterId)}
             nextHref={nextHref}
           />
         </div>

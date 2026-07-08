@@ -1,0 +1,98 @@
+---
+id: motion-variants
+title: Variants and Orchestration
+order: 2
+module: motion
+summary: Variants name your animation states ("hidden", "visible") so you can drive them by label and orchestrate parents and children together — the key to clean, coordinated animation.
+concepts:
+  - motion-variants-define
+  - motion-variants-drive
+  - motion-variants-propagate
+estMinutes: 11
+status: published
+assessment: null
+prereqs: []
+---
+
+Passing `initial`/`animate` objects inline is fine for one element. But when several elements
+share states, or a parent needs to coordinate its children, you use **variants** — named sets of
+values you refer to by string.
+
+## Naming your states
+
+Define an object of named states, then point `initial` and `animate` at the names:
+
+```jsx
+import { motion } from 'motion/react';
+
+const box = {
+  hidden: { opacity: 0, scale: 0.8 },
+  visible: { opacity: 1, scale: 1 },
+};
+
+function Card() {
+  return <motion.div variants={box} initial="hidden" animate="visible" />;
+}
+```
+
+<Mermaid
+  chart={`flowchart LR
+    V["variants = { hidden, visible }"] --> Init["initial='hidden'"]
+    V --> Anim["animate='visible'"]
+    Init -->|"transition"| Anim`}
+  caption="Variants name the states; initial and animate select which one by label."
+/>
+
+## Variants propagate to children
+
+Here's the payoff: set variants on a **parent**, and its `initial`/`animate` labels flow down to
+any child that has variants with the **same names**. You drive the whole group from the top:
+
+```jsx
+<motion.ul variants={list} initial="hidden" animate="visible">
+  <motion.li variants={item} />   {/* inherits 'hidden' → 'visible' from the parent */}
+  <motion.li variants={item} />
+</motion.ul>
+```
+
+The children don't need their own `initial`/`animate` — the parent's labels reach them. This is
+what makes coordinated, staggered entrances (next chapter) so tidy.
+
+<Callout type="tip" title="Why variants beat inline objects">
+  Named states keep animation logic readable, let one label drive many elements, and unlock
+  orchestration (delays, stagger) between a parent and its children — impossible with inline
+  `animate` objects alone.
+</Callout>
+
+## See it run
+
+<LiveExample
+  code={`import { motion } from 'motion/react';
+
+const box = {
+  hidden: { opacity: 0, scale: 0.6 },
+  visible: { opacity: 1, scale: 1 },
+};
+
+export default function App() {
+  return (
+    <motion.div
+      variants={box}
+      initial="hidden"
+      animate="visible"
+      transition={{ duration: 0.6 }}
+      style={{ width: 120, height: 120, background: '#0b7a4b', borderRadius: 12 }}
+    />
+  );
+}`}
+/>
+
+## Recap
+
+- **Variants** are named animation states (`hidden`, `visible`) referenced by string.
+- `initial` and `animate` select a variant by **name**.
+- Variants on a **parent propagate** to children sharing the same variant names — the basis of orchestration.
+
+Read this, try changing the variant values in the demo, then mark it complete. (Next chapter puts
+variants to work in a list — with a graded exercise, since a test can fairly check the list it
+produces.)

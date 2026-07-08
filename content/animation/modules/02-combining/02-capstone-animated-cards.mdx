@@ -1,0 +1,106 @@
+---
+id: anim-capstone
+title: "Capstone: An Animated Card Grid"
+order: 2
+module: combining
+summary: Put the track together — build a project grid whose cards stagger in with Motion and lift on hover. It's the pattern behind portfolios, dashboards, and marketing pages everywhere.
+concepts:
+  - capstone-map-to-cards
+  - capstone-stagger-entrance
+  - capstone-hover
+estMinutes: 14
+status: published
+assessment: capstone-cards
+prereqs: []
+---
+
+Time to combine what you've learned into a real feature: a **grid of project cards** that
+staggers in on load and responds to hover. This is the single most common "nice touch" animation
+in real apps — and it's all pieces you now know.
+
+## The shape
+
+Map your data to cards, wrap the grid in a stagger container, and give each card an entrance
+variant plus a hover gesture:
+
+<Mermaid
+  chart={`flowchart TD
+    Data["projects: [ { id, name } ]"] --> Map["map → one motion card each"]
+    Container["motion grid: staggerChildren"] --> Map
+    Map --> Entrance["each card: hidden → visible (variant)"]
+    Map --> Hover["whileHover: lift + scale"]`}
+  caption="One array of projects becomes a staggered, hoverable grid of Motion cards."
+/>
+
+```jsx
+import { motion } from 'motion/react';
+
+const grid = { hidden: {}, visible: { transition: { staggerChildren: 0.08 } } };
+const card = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } };
+
+function ProjectGrid({ projects }) {
+  return (
+    <motion.div variants={grid} initial="hidden" animate="visible" style={{ display: 'grid' }}>
+      {projects.map((project) => (
+        <motion.article key={project.id} variants={card} whileHover={{ y: -6, scale: 1.02 }}>
+          <h3>{project.name}</h3>
+        </motion.article>
+      ))}
+    </motion.div>
+  );
+}
+```
+
+Entrance is declarative (variants + stagger), hover is a gesture — exactly the Motion sweet spot.
+For a showpiece hero you might add a GSAP timeline; for a grid like this, Motion is the clean fit.
+
+## See it run
+
+<LiveExample
+  code={`import { motion } from 'motion/react';
+
+const grid = { hidden: {}, visible: { transition: { staggerChildren: 0.08 } } };
+const card = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } };
+
+const projects = [
+  { id: 1, name: 'Portfolio' },
+  { id: 2, name: 'Dashboard' },
+  { id: 3, name: 'Storefront' },
+  { id: 4, name: 'Blog' },
+];
+
+export default function App() {
+  return (
+    <motion.div
+      variants={grid}
+      initial="hidden"
+      animate="visible"
+      style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}
+    >
+      {projects.map((project) => (
+        <motion.article
+          key={project.id}
+          variants={card}
+          whileHover={{ y: -6, scale: 1.03 }}
+          style={{ padding: 16, background: '#0b7a4b', color: 'white', borderRadius: 10 }}
+        >
+          <h3 style={{ margin: 0 }}>{project.name}</h3>
+        </motion.article>
+      ))}
+    </motion.div>
+  );
+}`}
+/>
+
+## Recap
+
+- Map data to **one motion card per item** inside a **stagger** container.
+- **Variants** drive the entrance; **`whileHover`** adds the lift — Motion's sweet spot.
+- Combine with GSAP only where you need a timeline or scroll; here, Motion alone is the clean fit.
+
+## Your turn
+
+Build the project grid: render **one animated card per project**, each showing the project's name,
+inside a staggered Motion container.
+
+<Assessment id="capstone-cards" />

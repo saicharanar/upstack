@@ -1,0 +1,90 @@
+---
+id: gsap-react
+title: GSAP in React with useGSAP
+order: 1
+module: gsap
+summary: GSAP animates real DOM nodes, so in React you reach them with refs — and wrap the animation in the useGSAP hook, which scopes selectors and cleans everything up automatically.
+concepts:
+  - gsap-ref-target
+  - gsap-usegsap-hook
+  - gsap-set-immediate
+estMinutes: 11
+status: published
+assessment: gsap-set
+prereqs: []
+---
+
+GSAP isn't React-specific — it animates **DOM nodes directly**. So in React you give it nodes via
+**refs**, and you run your GSAP code inside the **`useGSAP`** hook (from `@gsap/react`), which runs
+after render, scopes any selectors to your component, and — crucially — **cleans up** every
+animation when the component unmounts.
+
+## The pattern
+
+```jsx
+import { useRef } from 'react';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+
+function Box() {
+  const ref = useRef(null);
+
+  useGSAP(() => {
+    gsap.to(ref.current, { rotation: 360, duration: 2 }); // animate the real node
+  }); // runs after mount; auto-reverts on unmount
+
+  return <div ref={ref} className="box" />;
+}
+```
+
+<Mermaid
+  chart={`flowchart LR
+    Ref["useRef → ref on the element"] --> Hook["useGSAP(() => { ... })"]
+    Hook --> GSAP["gsap.to / gsap.set on ref.current"]
+    Hook -->|"on unmount"| Cleanup["auto-reverts / kills the animations"]`}
+  caption="Point a ref at the node, animate it inside useGSAP, and the hook cleans up on unmount."
+/>
+
+<Callout type="warning" title="Always use useGSAP (not a bare useEffect)">
+  You *could* call GSAP in a `useEffect`, but you'd have to track and kill every tween yourself to
+  avoid leaks and double-runs. `useGSAP` does that cleanup for you and scopes selector strings to
+  the component. It's the official React integration — use it.
+</Callout>
+
+## gsap.set applies values immediately
+
+`gsap.to` animates over time. **`gsap.set`** applies values **instantly** — no tween. It's how you
+establish a starting position or lay elements out:
+
+```jsx
+gsap.set(ref.current, { x: 100, opacity: 0.5 }); // applied right now, no animation
+```
+
+## See it run
+
+<LiveExample
+  code={`import { useRef } from 'react';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+
+export default function App() {
+  const ref = useRef(null);
+  useGSAP(() => {
+    gsap.to(ref.current, { rotation: 360, x: 120, duration: 2, repeat: -1, yoyo: true });
+  });
+  return <div ref={ref} style={{ width: 80, height: 80, background: '#0b7a4b', borderRadius: 12 }} />;
+}`}
+/>
+
+## Recap
+
+- GSAP animates **DOM nodes** — reach them with **refs** in React.
+- Run GSAP inside **`useGSAP(() => { ... })`**; it runs after render and **auto-cleans up**.
+- **`gsap.set(node, {...})`** applies values instantly (no tween) — for starting states and layout.
+
+## Your turn
+
+Inside `useGSAP`, use **`gsap.set`** to place a box: move it right by 120px and make it half
+transparent. (The checker reads the styles GSAP applies.)
+
+<Assessment id="gsap-set" />

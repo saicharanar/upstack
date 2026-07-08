@@ -15,10 +15,18 @@ export interface LiveExampleRunnerProps {
   readonly code: string;
   readonly template: SandpackPredefinedTemplate;
   readonly entry: string;
+  readonly dependencies?: Readonly<Record<string, string>>;
 }
 
-export default function LiveExampleRunner({ code, template, entry }: LiveExampleRunnerProps): ReactNode {
+export default function LiveExampleRunner({
+  code,
+  template,
+  entry,
+  dependencies,
+}: LiveExampleRunnerProps): ReactNode {
   const [fullscreen, setFullscreen] = useState(false);
+  const customSetup =
+    dependencies && Object.keys(dependencies).length > 0 ? { dependencies } : undefined;
 
   // While full screen, lock body scroll and let Escape close it.
   useEffect(() => {
@@ -48,7 +56,12 @@ export default function LiveExampleRunner({ code, template, entry }: LiveExample
           {fullscreen ? 'Exit full screen (Esc)' : '⤢ Full screen'}
         </button>
       </div>
-      <SandpackProvider template={template} files={{ [entry]: code }} options={{ activeFile: entry }}>
+      <SandpackProvider
+        template={template}
+        customSetup={customSetup}
+        files={{ [entry]: code }}
+        options={{ activeFile: entry }}
+      >
         <SandpackLayout>
           <SandpackCodeEditor showLineNumbers showTabs={false} />
           <SandpackPreview showOpenInCodeSandbox={false} />

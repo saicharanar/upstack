@@ -15,6 +15,7 @@ export interface ModuleEntry {
 }
 
 export interface Manifest {
+  readonly stack: string;
   readonly modules: readonly ModuleEntry[];
   readonly chaptersInOrder: readonly ChapterEntry[];
 }

@@ -1,0 +1,94 @@
+---
+id: motion-stagger
+title: Staggering a List
+order: 3
+module: motion
+summary: A list that animates in all at once feels flat; one that staggers — each item a beat after the last — feels crafted. Motion does this with staggerChildren on the parent, no per-item delays.
+concepts:
+  - motion-stagger-parent
+  - motion-stagger-children
+  - motion-stagger-render
+estMinutes: 10
+status: published
+assessment: motion-stagger-list
+prereqs: []
+---
+
+Animating a list of items in *together* looks abrupt. Animating them in a **stagger** — each one
+starting a fraction after the previous — is the difference between "fine" and "polished." Motion
+handles the timing for you: put `staggerChildren` on the parent, give each child a variant, and
+the offsets are automatic.
+
+## staggerChildren
+
+The parent's `visible` variant carries a `transition` with **`staggerChildren`**; each child uses
+the same variant names and inherits the entrance from the parent:
+
+```jsx
+import { motion } from 'motion/react';
+
+const list = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1 } }, // 0.1s between each child
+};
+const item = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0 },
+};
+
+function Skills({ skills }) {
+  return (
+    <motion.ul variants={list} initial="hidden" animate="visible">
+      {skills.map((skill) => (
+        <motion.li key={skill} variants={item}>{skill}</motion.li>
+      ))}
+    </motion.ul>
+  );
+}
+```
+
+<Mermaid
+  chart={`flowchart TD
+    P["ul: visible → staggerChildren: 0.1"] --> C1["li 1 animates at 0.0s"]
+    P --> C2["li 2 animates at 0.1s"]
+    P --> C3["li 3 animates at 0.2s"]`}
+  caption="The parent's staggerChildren offsets each child's entrance automatically — no manual per-item delay."
+/>
+
+<Callout type="tip" title="You don't compute delays">
+  Without stagger you'd hand each item a `delay` and recompute when the list changes. `staggerChildren`
+  derives the offsets from child order, so adding or removing items just works.
+</Callout>
+
+## See it run
+
+<LiveExample
+  code={`import { motion } from 'motion/react';
+
+const list = { hidden: {}, visible: { transition: { staggerChildren: 0.15 } } };
+const item = { hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0 } };
+
+export default function App() {
+  const skills = ['JSX', 'Props', 'State', 'Effects', 'Hooks'];
+  return (
+    <motion.ul variants={list} initial="hidden" animate="visible" style={{ listStyle: 'none', padding: 0 }}>
+      {skills.map((skill) => (
+        <motion.li key={skill} variants={item} style={{ padding: 6 }}>{skill}</motion.li>
+      ))}
+    </motion.ul>
+  );
+}`}
+/>
+
+## Recap
+
+- Put **`staggerChildren`** in the parent variant's `transition` to offset children automatically.
+- Each child uses the **same variant names**; the parent drives them.
+- Offsets come from **child order**, so the list stays correct as items change.
+
+## Your turn
+
+Render a staggered list: a `motion.ul` driving `motion.li` children through shared `hidden`/`visible`
+variants, one `<li>` per item, each starting hidden.
+
+<Assessment id="motion-stagger-list" />

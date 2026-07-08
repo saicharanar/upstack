@@ -1,0 +1,98 @@
+---
+id: motion-layout-scroll
+title: Layout and Scroll Animations
+order: 5
+module: motion
+summary: Two of Motion's most impressive tricks — the layout prop, which animates layout changes automatically, and whileInView, which reveals elements as they scroll into view.
+concepts:
+  - motion-layout-prop
+  - motion-animate-presence
+  - motion-while-in-view
+estMinutes: 10
+status: published
+assessment: null
+prereqs: []
+---
+
+Some animations are hard to do by hand because you don't know the numbers ahead of time — an
+element that moves because *other* content changed, or a list item leaving. Motion measures the
+before/after for you.
+
+## The `layout` prop
+
+Add **`layout`** to a motion component and Motion animates any change to its position or size —
+even when the change comes from surrounding layout, not from your animation values:
+
+```jsx
+<motion.div layout>{expanded ? <LongContent /> : <ShortContent />}</motion.div>
+```
+
+Toggle `expanded` and the box smoothly resizes; reorder a list and items glide to their new
+spots. You changed the data — Motion animated the layout.
+
+<Mermaid
+  chart={`flowchart LR
+    Before["Measures the layout BEFORE the change"] --> Change["Layout changes (resize / reorder)"]
+    Change --> After["Measures AFTER, animates the difference"]`}
+  caption="With layout, Motion measures before and after a change and animates the difference automatically."
+/>
+
+## Exit animations with AnimatePresence
+
+React removes an element from the DOM instantly — too fast to animate out. Wrap it in
+**`AnimatePresence`** and give it an `exit`, and Motion keeps it mounted just long enough to play
+the exit:
+
+```jsx
+import { AnimatePresence, motion } from 'motion/react';
+
+<AnimatePresence>
+  {open && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />}
+</AnimatePresence>
+```
+
+## Reveal on scroll with whileInView
+
+**`whileInView`** animates an element when it scrolls into the viewport — the classic "fade up as
+you scroll" reveal — using an IntersectionObserver under the hood:
+
+```jsx
+<motion.section initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} />
+```
+
+<Callout type="tip" title="viewport={{ once: true }}">
+  By default `whileInView` re-runs every time the element re-enters view. Add `viewport={{ once:
+  true }}` so the reveal plays a single time — usually what you want for entrances.
+</Callout>
+
+## See it run
+
+Toggle the box — `layout` animates the size change with no numbers from you:
+
+<LiveExample
+  code={`import { useState } from 'react';
+import { motion } from 'motion/react';
+
+export default function App() {
+  const [open, setOpen] = useState(false);
+  return (
+    <motion.div
+      layout
+      onClick={() => setOpen((v) => !v)}
+      style={{ background: '#0b7a4b', color: 'white', borderRadius: 12, padding: 20, cursor: 'pointer' }}
+    >
+      <motion.h3 layout>Click me</motion.h3>
+      {open && <p>Now I'm taller — and Motion animated the resize automatically.</p>}
+    </motion.div>
+  );
+}`}
+/>
+
+## Recap
+
+- **`layout`** animates position/size changes automatically — great for resizing and reordering.
+- **`AnimatePresence`** + **`exit`** animates elements as they leave the DOM.
+- **`whileInView`** reveals elements on scroll; add **`viewport={{ once: true }}`** to play once.
+
+Read this, try the demo, then mark it complete. (These effects depend on real layout measurement
+and scrolling, so they're taught by demo rather than an auto-graded check.)

@@ -23,19 +23,21 @@ export interface NavModule {
 }
 
 export interface NavModel {
+  readonly stack: string;
   readonly modules: readonly NavModule[];
   readonly order: readonly string[];
 }
 
-export function chapterHref(moduleId: string, chapterId: string): string {
-  return `/learn/${moduleId}/${chapterId}`;
+export function chapterHref(stack: string, moduleId: string, chapterId: string): string {
+  return `/learn/${stack}/${moduleId}/${chapterId}`;
 }
 
-export function assessmentHref(moduleId: string, chapterId: string): string {
-  return `/learn/${moduleId}/${chapterId}/assessment`;
+export function assessmentHref(stack: string, moduleId: string, chapterId: string): string {
+  return `/learn/${stack}/${moduleId}/${chapterId}/assessment`;
 }
 
 export function toNavModel(manifest: Manifest): NavModel {
+  const stack = manifest.stack;
   const modules = manifest.modules.map((module) => ({
     moduleId: module.moduleId,
     title: module.frontmatter.title,
@@ -49,11 +51,11 @@ export function toNavModel(manifest: Manifest): NavModel {
       estMinutes: chapter.frontmatter.estMinutes,
       hasAssessment: chapter.frontmatter.assessment !== null,
       prereqs: chapter.frontmatter.prereqs,
-      href: chapterHref(chapter.moduleId, chapter.chapterId),
+      href: chapterHref(stack, chapter.moduleId, chapter.chapterId),
     })),
   }));
 
-  return { modules, order: manifest.chaptersInOrder.map((chapter) => chapter.chapterId) };
+  return { stack, modules, order: manifest.chaptersInOrder.map((chapter) => chapter.chapterId) };
 }
 
 // No locking: every chapter is freely navigable. State is purely a reflection

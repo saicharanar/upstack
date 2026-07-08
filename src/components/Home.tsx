@@ -17,7 +17,7 @@ export interface AvailableStackData {
 
 export interface HomeProps {
   readonly stacks: readonly StackSummary[];
-  readonly available: AvailableStackData;
+  readonly available: Readonly<Record<string, AvailableStackData>>;
 }
 
 function FeaturedStack({
@@ -78,7 +78,7 @@ function FeaturedStack({
         <Link className="button button--primary featured__cta" href={resumeHref}>
           {started ? 'Resume where you left off' : 'Start learning'}
         </Link>
-        <span className="featured__meta">React 19 · free · runs in your browser</span>
+        <span className="featured__meta">free · runs in your browser</span>
       </div>
     </article>
   );
@@ -101,7 +101,12 @@ function ComingSoonCard({ stack }: { stack: StackSummary }): ReactNode {
 }
 
 export function Home({ stacks, available }: HomeProps): ReactNode {
-  const featured = stacks.find((stack) => stack.status === 'available');
+  const featured = stacks
+    .filter((stack) => stack.status === 'available')
+    .map((stack) => ({ stack, data: available[stack.id] }))
+    .filter((entry): entry is { stack: StackSummary; data: AvailableStackData } =>
+      Boolean(entry.data),
+    );
   const soon = stacks.filter((stack) => stack.status === 'coming-soon');
 
   return (
@@ -116,9 +121,11 @@ export function Home({ stacks, available }: HomeProps): ReactNode {
         </p>
       </section>
 
-      {featured ? (
-        <section className="home__featured" aria-label="Your track">
-          <FeaturedStack stack={featured} data={available} />
+      {featured.length > 0 ? (
+        <section className="home__featured" aria-label="Your tracks">
+          {featured.map(({ stack, data }) => (
+            <FeaturedStack key={stack.id} stack={stack} data={data} />
+          ))}
         </section>
       ) : null}
 

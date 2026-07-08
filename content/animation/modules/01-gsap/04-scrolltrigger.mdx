@@ -1,0 +1,103 @@
+---
+id: gsap-scrolltrigger
+title: Scroll Animation with ScrollTrigger
+order: 4
+module: gsap
+summary: ScrollTrigger ties any GSAP animation to the scroll position — play on entry, or scrub it frame-by-frame as the user scrolls. It's the engine behind most "scrollytelling" sites.
+concepts:
+  - gsap-scrolltrigger-register
+  - gsap-scrolltrigger-toggle
+  - gsap-scrolltrigger-scrub
+estMinutes: 11
+status: published
+assessment: null
+prereqs: []
+---
+
+ScrollTrigger is GSAP's plugin for **scroll-driven** animation. It connects a tween or timeline to
+an element's position in the viewport — either firing it once when it scrolls in, or tying its
+progress directly to the scrollbar.
+
+## Register the plugin, then attach it
+
+Plugins are opt-in — register once, then pass a `scrollTrigger` config to any tween:
+
+```jsx
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
+
+gsap.from('.card', {
+  y: 60,
+  opacity: 0,
+  scrollTrigger: {
+    trigger: '.card',
+    start: 'top 80%', // when the card's top hits 80% down the viewport
+  },
+});
+```
+
+<Mermaid
+  chart={`flowchart LR
+    Scroll["User scrolls"] --> ST["ScrollTrigger watches the trigger element"]
+    ST -->|"reaches start"| Play["Play the animation"]
+    ST -->|"scrub: true"| Tie["Tie progress directly to scroll position"]`}
+  caption="ScrollTrigger fires an animation at a scroll position — or scrubs its progress with the scrollbar."
+/>
+
+## Toggle vs. scrub
+
+- **Toggle** (default): the animation **plays** when the trigger enters. Great for reveals.
+- **`scrub: true`**: the animation's progress is **tied to the scrollbar** — scroll down and it
+  advances, scroll up and it rewinds. This is how parallax and "scrollytelling" work.
+
+```jsx
+scrollTrigger: { trigger: '.section', start: 'top center', end: 'bottom center', scrub: true }
+```
+
+<Callout type="warning" title="Register once, and clean up">
+  Call `gsap.registerPlugin(ScrollTrigger)` a single time. Inside React, create ScrollTriggers in
+  `useGSAP` so they're reverted on unmount — orphaned triggers are a common source of scroll bugs.
+</Callout>
+
+## See it run
+
+<LiveExample
+  code={`import { useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
+
+gsap.registerPlugin(ScrollTrigger);
+
+export default function App() {
+  const scope = useRef(null);
+  useGSAP(
+    () => {
+      gsap.utils.toArray('.card').forEach((card) => {
+        gsap.from(card, { opacity: 0, y: 40, duration: 0.6, scrollTrigger: { trigger: card, start: 'top 85%' } });
+      });
+    },
+    { scope },
+  );
+  return (
+    <div ref={scope} style={{ height: 240, overflow: 'auto' }}>
+      <p>Scroll down ↓</p>
+      <div style={{ height: 200 }} />
+      {[1, 2, 3].map((n) => (
+        <div key={n} className="card" style={{ height: 80, margin: 12, background: '#0b7a4b', borderRadius: 8 }} />
+      ))}
+    </div>
+  );
+}`}
+/>
+
+## Recap
+
+- **Register** ScrollTrigger once with `gsap.registerPlugin(ScrollTrigger)`.
+- Add a **`scrollTrigger`** config to any tween/timeline; **`start`** sets when it fires.
+- **Toggle** plays on entry; **`scrub: true`** ties progress to the scrollbar (parallax/scrollytelling).
+
+Read this, try scrolling the demo, then mark it complete. (Scroll behavior needs a real viewport,
+so it's taught by demo rather than an auto-graded check.)

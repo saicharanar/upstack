@@ -6,10 +6,12 @@ export function ChapterMarkup({
   source,
   chapterId,
   moduleId,
+  stack,
 }: {
   source: string;
   chapterId: string;
   moduleId: string;
+  stack: string;
 }): ReactNode {
-  return <MDXRemote source={source} components={createMdxComponents(chapterId, moduleId)} />;
+  return <MDXRemote source={source} components={createMdxComponents(chapterId, moduleId, stack)} />;
 }

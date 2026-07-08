@@ -11,10 +11,16 @@ import {
 } from './schema';
 import type { ChapterEntry, Manifest, ModuleEntry } from './manifest';
 
-const CONTENT_ROOT = path.join(process.cwd(), 'content', 'react');
+const DEFAULT_STACK = 'react';
 const MODULE_INTRO_FILE = '_module.mdx';
 const EDITABLE_DIR = 'files';
 const TESTS_DIR = 'tests';
+
+// Content is organized per stack under content/<stack>/. Everything defaults to
+// the React stack so existing single-stack callers keep working unchanged.
+function contentRoot(stack: string): string {
+  return path.join(process.cwd(), 'content', stack);
+}
 
 export interface AssessmentFile {
   readonly code: string;
@@ -25,15 +31,17 @@ export interface AssessmentFile {
 
 export interface AssessmentBundle {
   readonly meta: AssessmentMeta;
+  readonly runner: string;
   readonly template: string;
   readonly entry: string;
   readonly activeFile: string;
   readonly visibleFiles: readonly string[];
+  readonly dependencies: Readonly<Record<string, string>>;
   readonly files: Readonly<Record<string, AssessmentFile>>;
 }
 
 function relativeToContent(absPath: string): string {
-  return path.relative(CONTENT_ROOT, absPath);
+  return path.relative(path.join(process.cwd(), 'content'), absPath);
 }
 
 function formatZodError(error: z.ZodError): string {
@@ -78,9 +86,9 @@ function parseModule(absPath: string, chapters: readonly ChapterEntry[]): Module
   };
 }
 
-function collectChaptersByDir(): Map<string, ChapterEntry[]> {
+function collectChaptersByDir(stack: string): Map<string, ChapterEntry[]> {
   const chapterFiles = fg.sync('modules/*/*.mdx', {
-    cwd: CONTENT_ROOT,
+    cwd: contentRoot(stack),
     absolute: true,
     ignore: [`**/${MODULE_INTRO_FILE}`],
   });
@@ -99,12 +107,12 @@ function collectChaptersByDir(): Map<string, ChapterEntry[]> {
   return byDir;
 }
 
-function buildManifest(): Manifest {
+function buildManifest(stack: string): Manifest {
   const moduleFiles = fg.sync(`modules/*/${MODULE_INTRO_FILE}`, {
-    cwd: CONTENT_ROOT,
+    cwd: contentRoot(stack),
     absolute: true,
   });
-  const chaptersByDir = collectChaptersByDir();
+  const chaptersByDir = collectChaptersByDir(stack);
 
   const modules = moduleFiles
     .map((moduleFile) => parseModule(moduleFile, chaptersByDir.get(path.dirname(moduleFile)) ?? []))
@@ -112,14 +120,17 @@ function buildManifest(): Manifest {
 
   const chaptersInOrder = modules.flatMap((module) => module.chapters);
 
-  return { modules, chaptersInOrder };
+  return { stack, modules, chaptersInOrder };
 }
 
-let cachedManifest: Manifest | null = null;
+const manifestCache = new Map<string, Manifest>();
 
-export function getManifest(): Manifest {
-  if (!cachedManifest) cachedManifest = buildManifest();
-  return cachedManifest;
+export function getManifest(stack: string = DEFAULT_STACK): Manifest {
+  const cached = manifestCache.get(stack);
+  if (cached) return cached;
+  const manifest = buildManifest(stack);
+  manifestCache.set(stack, manifest);
+  return manifest;
 }
 
 export function getChapterSource(filePath: string): string {
@@ -150,15 +161,15 @@ function readDirIntoFiles(
   return files;
 }
 
-function locateAssessmentDir(assessmentId: string): { dir: string; moduleDir: string } {
+function locateAssessmentDir(assessmentId: string, stack: string): { dir: string; moduleDir: string } {
   const matches = fg.sync(`modules/*/assessments/${assessmentId}/meta.ts`, {
-    cwd: CONTENT_ROOT,
+    cwd: contentRoot(stack),
     absolute: true,
   });
 
   const metaPath = matches[0];
   if (!metaPath) {
-    throw new Error(`Assessment "${assessmentId}" not found under content/react/modules/*/assessments`);
+    throw new Error(`Assessment "${assessmentId}" not found under content/${stack}/modules/*/assessments`);
   }
 
   const dir = path.dirname(metaPath);
@@ -166,10 +177,14 @@ function locateAssessmentDir(assessmentId: string): { dir: string; moduleDir: st
   return { dir, moduleDir };
 }
 
-async function importAssessmentMeta(moduleDir: string, assessmentId: string): Promise<AssessmentMeta> {
+async function importAssessmentMeta(
+  stack: string,
+  moduleDir: string,
+  assessmentId: string,
+): Promise<AssessmentMeta> {
   const module = (await import(
-    /* webpackInclude: /assessments\/[^/]+\/meta\.ts$/ */
-    `../../content/react/modules/${moduleDir}/assessments/${assessmentId}/meta.ts`
+    /* webpackInclude: /content\/[^/]+\/modules\/[^/]+\/assessments\/[^/]+\/meta\.ts$/ */
+    `../../content/${stack}/modules/${moduleDir}/assessments/${assessmentId}/meta.ts`
   )) as { default?: unknown; meta?: unknown };
 
   const parsed = assessmentMetaSchema.safeParse(module.default ?? module.meta);
@@ -182,9 +197,12 @@ async function importAssessmentMeta(moduleDir: string, assessmentId: string): Pr
   return parsed.data;
 }
 
-export async function getAssessmentBundle(assessmentId: string): Promise<AssessmentBundle> {
-  const { dir, moduleDir } = locateAssessmentDir(assessmentId);
-  const meta = await importAssessmentMeta(moduleDir, assessmentId);
+export async function getAssessmentBundle(
+  assessmentId: string,
+  stack: string = DEFAULT_STACK,
+): Promise<AssessmentBundle> {
+  const { dir, moduleDir } = locateAssessmentDir(assessmentId, stack);
+  const meta = await importAssessmentMeta(stack, moduleDir, assessmentId);
 
   const editable = readDirIntoFiles(path.join(dir, EDITABLE_DIR), '/', {
     readOnly: false,
@@ -210,10 +228,12 @@ export async function getAssessmentBundle(assessmentId: string): Promise<Assessm
 
   return {
     meta,
+    runner: meta.runner,
     template: meta.template,
     entry: meta.entry,
     activeFile,
     visibleFiles,
+    dependencies: meta.dependencies,
     files,
   };
 }

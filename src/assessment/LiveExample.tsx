@@ -16,14 +16,16 @@ export interface LiveExampleProps {
   readonly code: string;
   readonly template?: SandpackPredefinedTemplate;
   readonly entry?: string;
+  readonly dependencies?: Readonly<Record<string, string>>;
 }
 
-export function LiveExample({ code, template, entry }: LiveExampleProps): ReactNode {
+export function LiveExample({ code, template, entry, dependencies }: LiveExampleProps): ReactNode {
   return (
     <LiveExampleRunner
       code={code.trim()}
       template={template ?? DEFAULT_TEMPLATE}
       entry={entry ?? DEFAULT_ENTRY}
+      dependencies={dependencies}
     />
   );
 }

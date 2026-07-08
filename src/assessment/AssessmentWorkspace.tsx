@@ -60,5 +60,22 @@ export function AssessmentWorkspace({
     );
   }
 
+  // Runner seam: today only the Sandpack runner is implemented. Other runtimes
+  // (e.g. a WebContainer runner for server frameworks) plug in here by bundle.runner.
+  if (bundle.runner !== 'sandpack') {
+    return (
+      <div className="assessment-gate__small" role="note">
+        <h2 className="assessment-gate__small-title">This exercise runs elsewhere</h2>
+        <p className="assessment-gate__small-body">
+          It uses a runtime that isn&apos;t available in this in-browser workspace yet. Follow the
+          chapter to run it locally.
+        </p>
+        <Link className="button button--primary" href={backHref}>
+          Back to the chapter
+        </Link>
+      </div>
+    );
+  }
+
   return <AssessmentRunner bundle={bundle} chapterId={chapterId} nextHref={nextHref} />;
 }

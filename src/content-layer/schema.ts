@@ -39,11 +39,17 @@ export const passRuleSchema = z.union([
 
 export const assessmentMetaSchema = z.object({
   id: z.string().min(1),
+  // Which in-browser engine runs this exercise. 'sandpack' is the only one
+  // implemented today; the field is the seam for future runners (e.g. a
+  // WebContainer runtime for server frameworks).
+  runner: z.string().min(1).default('sandpack'),
   template: z.string().min(1).default('react'),
   entry: z.string().min(1),
   passRule: passRuleSchema.default(PASS_RULE_ALL_REQUIRED),
   visibleFiles: z.array(z.string()).default([]),
   readOnlyFiles: z.array(z.string()).default([]),
+  // Extra npm dependencies the sandbox should install (name → version range).
+  dependencies: z.record(z.string()).default({}),
   concepts: z.array(conceptSchema).min(1),
 });
 

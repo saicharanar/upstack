@@ -8,22 +8,27 @@ import { chapterIndex, findChapter, type ChapterEntry, type Manifest } from '@/c
 import { chapterHref } from '@/content-layer/nav';
 import { extractHeadings } from '@/content-layer/toc';
 import { ChapterMarkup } from '@/mdx/mdx';
+import { availableStackIds } from '@/stacks/registry';
 
 interface ChapterParams {
+  readonly stack: string;
   readonly module: string;
   readonly chapter: string;
 }
 
 export function generateStaticParams(): ChapterParams[] {
-  return getManifest().chaptersInOrder.map((entry) => ({
-    module: entry.moduleId,
-    chapter: entry.chapterId,
-  }));
+  return availableStackIds().flatMap((stack) =>
+    getManifest(stack).chaptersInOrder.map((entry) => ({
+      stack,
+      module: entry.moduleId,
+      chapter: entry.chapterId,
+    })),
+  );
 }
 
-function toNavLink(entry: ChapterEntry | undefined): ChapterNavLink | null {
+function toNavLink(stack: string, entry: ChapterEntry | undefined): ChapterNavLink | null {
   if (!entry) return null;
-  return { title: entry.frontmatter.title, href: chapterHref(entry.moduleId, entry.chapterId) };
+  return { title: entry.frontmatter.title, href: chapterHref(stack, entry.moduleId, entry.chapterId) };
 }
 
 function pad(value: number): string {
@@ -41,8 +46,8 @@ export default async function ChapterPage({
 }: {
   params: Promise<ChapterParams>;
 }): Promise<ReactNode> {
-  const { module: moduleId, chapter: chapterId } = await params;
-  const manifest = getManifest();
+  const { stack, module: moduleId, chapter: chapterId } = await params;
+  const manifest = getManifest(stack);
   const entry = findChapter(manifest, moduleId, chapterId);
   if (!entry) notFound();
 
@@ -50,7 +55,7 @@ export default async function ChapterPage({
   const source = getChapterSource(entry.filePath);
   const headings = extractHeadings(source);
   const next = manifest.chaptersInOrder[index + 1];
-  const nextHref = next ? chapterHref(next.moduleId, next.chapterId) : null;
+  const nextHref = next ? chapterHref(stack, next.moduleId, next.chapterId) : null;
 
   return (
     <div className="chapter-layout">
@@ -62,7 +67,12 @@ export default async function ChapterPage({
         </header>
 
         <div className="chapter__body">
-          <ChapterMarkup source={source} chapterId={entry.chapterId} moduleId={entry.moduleId} />
+          <ChapterMarkup
+            source={source}
+            chapterId={entry.chapterId}
+            moduleId={entry.moduleId}
+            stack={stack}
+          />
         </div>
 
         <div className="chapter-actions">
@@ -70,8 +80,8 @@ export default async function ChapterPage({
         </div>
 
         <ChapterNav
-          previous={toNavLink(manifest.chaptersInOrder[index - 1])}
-          next={toNavLink(next)}
+          previous={toNavLink(stack, manifest.chaptersInOrder[index - 1])}
+          next={toNavLink(stack, next)}
         />
       </article>
 

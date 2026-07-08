@@ -1,0 +1,84 @@
+---
+id: gsap-timelines
+title: Timelines
+order: 3
+module: gsap
+summary: A timeline sequences multiple tweens on one clock — play, pause, reverse, or scrub the whole thing as a unit. This is GSAP's superpower and where it pulls ahead of declarative tools.
+concepts:
+  - gsap-timeline-sequence
+  - gsap-timeline-position
+  - gsap-timeline-control
+estMinutes: 11
+status: published
+assessment: null
+prereqs: []
+---
+
+Chaining single tweens with delays gets fragile fast — change one duration and every later delay
+is wrong. A **timeline** solves this: add tweens to it and they play **in sequence** by default,
+each starting when the previous ends. Adjust one and the rest follow.
+
+## Sequencing
+
+```jsx
+const tl = gsap.timeline();
+tl.to('.box', { x: 200, duration: 1 })      // first
+  .to('.box', { y: 100, duration: 0.5 })    // then this
+  .to('.box', { rotation: 180, duration: 1 }); // then this
+```
+
+<Mermaid
+  chart={`flowchart LR
+    A["to: x → 200 (0–1s)"] --> B["to: y → 100 (1–1.5s)"] --> C["to: rotation → 180 (1.5–2.5s)"]`}
+  caption="Timeline tweens play back-to-back by default; each starts where the previous ended."
+/>
+
+## The position parameter
+
+A third argument controls *when* a tween starts — overlap, gap, or absolute time:
+
+```jsx
+tl.to('.a', { x: 100 })
+  .to('.b', { x: 100 }, '<')      // start together with the previous
+  .to('.c', { x: 100 }, '-=0.25') // start 0.25s before the previous ends (overlap)
+  .to('.d', { x: 100 }, '+=0.5'); // start 0.5s after the previous ends (gap)
+```
+
+## One handle for the whole sequence
+
+Because the timeline *is* the sequence, you control all of it at once: `tl.pause()`,
+`tl.reverse()`, `tl.play()`, or `tl.progress(0.5)` to jump to the middle. This is why complex,
+coordinated motion is GSAP's home turf.
+
+<Callout type="tip" title="Build timelines inside useGSAP">
+  Create the timeline in `useGSAP` so it's cleaned up with the component. Return nothing special —
+  the hook reverts it on unmount.
+</Callout>
+
+## See it run
+
+<LiveExample
+  code={`import { useRef } from 'react';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+
+export default function App() {
+  const ref = useRef(null);
+  useGSAP(() => {
+    const tl = gsap.timeline({ repeat: -1, repeatDelay: 0.5, yoyo: true });
+    tl.to(ref.current, { x: 140, duration: 0.8, ease: 'power2.inOut' })
+      .to(ref.current, { rotation: 180, duration: 0.6 })
+      .to(ref.current, { borderRadius: '50%', duration: 0.4 });
+  });
+  return <div ref={ref} style={{ width: 70, height: 70, background: '#0b7a4b' }} />;
+}`}
+/>
+
+## Recap
+
+- A **timeline** sequences tweens on one clock — they play back-to-back by default.
+- The **position parameter** (`'<'`, `'-=0.25'`, `'+=0.5'`) overlaps or gaps tweens precisely.
+- Control the whole sequence as a unit: `play`, `pause`, `reverse`, `progress`.
+
+Read this, try the demo, then mark it complete. (Timelines are about *timing*, best felt in the
+running demo; the graded exercises use GSAP's instant operations a test can check fairly.)
