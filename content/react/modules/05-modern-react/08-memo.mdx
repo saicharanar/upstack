@@ -10,7 +10,7 @@ concepts:
   - memo-when-to-use
 estMinutes: 10
 status: published
-assessment: null
+assessment: memo-skip
 prereqs: []
 ---
 
@@ -93,4 +93,9 @@ so React skips it.
 - Use it only for **measured** hotspots — expensive components re-rendering with the same props.
 - `memo` needs **stable** props to help — enter `useMemo` and `useCallback` next.
 
-Read this, then mark it complete.
+## Your turn
+
+Wrap a child component in `memo` so it skips re-rendering when its props are unchanged — the
+checker counts how many times the child renders when the parent re-renders for an unrelated reason.
+
+<Assessment id="memo-skip" />
