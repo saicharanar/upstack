@@ -1,0 +1,122 @@
+---
+id: portals
+title: Rendering Outside the Tree with Portals
+order: 12
+module: modern-react
+summary: A modal or tooltip belongs in your component logically, but visually it needs to escape any parent that clips or stacks it. createPortal renders children into a different DOM node while keeping them inside your React tree.
+concepts:
+  - portal-what-it-does
+  - portal-why-escape
+  - portal-events-follow-react
+estMinutes: 9
+status: published
+assessment: portal-modal
+prereqs: []
+---
+
+Some UI needs to live in two places at once. A **modal** is written inside the component that
+opens it — that's where it makes sense in your code. But on screen it has to cover the *whole
+page*, which it can't do if an ancestor has `overflow: hidden`, a `transform`, or a low
+`z-index` boxing it in. A **portal** resolves the tension: the element stays in your React tree
+but is rendered into a **different DOM node** (usually `document.body`).
+
+## Two trees, not one
+
+`createPortal(children, domNode)` tells React: keep `children` here in the component tree, but
+put the actual DOM *there*. So the React tree and the DOM tree diverge on purpose:
+
+<Mermaid
+  chart={`flowchart TD
+    subgraph React["React tree (where you wrote it)"]
+      App1["App"] --> Page1["Page (overflow: hidden)"]
+      Page1 --> Modal1["Modal"]
+    end
+    subgraph DOM["DOM tree (where it renders)"]
+      Body["document.body"] --> AppDom["div#root"]
+      Body --> ModalDom["Modal markup — escapes the clipping parent"]
+    end
+    Modal1 -.->|"createPortal(..., document.body)"| ModalDom`}
+  caption="The modal stays a child of Page in React, but its DOM lands directly under body — free of any clipping ancestor."
+/>
+
+## Using createPortal
+
+Import it from `react-dom` and return its result. The children render into the node you pass:
+
+```jsx
+import { createPortal } from 'react-dom';
+
+function Modal({ children }) {
+  return createPortal(
+    <div className="modal-overlay">
+      <div className="modal">{children}</div>
+    </div>,
+    document.body, // render here instead of next to <Modal /> in the DOM
+  );
+}
+```
+
+Wherever you place `<Modal>…</Modal>` in your JSX, the overlay comes out attached to
+`document.body` — above and outside everything else.
+
+## Events still follow the React tree
+
+This is the part that surprises people: even though the modal's DOM lives under `body`, its
+events **bubble through its React parent**, not its DOM parent. A click inside the portal still
+triggers `onClick` handlers on the component that rendered `<Modal>`, and it still reads the same
+Context. Logically, it never left your tree.
+
+<Callout type="tip" title="What portals are for">
+  Reach for a portal when an element must visually break out of its container: modals, dialogs,
+  dropdown menus, tooltips, and toast notifications. If an element sits fine inside its parent,
+  you don't need one.
+</Callout>
+
+## See it run
+
+The dialog below is rendered with `createPortal` into `document.body`, so it sits on top of the
+page even though it's written inside `App`. Open it and close it:
+
+<LiveExample
+  code={`import { useState } from 'react';
+import { createPortal } from 'react-dom';
+
+function Modal({ children, onClose }) {
+  return createPortal(
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+                  display: 'grid', placeItems: 'center' }}>
+      <div style={{ background: 'white', padding: 24, borderRadius: 8 }}>
+        {children}
+        <div><button onClick={onClose}>Close</button></div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+export default function App() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ overflow: 'hidden', height: 80, border: '1px solid #ccc', padding: 12 }}>
+      <p>This box clips its content, but the modal escapes it.</p>
+      <button onClick={() => setOpen(true)}>Open dialog</button>
+      {open && <Modal onClose={() => setOpen(false)}><p>Hello from a portal!</p></Modal>}
+    </div>
+  );
+}`}
+/>
+
+## Recap
+
+- A **portal** renders children into a **different DOM node** while keeping them in your React tree.
+- **`createPortal(children, domNode)`** (from `react-dom`) is the whole API — usually you target
+  `document.body`.
+- Use it when an element must **escape a clipping or stacking** ancestor: modals, tooltips, toasts.
+- **Events and Context still follow the React parent**, not the DOM parent.
+
+## Your turn
+
+Build a `Modal` that renders its content through a portal into `document.body` — so it lands
+outside the app's own container — with a button to open it and one to close it.
+
+<Assessment id="portal-modal" />

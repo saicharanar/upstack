@@ -1,0 +1,135 @@
+---
+id: useid
+title: Stable IDs with useId
+order: 9
+module: escape-hatches
+summary: Accessible markup often needs matching ids — a label pointing at its input, an input pointing at its hint. Hardcoding those ids breaks the moment a component is used twice. useId generates a unique, stable id for you.
+concepts:
+  - useid-why-not-hardcode
+  - useid-generate
+  - useid-multiple-from-one
+estMinutes: 9
+status: published
+assessment: useid-labels
+prereqs: []
+---
+
+Some HTML only works when two elements share an **id**. A `<label>` connects to its field with
+`htmlFor="email"` matching `<input id="email">`. A screen-reader hint connects with
+`aria-describedby="email-hint"` matching `<p id="email-hint">`. Get those ids matched and the
+form is accessible; get them wrong and the label is just decoration.
+
+So why not hardcode `id="email"`? Because a component is meant to be **reused**, and ids must be
+**unique on the whole page**. The second time your field renders, you'd have two
+`id="email"` — invalid HTML, and now a click on either label focuses the *same* input.
+
+## The problem, drawn
+
+<Mermaid
+  chart={`flowchart TD
+    subgraph Bad["Hardcoded id='email' — used twice"]
+      L1["label for=email"] --> I1["input id=email"]
+      L2["label for=email"] --> I1
+    end
+    subgraph Good["useId — a fresh id per instance"]
+      L3["label for=:r0:"] --> I3["input id=:r0:"]
+      L4["label for=:r1:"] --> I4["input id=:r1:"]
+    end`}
+  caption="Hardcoded ids collide when a component repeats; useId hands each instance its own unique id."
+/>
+
+## useId gives you a unique, stable id
+
+Call `useId()` once at the top of your component. It returns a string that is **unique per
+component instance** and **stable across renders** — and, importantly, identical on the server
+and the client, so server-rendered pages hydrate without id mismatches.
+
+```jsx
+import { useId } from 'react';
+
+function EmailField() {
+  const id = useId();
+  return (
+    <p>
+      <label htmlFor={id}>Email</label>
+      <input id={id} type="email" />
+    </p>
+  );
+}
+```
+
+Render `<EmailField />` twice and each copy gets its *own* id — the label always focuses the
+right input.
+
+## One id, several related elements
+
+You often need a few matching ids for one field (the input, its hint, maybe an error). Don't
+call `useId` several times — call it once and **build the others by adding a suffix**:
+
+```jsx
+function EmailField() {
+  const id = useId();
+  const hintId = `${id}-hint`;
+  return (
+    <p>
+      <label htmlFor={id}>Email</label>
+      <input id={id} aria-describedby={hintId} />
+      <span id={hintId}>We'll never share it.</span>
+    </p>
+  );
+}
+```
+
+Now the input announces its hint to assistive tech, and it all stays unique per instance.
+
+<Callout type="warning" title="useId is for ids, not list keys">
+  `useId` is for matching ids in markup. It is **not** for `key` props in a list — keys come
+  from your data (a task's `id`, say), not from a hook. Using `useId` for keys would hand out a
+  brand-new key every render and defeat the point of keys entirely.
+</Callout>
+
+## See it run
+
+Both fields below come from the same component, yet clicking either label focuses *its own*
+input — because each instance got a different id from `useId`.
+
+<LiveExample
+  code={`import { useId } from 'react';
+
+function Field({ label, hint }) {
+  const id = useId();
+  const hintId = id + '-hint';
+  return (
+    <p>
+      <label htmlFor={id}>{label}</label>{' '}
+      <input id={id} aria-describedby={hintId} />
+      <br />
+      <small id={hintId} style={{ color: '#666' }}>{hint}</small>
+    </p>
+  );
+}
+
+export default function App() {
+  return (
+    <form>
+      <Field label="Email" hint="We'll never share it." />
+      <Field label="Confirm email" hint="Type it again." />
+    </form>
+  );
+}`}
+/>
+
+## Recap
+
+- Accessible markup needs **matching ids** (label↔input, input↔hint) — and ids must be **unique**.
+- **Hardcoding** ids breaks as soon as a component is reused.
+- **`useId()`** returns a unique, stable id per instance (and matches across server/client).
+- Call it **once** and derive related ids with a **suffix** (`` `${id}-hint` ``).
+- It is **not** for list keys — those come from your data.
+
+## Your turn
+
+Build an accessible `Field` component with `useId`: wire the label to the input, and point the
+input at its hint with `aria-describedby`. It's rendered twice, so your ids must stay unique.
+
+<Assessment id="useid-labels" />

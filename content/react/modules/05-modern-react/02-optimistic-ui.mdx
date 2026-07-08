@@ -30,6 +30,14 @@ in — including the tricky part, the rollback.
   caption="Show the expected result immediately; React reconciles with reality when the request settles."
 />
 
+## Without a helper, this is fiddly
+
+Done by hand, an optimistic update means juggling several moving parts: add the item to a local
+copy of the list, mark it "pending," fire the request, and then — on success — swap in the real
+item, or — on failure — remove the one you added and surface an error. Every optimistic
+interaction re-implements that same bookkeeping, and the **rollback** path is the easiest to get
+wrong. `useOptimistic` owns all of it for you.
+
 ## useOptimistic
 
 ```jsx
@@ -61,7 +69,14 @@ function Thread({ messages, sendMessage }) {
 }
 ```
 
-You give `useOptimistic` the real state and a function that produces the optimistic version.
+Reading that call apart:
+
+- **First argument** — the *real*, confirmed state (here, `messages`).
+- **Second argument** — a function `(currentState, optimisticInput) => nextState` that builds the
+  temporary, optimistic version.
+- It returns `[optimisticValue, addOptimistic]`. You call `addOptimistic(input)` inside your
+  Action, and render `optimisticValue`.
+
 While the async Action runs, the UI shows the optimistic value; when the Action settles, React
 **automatically reverts** to the real state (now updated by the server).
 

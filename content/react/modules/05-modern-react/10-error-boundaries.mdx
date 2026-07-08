@@ -77,6 +77,49 @@ Place boundaries thoughtfully: one near the root for a global "something broke" 
 finer boundaries around independent sections (a widget, a route, a chart) so a single failure
 doesn't blank everything around it.
 
+## See it catch an error
+
+Click **+1** a few times. At 3 the child throws *while rendering* — but instead of a blank
+screen, the boundary swaps in its fallback. Anything outside the boundary would have kept
+working normally.
+
+<LiveExample
+  code={`import { Component, useState } from 'react';
+
+class ErrorBoundary extends Component {
+  state = { hasError: false };
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    if (this.state.hasError) return <p>⚠️ Something went wrong in this section.</p>;
+    return this.props.children;
+  }
+}
+
+function Counter({ count }) {
+  if (count > 2) throw new Error('Count got too big!');
+  return <p>Count: {count}</p>;
+}
+
+export default function App() {
+  const [count, setCount] = useState(0);
+  return (
+    <ErrorBoundary>
+      <button onClick={() => setCount(count + 1)}>+1</button>
+      <Counter count={count} />
+    </ErrorBoundary>
+  );
+}`}
+/>
+
+<Callout type="note" title="Recovering after an error">
+  A real app usually lets the user *try again*. Libraries like `react-error-boundary` add a
+  reset action that clears the error **and** resets the state that caused it, so the subtree can
+  re-render cleanly. The bare class can flip `hasError` back to `false`, but unless you also fix
+  whatever made it throw, it will simply throw again on the next render.
+</Callout>
+
 ## Recap
 
 - Without a boundary, a render error **unmounts the whole app**.
