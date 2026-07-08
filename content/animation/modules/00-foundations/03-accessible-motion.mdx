@@ -1,0 +1,79 @@
+---
+id: accessible-motion
+title: Accessible Motion
+order: 3
+module: foundations
+summary: Some people get motion sickness from animation. The OS lets them ask for less, via prefers-reduced-motion — and respecting that is a baseline of professional, accessible UI.
+concepts:
+  - a11y-prefers-reduced-motion
+  - a11y-css-query
+  - a11y-usereducedmotion
+estMinutes: 10
+status: published
+assessment: reduced-motion
+prereqs: []
+---
+
+Animation isn't free for everyone — for some users, motion causes real discomfort or nausea. Every
+OS has a **"reduce motion"** setting, and the web exposes it. Respecting it isn't optional polish;
+it's a baseline accessibility responsibility.
+
+## The prefers-reduced-motion media query
+
+In CSS, honor the preference by toning motion down (or off) when it's set:
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+```
+
+A gentler approach keeps *essential* feedback but removes large movement — the goal is "less
+motion," not necessarily "no motion."
+
+## useReducedMotion in Motion
+
+Motion gives you the preference as a hook so you can branch in JS — usually to drop movement while
+keeping a subtle fade:
+
+```jsx
+import { useReducedMotion, motion } from 'motion/react';
+
+function Card() {
+  const reduce = useReducedMotion();
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: reduce ? 0 : 20 }}  // no movement if reduced
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: reduce ? 0 : 0.4 }}    // instant if reduced
+    />
+  );
+}
+```
+
+<Mermaid
+  chart={`flowchart LR
+    OS["OS 'reduce motion' setting"] --> Web["prefers-reduced-motion / useReducedMotion"]
+    Web -->|"true"| Less["Drop movement, keep essentials (or instant)"]
+    Web -->|"false"| Full["Full animation"]`}
+  caption="The OS preference reaches the web; branch on it to reduce or remove motion."
+/>
+
+<Callout type="tip" title="Movement is the problem, not opacity">
+  What triggers discomfort is **large movement/scale/parallax**, not a gentle opacity fade. So the
+  usual fix is: keep a subtle fade, drop the translate/scale, and make it quick. Design the reduced
+  path deliberately rather than killing all motion.
+</Callout>
+
+## Recap
+
+- Users can request **reduced motion** at the OS level; respecting it is a **baseline of accessible UI**.
+- Honor it in CSS with **`@media (prefers-reduced-motion: reduce)`**.
+- In Motion, branch on **`useReducedMotion()`** — usually drop movement, keep a subtle fade.
+
+## Your turn
+
+Write `transitionFor(prefersReducedMotion)`: return the transition to use — instant (duration `0`)
+when the user prefers reduced motion, and a `0.5`s duration otherwise.
+
+<Assessment id="reduced-motion" />

@@ -1,0 +1,75 @@
+---
+id: gsap-plugins
+title: Plugins and Responsive Animation
+order: 5
+module: gsap
+summary: GSAP's plugins unlock effects that would be painful by hand — Flip for layout transitions, SplitText for per-character text, Draggable for drag-and-drop — and matchMedia makes animations responsive.
+concepts:
+  - gsap-plugins-register
+  - gsap-key-plugins
+  - gsap-match-media
+estMinutes: 11
+status: published
+assessment: null
+prereqs: []
+---
+
+Beyond tweens and ScrollTrigger, GSAP has a **plugin** ecosystem for effects that are hard to
+build from scratch. You register a plugin once, then use its API.
+
+## The headline plugins
+
+- **Flip** — animate between two layouts. Record the state, change the DOM (reorder a grid, move an
+  item), and Flip animates the difference. It's GSAP's answer to Motion's `layout` prop, with more
+  control.
+- **SplitText** — split text into lines, words, or characters so you can animate them individually
+  (the classic staggered headline reveal).
+- **Draggable** — drag-and-drop, sliders, and throwable elements, with bounds and inertia.
+- **MotionPathPlugin** — animate an element **along an SVG path**, not just in straight lines.
+
+```jsx
+import gsap from 'gsap';
+import { Flip } from 'gsap/Flip';
+gsap.registerPlugin(Flip);
+
+const state = Flip.getState('.item');   // 1. record current layout
+reorderTheDom();                        // 2. change the DOM
+Flip.from(state, { duration: 0.6 });    // 3. animate from old → new
+```
+
+<Mermaid
+  chart={`flowchart LR
+    Record["Flip.getState() — record layout"] --> Change["Change the DOM (reorder/move)"]
+    Change --> Animate["Flip.from(state) — animate the difference"]`}
+  caption="Flip records a layout, lets you change the DOM, then animates from the old positions to the new."
+/>
+
+## Responsive animation with matchMedia
+
+Animations often need to differ by screen size (a big desktop timeline, a simpler mobile one).
+**`gsap.matchMedia`** runs setup per breakpoint and **cleans it up automatically** when the query
+stops matching:
+
+```jsx
+const mm = gsap.matchMedia();
+
+mm.add('(min-width: 800px)', () => {
+  gsap.to('.panel', { x: 400, scrollTrigger: { /* desktop-only */ } });
+  // reverted automatically when the query no longer matches
+});
+```
+
+<Callout type="tip" title="Register once; some plugins need a license">
+  Call `gsap.registerPlugin(...)` a single time (module scope). The core and most plugins are free;
+  a few (like the newer SplitText) are part of GSAP's free tier now — check the docs for the version
+  you use.
+</Callout>
+
+## Recap
+
+- **Register** a plugin once with `gsap.registerPlugin(...)`, then use its API.
+- Key plugins: **Flip** (layout transitions), **SplitText** (per-character text), **Draggable**
+  (drag/inertia), **MotionPath** (animate along a path).
+- **`gsap.matchMedia`** makes animations **responsive** and cleans them up per breakpoint.
+
+Read this, then mark it complete — next module: putting Motion and GSAP together.

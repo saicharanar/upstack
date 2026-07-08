@@ -1,0 +1,90 @@
+---
+id: motion-values
+title: Motion Values, useTransform, and Scroll
+order: 6
+module: motion
+summary: Motion values are live, animatable numbers that update without re-rendering. useTransform maps one value onto another, and useScroll turns scroll position into a value — together they power progress bars, parallax, and scroll-linked effects.
+concepts:
+  - mv-motion-value
+  - mv-use-transform
+  - mv-use-scroll
+estMinutes: 12
+status: published
+assessment: map-range
+prereqs: []
+---
+
+Sometimes you want to drive animation from a **continuous** source — the scroll position, the
+pointer, a gesture — not just from state changes. Motion's **motion values** are live numbers that
+update outside React's render cycle (so no re-render per frame), and you compose them with
+**`useTransform`**.
+
+## Motion values and useTransform
+
+A **motion value** (`useMotionValue`) holds a number that can change every frame cheaply.
+**`useTransform`** derives a *new* motion value by **mapping** an input range to an output range —
+this mapping is the heart of scroll and gesture effects:
+
+```jsx
+import { motion, useMotionValue, useTransform } from 'motion/react';
+
+const x = useMotionValue(0);
+// as x goes 0 → 200, opacity goes 1 → 0
+const opacity = useTransform(x, [0, 200], [1, 0]);
+
+return <motion.div drag="x" style={{ x, opacity }} />;
+```
+
+<Mermaid
+  chart={`flowchart LR
+    Source["input value (scroll / drag / pointer)"] --> Map["useTransform([inMin,inMax], [outMin,outMax])"]
+    Map --> Derived["derived value (opacity / scale / color)"]
+    Derived --> El["applied to the element"]`}
+  caption="useTransform maps an input range onto an output range — the core move behind scroll and gesture effects."
+/>
+
+## useScroll — scroll as a value
+
+**`useScroll`** gives you the scroll position as motion values, most usefully **`scrollYProgress`**
+(0 at the top, 1 at the bottom). Feed it through `useTransform` for parallax, or use it directly
+for a reading-progress bar:
+
+```jsx
+const { scrollYProgress } = useScroll();
+return <motion.div style={{ scaleX: scrollYProgress, transformOrigin: 'left' }} />;
+```
+
+## See it run
+
+A reading-progress bar — `scrollYProgress` drives the bar's `scaleX`, no state or re-renders:
+
+<LiveExample
+  code={`import { motion, useScroll } from 'motion/react';
+
+export default function App() {
+  const { scrollYProgress } = useScroll();
+  return (
+    <div style={{ height: 260, overflowY: 'auto' }}>
+      <motion.div
+        style={{ scaleX: scrollYProgress, transformOrigin: 'left', height: 6, background: '#0b7a4b', position: 'sticky', top: 0 }}
+      />
+      <p style={{ padding: 12 }}>Scroll this panel — the bar tracks your progress.</p>
+      <div style={{ height: 700 }} />
+      <p style={{ padding: 12 }}>The end.</p>
+    </div>
+  );
+}`}
+/>
+
+## Recap
+
+- **Motion values** are live numbers that update per frame **without re-rendering**.
+- **`useTransform(value, [inMin, inMax], [outMin, outMax])`** maps one value's range onto another.
+- **`useScroll`** exposes scroll as motion values (`scrollYProgress`) for bars and parallax.
+
+## Your turn
+
+Write `mapRange(value, inMin, inMax, outMin, outMax)` — the linear mapping at the heart of
+`useTransform` (e.g. `mapRange(0.5, 0, 1, 0, 100)` is `50`).
+
+<Assessment id="map-range" />

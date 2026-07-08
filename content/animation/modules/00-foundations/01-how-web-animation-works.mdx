@@ -1,0 +1,96 @@
+---
+id: how-animation-works
+title: How Web Animation Works
+order: 1
+module: foundations
+summary: Before any library, the browser can animate on its own — CSS transitions for state changes and CSS keyframes for sequences. Knowing this tells you when you don't need a library at all.
+concepts:
+  - css-transition
+  - css-keyframes
+  - when-to-use-a-library
+estMinutes: 11
+status: published
+assessment: null
+prereqs: []
+---
+
+Animation libraries are built on the browser's own animation engine. Understanding that base
+makes you a better animator — and shows you when you can skip a library entirely.
+
+## CSS transitions — animate a change
+
+A **transition** animates a property when its value changes. Set `transition` on an element and
+any change to the listed properties eases instead of snapping:
+
+```css
+.box {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.box:hover {
+  transform: scale(1.1); /* animates smoothly because of the transition above */
+}
+```
+
+## CSS keyframe animations — a defined sequence
+
+For motion that isn't tied to a state change (a looping spinner, a pulse), use **`@keyframes`**:
+
+```css
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+.dot { animation: pulse 1.5s ease-in-out infinite; }
+```
+
+<Mermaid
+  chart={`flowchart TD
+    Q{"What kind of motion?"} -->|"a property changing (hover, toggle)"| T["CSS transition"]
+    Q -->|"a fixed loop/sequence"| K["CSS @keyframes"]
+    Q -->|"coordinated states, gestures, timelines, scroll"| L["Reach for Motion or GSAP"]`}
+  caption="CSS handles simple transitions and keyframes; libraries earn their place for coordinated, interactive, or scroll-driven motion."
+/>
+
+## When to reach for a library
+
+CSS is enough for a huge amount of UI polish — hovers, simple reveals, spinners. Bring in **Motion
+or GSAP** when you need what CSS can't express cleanly: **coordinated component states**,
+**gestures**, **layout/shared-element** animation, **sequenced timelines**, or **scroll-driven**
+motion. Right tool, right job.
+
+## See it run
+
+This uses only a CSS transition — no library — and it's smooth:
+
+<LiveExample
+  code={`import { useState } from 'react';
+
+export default function App() {
+  const [on, setOn] = useState(false);
+  return (
+    <div>
+      <button onClick={() => setOn((v) => !v)}>Toggle</button>
+      <div
+        style={{
+          width: 80,
+          height: 80,
+          marginTop: 12,
+          background: '#0b7a4b',
+          borderRadius: 8,
+          transition: 'transform 0.4s ease, opacity 0.4s ease',
+          transform: on ? 'translateX(160px) rotate(45deg)' : 'none',
+          opacity: on ? 0.5 : 1,
+        }}
+      />
+    </div>
+  );
+}`}
+/>
+
+## Recap
+
+- **CSS transitions** animate a property when it changes (hover, toggle) — often all you need.
+- **CSS `@keyframes`** define standalone sequences (spinners, pulses).
+- Reach for **Motion/GSAP** for coordinated states, gestures, layout, timelines, or scroll.
+
+Read this, try the demo, then mark it complete — next, the principles of good motion.

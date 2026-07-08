@@ -1,0 +1,64 @@
+---
+id: animation-principles
+title: Principles and Performance
+order: 2
+module: foundations
+summary: A few principles separate polished motion from janky motion — natural easing, sensible timing, restraint — and the performance rule that matters most, which is to animate transform and opacity rather than layout.
+concepts:
+  - principle-easing
+  - principle-timing-restraint
+  - perf-transform-opacity
+estMinutes: 11
+status: published
+assessment: null
+prereqs: []
+---
+
+Good animation is mostly a few habits. Get these and your motion feels intentional and runs
+smoothly; ignore them and it feels cheap or stutters.
+
+## Easing: nothing moves linearly
+
+Real objects accelerate and decelerate. **Linear** motion (`ease: 'none'`) reads as robotic. Use
+an **ease-out** for things entering (fast then settle), **ease-in** for things leaving, and
+**ease-in-out** for moves. This single choice does most of the work of "feeling nice."
+
+## Timing and restraint
+
+- **Duration:** most UI motion lives in **150–400ms**. Shorter feels instant; longer feels
+  sluggish and makes people wait.
+- **Restraint:** animate to *guide attention and explain change*, not to decorate. If everything
+  moves, nothing stands out — and it gets annoying fast.
+
+## The one performance rule: animate transform and opacity
+
+The browser paints in stages. **`transform`** and **`opacity`** can be handled by the GPU
+compositor **without re-doing layout or paint** — they hit 60fps easily. Animating layout
+properties like `width`, `height`, `top`, or `left` forces the browser to **re-layout every
+frame**, which stutters.
+
+<Mermaid
+  chart={`flowchart LR
+    Cheap["transform, opacity"] -->|"GPU compositor, no relayout"| Smooth["60fps ✅"]
+    Expensive["width, height, top, left, margin"] -->|"relayout + repaint every frame"| Jank["jank ❌"]`}
+  caption="Animate transform and opacity for smooth 60fps; avoid animating layout-affecting properties."
+/>
+
+```css
+/* ❌ animates layout — janky */    .box { transition: left 0.3s; }  .box.moved { left: 200px; }
+/* ✅ animates transform — smooth */ .box { transition: transform 0.3s; } .box.moved { transform: translateX(200px); }
+```
+
+<Callout type="tip" title="This is why Motion and GSAP prefer transforms">
+  Both libraries animate via `transform` under the hood (that's why Motion's `x`/`y` and GSAP's
+  `x`/`y` map to `translate`, not `left`/`top`). Reach for movement/scale/rotate/opacity and you're
+  on the fast path by default.
+</Callout>
+
+## Recap
+
+- Use **easing** (ease-out to enter, ease-in to leave) — never linear for UI.
+- Keep durations **~150–400ms** and animate with **restraint** (guide, don't decorate).
+- **Animate `transform` and `opacity`** for 60fps; avoid animating layout properties.
+
+Read this, then mark it complete — next, motion that respects user preferences.
