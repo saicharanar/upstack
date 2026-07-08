@@ -10,7 +10,7 @@ concepts:
   - usememo-when-to-use
 estMinutes: 9
 status: published
-assessment: null
+assessment: use-memo-cache
 prereqs: []
 ---
 
@@ -95,4 +95,9 @@ factorial — its dependency `n` didn't change.
 - It also keeps **object references stable** for memoized children.
 - Use it for **measured** expensive work or needed reference stability — not by default.
 
-Read this, then mark it complete — next, its sibling for functions, `useCallback`.
+## Your turn
+
+Cache a calculation with `useMemo` so it only runs again when its input changes — not on an
+unrelated re-render. The checker counts how many times the calculation runs.
+
+<Assessment id="use-memo-cache" />

@@ -73,6 +73,37 @@ The only reason to reach for `useCallback` is **stability that something depends
   that a `memo` or an Effect relies on.
 </Callout>
 
+## See it run
+
+Click the parent button a few times. The parent re-renders each click, but the memoized `Child`
+receives the **same** `onAction` function (thanks to `useCallback`), so its render count stays at
+1 instead of climbing:
+
+<LiveExample
+  code={`import { useState, useCallback, memo } from 'react';
+
+let childRenders = 0;
+const Child = memo(function Child() {
+  childRenders += 1;
+  return <p>Child has rendered {childRenders} time(s)</p>;
+});
+
+export default function App() {
+  const [count, setCount] = useState(0);
+  const onAction = useCallback(() => {}, []); // stable identity across renders
+
+  return (
+    <div>
+      <button onClick={() => setCount(count + 1)}>Parent clicks: {count}</button>
+      <Child onAction={onAction} />
+    </div>
+  );
+}`}
+/>
+
+Remove the `useCallback` (pass a plain `() => {}`) and the child's count would climb on every
+click — a fresh function each render defeats its `memo`.
+
 ## Recap
 
 - Functions are **re-created every render**, which can defeat a child's `memo` or re-trigger an

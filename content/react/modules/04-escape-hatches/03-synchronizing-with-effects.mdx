@@ -70,6 +70,34 @@ useEffect(() => {
 
 Think of each Effect as a pair: **start syncing** (setup) and **stop syncing** (cleanup).
 
+## See it run
+
+This Effect starts an interval when the component mounts and **clears it on cleanup**. Toggle the
+clock off and the interval stops — proof the cleanup ran:
+
+<LiveExample
+  code={`import { useState, useEffect } from 'react';
+
+function Clock() {
+  const [seconds, setSeconds] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setSeconds((s) => s + 1), 1000);
+    return () => clearInterval(id); // cleanup: stop the interval when unmounted
+  }, []);
+  return <p>Running for {seconds}s</p>;
+}
+
+export default function App() {
+  const [show, setShow] = useState(true);
+  return (
+    <div>
+      <button onClick={() => setShow(!show)}>{show ? 'Hide' : 'Show'} clock</button>
+      {show && <Clock />}
+    </div>
+  );
+}`}
+/>
+
 <Callout type="note" title="Why Effects run twice in development">
   In development (Strict Mode), React runs each Effect **setup → cleanup → setup** once, on
   purpose, to reveal missing cleanup. If your chat shows two connections or a timer doubles,

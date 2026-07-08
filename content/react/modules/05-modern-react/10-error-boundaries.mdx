@@ -10,7 +10,7 @@ concepts:
   - eb-what-they-miss
 estMinutes: 9
 status: published
-assessment: null
+assessment: error-boundary
 prereqs: []
 ---
 
@@ -128,4 +128,9 @@ export default function App() {
   use `react-error-boundary`.
 - They **don't** catch event-handler, async, or server errors — handle those separately.
 
-Read this, then mark it complete.
+## Your turn
+
+Finish an `ErrorBoundary` so that when a child throws while rendering, it shows a fallback
+instead of crashing the app — and the rest of the page keeps working.
+
+<Assessment id="error-boundary" />
