@@ -7,12 +7,6 @@ const meta = {
   readOnlyFiles: [],
   concepts: [
     {
-      id: 'ref-not-focused-initially',
-      label: 'Input is not focused at first',
-      tests: ['leaves the input unfocused before clicking'],
-      required: true,
-    },
-    {
       id: 'ref-focus-on-click',
       label: 'Focuses the input via a ref',
       tests: ['focuses the input when the button is clicked'],

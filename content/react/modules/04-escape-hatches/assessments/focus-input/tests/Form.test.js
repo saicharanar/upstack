@@ -21,12 +21,6 @@ function click(node) {
 }
 
 describe('Focus the input', () => {
-  test('leaves the input unfocused before clicking', () => {
-    const container = setup();
-    const input = container.querySelector('input');
-    expect(document.activeElement).not.toBe(input);
-  });
-
   test('focuses the input when the button is clicked', () => {
     const container = setup();
     const input = container.querySelector('input');

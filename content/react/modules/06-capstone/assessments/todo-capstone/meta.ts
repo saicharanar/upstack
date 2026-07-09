@@ -7,12 +7,6 @@ const meta = {
   readOnlyFiles: [],
   concepts: [
     {
-      id: 'capstone-render-list',
-      label: 'Renders the task list',
-      tests: ['shows the three starting tasks'],
-      required: true,
-    },
-    {
       id: 'capstone-add',
       label: 'Adds a task from the input',
       tests: ['adds a task from the input field', 'a new task starts as still to-do'],

@@ -21,14 +21,20 @@ function click(node) {
 }
 
 describe('Light switch', () => {
-  test('starts with the light off', () => {
+  test('toggles the light on and off', () => {
     const container = setup();
+    const button = container.querySelector('button');
+    click(button);
+    expect(container.textContent).toContain('The light is on');
+    click(button);
     expect(container.textContent).not.toContain('The light is on');
   });
 
-  test('turns the light on when flipped', () => {
+  test('updates the button label as it toggles', () => {
     const container = setup();
-    click(container.querySelector('button'));
-    expect(container.textContent).toContain('The light is on');
+    const button = container.querySelector('button');
+    expect(button.textContent).toBe('Turn on');
+    click(button);
+    expect(button.textContent).toBe('Turn off');
   });
 });

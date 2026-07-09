@@ -22,11 +22,6 @@ function click(node) {
 }
 
 describe('External store counter', () => {
-  test('shows the store value', () => {
-    const container = setup();
-    expect(container.textContent).toContain('Count: 0');
-  });
-
   test('updates when the store changes', () => {
     const container = setup();
     const button = container.querySelector('button');
@@ -34,5 +29,23 @@ describe('External store counter', () => {
     expect(container.textContent).toContain('Count: 1');
     click(button);
     expect(container.textContent).toContain('Count: 2');
+  });
+
+  test('keeps every subscribed component in sync', () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    act(() =>
+      root.render(
+        <>
+          <Counter />
+          <Counter />
+        </>,
+      ),
+    );
+    // Clicking one component's button changes the shared store — both should update.
+    click(container.querySelectorAll('button')[0]);
+    const counts = [...container.querySelectorAll('p')].map((p) => p.textContent);
+    expect(counts).toEqual(['Count: 1', 'Count: 1']);
   });
 });

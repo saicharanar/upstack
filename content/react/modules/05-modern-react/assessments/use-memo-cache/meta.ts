@@ -7,15 +7,9 @@ const meta = {
   readOnlyFiles: [],
   concepts: [
     {
-      id: 'memo-skips-unrelated',
-      label: 'Skips the work on an unrelated re-render',
-      tests: ['does not recompute on an unrelated re-render'],
-      required: true,
-    },
-    {
-      id: 'memo-recomputes-on-change',
-      label: 'Recomputes when its input changes',
-      tests: ['recomputes when its input changes'],
+      id: 'memo-only-on-change',
+      label: 'Recomputes only when its input changes',
+      tests: ['recomputes only when its input changes'],
       required: true,
     },
   ],

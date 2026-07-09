@@ -4,15 +4,8 @@ const items = [
 ];
 
 export default function Menu({ onPick = () => {} }) {
-  // Wire each button so that clicking it calls onPick with that item's id.
-  // Remember: pass a function to onClick — don't call it during render.
-  return (
-    <ul>
-      {items.map((item) => (
-        <li key={item.id}>
-          <button>{item.label}</button>
-        </li>
-      ))}
-    </ul>
-  );
+  // Render a <button> for each item (showing its label). Clicking a button
+  // should call onPick with that item's id — pass the handler to onClick,
+  // don't call it during render.
+  return null;
 }

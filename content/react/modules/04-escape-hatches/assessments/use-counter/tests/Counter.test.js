@@ -21,14 +21,18 @@ function click(node) {
 }
 
 describe('useCounter custom hook', () => {
-  test('starts at zero through the hook', () => {
-    const container = setup();
-    expect(container.textContent).toContain('Count: 0');
-  });
-
   test('increments through the custom hook', () => {
     const container = setup();
     click(container.querySelector('button'));
     expect(container.textContent).toContain('Count: 1');
+  });
+
+  test('keeps counting up across clicks', () => {
+    const container = setup();
+    const button = container.querySelector('button');
+    click(button);
+    click(button);
+    click(button);
+    expect(container.textContent).toContain('Count: 3');
   });
 });

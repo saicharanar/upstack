@@ -7,15 +7,15 @@ const meta = {
   readOnlyFiles: [],
   concepts: [
     {
-      id: 'imperative-types',
-      label: 'Shows what you type',
-      tests: ['shows what you type'],
-      required: true,
-    },
-    {
       id: 'imperative-clear',
       label: 'Clears through the exposed ref handle',
       tests: ['clears the message box through the ref handle'],
+      required: true,
+    },
+    {
+      id: 'imperative-focus',
+      label: 'Focuses through the exposed ref handle',
+      tests: ['focuses the box through the ref handle'],
       required: true,
     },
   ],

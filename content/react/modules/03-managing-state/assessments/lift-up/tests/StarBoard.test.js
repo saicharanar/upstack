@@ -21,14 +21,18 @@ function click(node) {
 }
 
 describe('Lifted star count', () => {
-  test('starts with zero stars', () => {
-    const container = setup();
-    expect(container.textContent).toContain('Stars: 0');
-  });
-
   test('adds a star from the button to the shared count', () => {
     const container = setup();
     click(container.querySelector('button'));
     expect(container.textContent).toContain('Stars: 1');
+  });
+
+  test('keeps counting up across clicks', () => {
+    const container = setup();
+    const button = container.querySelector('button');
+    click(button);
+    click(button);
+    click(button);
+    expect(container.textContent).toContain('Stars: 3');
   });
 });

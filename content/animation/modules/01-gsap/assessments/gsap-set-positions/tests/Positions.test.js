@@ -19,11 +19,6 @@ function setup() {
 }
 
 describe('Laying boxes out with a function-based gsap.set', () => {
-  test('renders the four boxes', () => {
-    const container = setup();
-    expect(container.querySelectorAll('.box').length).toBe(4);
-  });
-
   test('places each box further right than the last', () => {
     const container = setup();
     const boxes = [...container.querySelectorAll('.box')];

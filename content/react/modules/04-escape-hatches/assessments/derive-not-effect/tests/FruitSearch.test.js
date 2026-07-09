@@ -22,16 +22,17 @@ function typeQuery(container, value) {
 }
 
 describe('Filter during render', () => {
-  test('shows all items at first', () => {
-    const container = setup();
-    expect(container.querySelectorAll('li').length).toBe(5);
-  });
-
   test('filters the list as you type', () => {
     const container = setup();
     typeQuery(container, 'an');
     const items = container.querySelectorAll('li');
     expect(items.length).toBe(1);
     expect(container.textContent).toContain('banana');
+  });
+
+  test('shows nothing when no fruit matches', () => {
+    const container = setup();
+    typeQuery(container, 'zzz');
+    expect(container.querySelectorAll('li').length).toBe(0);
   });
 });

@@ -7,15 +7,15 @@ const meta = {
   readOnlyFiles: [],
   concepts: [
     {
-      id: 'hook-initial',
-      label: 'Custom hook holds initial state',
-      tests: ['starts at zero through the hook'],
-      required: true,
-    },
-    {
       id: 'hook-behavior',
       label: 'Custom hook exposes behavior',
       tests: ['increments through the custom hook'],
+      required: true,
+    },
+    {
+      id: 'hook-accumulates',
+      label: 'State persists across renders',
+      tests: ['keeps counting up across clicks'],
       required: true,
     },
   ],

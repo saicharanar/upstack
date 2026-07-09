@@ -22,11 +22,6 @@ function clickButton(container, label) {
 }
 
 describe('Reducer counter', () => {
-  test('starts at zero', () => {
-    const container = setup();
-    expect(container.textContent).toContain('Count: 0');
-  });
-
   test('increments on the increment action', () => {
     const container = setup();
     clickButton(container, '+1');
@@ -37,6 +32,7 @@ describe('Reducer counter', () => {
   test('resets to zero on the reset action', () => {
     const container = setup();
     clickButton(container, '+1');
+    expect(container.textContent).toContain('Count: 1'); // increment must actually work
     clickButton(container, 'Reset');
     expect(container.textContent).toContain('Count: 0');
   });

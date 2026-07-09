@@ -7,15 +7,15 @@ const meta = {
   readOnlyFiles: [],
   concepts: [
     {
-      id: 'dne-initial',
-      label: 'Shows all items at first',
-      tests: ['shows all items at first'],
-      required: true,
-    },
-    {
       id: 'dne-filter',
       label: 'Filters during render as you type',
       tests: ['filters the list as you type'],
+      required: true,
+    },
+    {
+      id: 'dne-no-match',
+      label: 'Shows nothing when no item matches',
+      tests: ['shows nothing when no fruit matches'],
       required: true,
     },
   ],

@@ -7,12 +7,6 @@ const meta = {
   readOnlyFiles: [],
   concepts: [
     {
-      id: 'reducer-initial',
-      label: 'Starts at the initial state',
-      tests: ['starts at zero'],
-      required: true,
-    },
-    {
       id: 'reducer-increment',
       label: 'Handles the increment action',
       tests: ['increments on the increment action'],

@@ -5,7 +5,7 @@ export function toBreadcrumbs(pathname) {
   //     { label: 'hooks', href: '/blog/react/hooks' } ]
   // Split on "/", ignore empty segments, and build the cumulative href for each.
   // The root path "/" has no segments, so it returns an empty array.
-  return [];
+  return [{ label: '?', href: '/' }];
 }
 
 // A small preview — no need to change this.

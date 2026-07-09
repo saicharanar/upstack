@@ -7,15 +7,15 @@ const meta = {
   readOnlyFiles: [],
   concepts: [
     {
-      id: 'state-initial-hidden',
-      label: 'Starts with the light off',
-      tests: ['starts with the light off'],
+      id: 'state-toggle',
+      label: 'Toggles the light on and off',
+      tests: ['toggles the light on and off'],
       required: true,
     },
     {
-      id: 'state-toggle',
-      label: 'Turns on when flipped',
-      tests: ['turns the light on when flipped'],
+      id: 'state-label',
+      label: 'Updates the button label to match',
+      tests: ['updates the button label as it toggles'],
       required: true,
     },
   ],

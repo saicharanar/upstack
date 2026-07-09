@@ -17,12 +17,6 @@ function click(node) {
 }
 
 describe('Forwarded ref input', () => {
-  test('leaves the input unfocused before clicking', () => {
-    const container = setup();
-    const input = container.querySelector('input');
-    expect(document.activeElement).not.toBe(input);
-  });
-
   test('focuses the forwarded input when the button is clicked', () => {
     const container = setup();
     const input = container.querySelector('input');

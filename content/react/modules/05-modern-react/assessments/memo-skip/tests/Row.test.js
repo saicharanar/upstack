@@ -21,12 +21,6 @@ function click(node) {
 }
 
 describe('Skipping re-renders with memo', () => {
-  test('renders the child', () => {
-    const container = setup();
-    expect(container.textContent).toContain('Fixed item');
-    expect(stats.childRenders).toBeGreaterThan(0);
-  });
-
   test('does not re-render the child on an unrelated parent update', () => {
     const container = setup();
     const rendersAfterMount = stats.childRenders;

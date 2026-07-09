@@ -29,12 +29,6 @@ function switchUser(container) {
 }
 
 describe('Reset state with a key', () => {
-  test('lets you type a note', () => {
-    const container = setup();
-    typeNote(container, 'Buy milk');
-    expect(container.querySelector('input[aria-label="Note"]').value).toBe('Buy milk');
-  });
-
   test('resets the note when you switch users', () => {
     const container = setup();
     typeNote(container, 'Buy milk');

@@ -24,18 +24,15 @@ const buttonByText = (container, text) =>
   [...container.querySelectorAll('button')].find((b) => b.textContent.includes(text));
 
 describe('Cached calculation', () => {
-  test('does not recompute on an unrelated re-render', () => {
+  test('recomputes only when its input changes', () => {
     const container = setup();
-    const runsAfterMount = stats.runs;
+    const afterMount = stats.runs;
+    // An unrelated re-render must NOT recompute (the cache holds)...
     click(buttonByText(container, 'unrelated'));
-    expect(stats.runs).toBe(runsAfterMount); // the calculation was skipped
-  });
-
-  test('recomputes when its input changes', () => {
-    const container = setup();
-    const runsAfterMount = stats.runs;
+    expect(stats.runs).toBe(afterMount);
+    // ...but changing the input must recompute.
     click(buttonByText(container, 'n + 1'));
-    expect(stats.runs).toBeGreaterThan(runsAfterMount);
+    expect(stats.runs).toBeGreaterThan(afterMount);
     expect(container.textContent).toContain('Doubled: 6');
   });
 });

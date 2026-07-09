@@ -26,12 +26,7 @@ const buttonByText = (root, text) =>
   [...root.querySelectorAll('button')].find((b) => b.textContent === text);
 
 describe('Modal via portal', () => {
-  test('shows no modal until it is opened', () => {
-    setup();
-    expect(document.querySelector('.modal')).toBeNull();
-  });
-
-  test('renders the modal outside the app container when opened', () => {
+  test('renders the modal into document.body, outside the app, when opened', () => {
     const container = setup();
     click(buttonByText(container, 'Open'));
     const modal = document.querySelector('.modal');

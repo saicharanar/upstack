@@ -7,15 +7,15 @@ const meta = {
   readOnlyFiles: [],
   concepts: [
     {
-      id: 'queue-starts-zero',
-      label: 'Starts at zero',
-      tests: ['starts at zero'],
-      required: true,
-    },
-    {
       id: 'queue-updater-function',
       label: 'Adds three in one click with updater functions',
       tests: ['adds three in a single click'],
+      required: true,
+    },
+    {
+      id: 'queue-accumulates',
+      label: 'Keeps stacking on each click',
+      tests: ['adds three again on a second click'],
       required: true,
     },
   ],

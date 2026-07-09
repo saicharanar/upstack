@@ -17,16 +17,16 @@ function click(node) {
 }
 
 describe('Event handlers', () => {
-  test('does not call the handler while rendering', () => {
-    const picked = [];
-    render((id) => picked.push(id));
-    // Handlers must be passed, not called during render.
-    expect(picked).toEqual([]);
+  test('renders a button for each item', () => {
+    const container = render(() => {});
+    expect(container.querySelectorAll('button').length).toBe(2);
   });
 
-  test('calls the handler with the clicked item id', () => {
+  test('calls onPick with the clicked id, and only on click', () => {
     const picked = [];
     const container = render((id) => picked.push(id));
+    // The handler must be passed, not called during render.
+    expect(picked).toEqual([]);
     const buttons = container.querySelectorAll('button');
     click(buttons[1]); // "Banana" → id 2
     expect(picked).toEqual([2]);

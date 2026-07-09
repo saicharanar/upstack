@@ -7,15 +7,15 @@ const meta = {
   readOnlyFiles: [],
   concepts: [
     {
-      id: 'lift-initial',
-      label: 'Shares a starting value',
-      tests: ['starts with zero stars'],
-      required: true,
-    },
-    {
       id: 'lift-shared-update',
       label: 'Updates shared state from a child',
       tests: ['adds a star from the button to the shared count'],
+      required: true,
+    },
+    {
+      id: 'lift-accumulates',
+      label: 'Keeps accumulating across clicks',
+      tests: ['keeps counting up across clicks'],
       required: true,
     },
   ],

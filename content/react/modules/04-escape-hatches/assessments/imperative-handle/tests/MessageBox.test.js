@@ -25,17 +25,20 @@ function click(node) {
   act(() => node.dispatchEvent(new MouseEvent('click', { bubbles: true })));
 }
 
-describe('Message box with an imperative handle', () => {
-  test('shows what you type', () => {
-    const container = setup();
-    typeInto(container, 'Hello there');
-    expect(container.querySelector('textarea').value).toBe('Hello there');
-  });
+const buttonByText = (container, text) =>
+  [...container.querySelectorAll('button')].find((b) => b.textContent === text);
 
+describe('Message box with an imperative handle', () => {
   test('clears the message box through the ref handle', () => {
     const container = setup();
     typeInto(container, 'Hello there');
-    click(container.querySelector('button'));
+    click(buttonByText(container, 'Clear'));
     expect(container.querySelector('textarea').value).toBe('');
+  });
+
+  test('focuses the box through the ref handle', () => {
+    const container = setup();
+    click(buttonByText(container, 'Focus'));
+    expect(document.activeElement).toBe(container.querySelector('textarea'));
   });
 });

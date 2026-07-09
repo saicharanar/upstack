@@ -7,15 +7,15 @@ const meta = {
   readOnlyFiles: [],
   concepts: [
     {
-      id: 'eh-pass-not-call',
-      label: 'Passes the handler (does not call it during render)',
-      tests: ['does not call the handler while rendering'],
+      id: 'eh-renders',
+      label: 'Renders a button for each item',
+      tests: ['renders a button for each item'],
       required: true,
     },
     {
-      id: 'eh-argument',
-      label: 'Calls the handler with the clicked id',
-      tests: ['calls the handler with the clicked item id'],
+      id: 'eh-calls',
+      label: 'Calls onPick with the clicked id, only on click',
+      tests: ['calls onPick with the clicked id, and only on click'],
       required: true,
     },
   ],

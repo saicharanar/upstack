@@ -43,11 +43,6 @@ const completeButton = (li) => [...li.querySelectorAll('button')].find((b) => !i
 const deleteButton = (li) => [...li.querySelectorAll('button')].find((b) => isDeleteButton(b));
 
 describe('Todo capstone', () => {
-  test('shows the three starting tasks', () => {
-    const c = setup();
-    expect(items(c).length).toBe(3);
-  });
-
   test('adds a task from the input field', () => {
     const c = setup();
     typeInDraft(c, 'Write tests');
@@ -66,9 +61,12 @@ describe('Todo capstone', () => {
 
   test('ignores empty or whitespace-only input', () => {
     const c = setup();
+    typeInDraft(c, 'Write tests');
+    submitForm(c);
+    expect(items(c).length).toBe(4); // a real task is added...
     typeInDraft(c, '   ');
     submitForm(c);
-    expect(items(c).length).toBe(3);
+    expect(items(c).length).toBe(4); // ...but whitespace is ignored
   });
 
   test('marks a task done and updates the remaining count', () => {
