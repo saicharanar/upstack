@@ -1066,6 +1066,91 @@ a.sidebar__chapter:hover {
   min-block-size: 0;
 }
 
+/* ---- Preview / console toggle (workspace + live examples) --------------- */
+.lab__view-toggle,
+.live-example__view-toggle {
+  display: inline-flex;
+  flex: none;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm, 4px);
+  background: var(--color-bg);
+}
+
+.lab__view-toggle {
+  margin-inline-start: auto;
+}
+
+.lab__view-toggle button,
+.live-example__view-toggle button {
+  padding: 3px var(--space-3);
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.lab__view-toggle button[data-active='true'],
+.live-example__view-toggle button[data-active='true'] {
+  background: var(--color-accent-soft, var(--color-surface-alt));
+  color: var(--color-accent);
+}
+
+/* Both panes stay mounted; only the inactive one is hidden. */
+.lab__view {
+  block-size: 100%;
+  min-block-size: 0;
+}
+
+.lab__preview-stage[data-view='preview'] .lab__view--console,
+.lab__preview-stage[data-view='console'] .lab__view--preview {
+  display: none;
+}
+
+.live-example__output {
+  display: flex;
+  flex: 1 1 0;
+  min-inline-size: 0;
+  block-size: var(--live-example-body-height);
+}
+
+.live-example__view {
+  flex: 1 1 0;
+  min-inline-size: 0;
+  block-size: var(--live-example-body-height);
+  overflow: hidden;
+}
+
+.live-example__output[data-view='preview'] .live-example__view--console,
+.live-example__output[data-view='console'] .live-example__view--preview {
+  display: none;
+}
+
+.live-example[data-fullscreen='true'] .live-example__output,
+.live-example[data-fullscreen='true'] .live-example__view {
+  block-size: calc(100vh - 3rem);
+  min-block-size: 0;
+}
+
+/* The console fills its pane regardless of Sandpack's internal class names. */
+.lab__view--console,
+.live-example__view--console {
+  display: flex;
+  flex-direction: column;
+}
+
+.lab__view--console > *,
+.live-example__view--console > * {
+  flex: 1 1 0;
+  min-block-size: 0;
+  overflow: auto;
+}
+
 .lab__tests {
   display: flex;
   flex-direction: column;

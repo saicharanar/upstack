@@ -16,7 +16,7 @@ function setup() {
 
 function click(node) {
   act(() => {
-    node.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    node.click();
   });
 }
 

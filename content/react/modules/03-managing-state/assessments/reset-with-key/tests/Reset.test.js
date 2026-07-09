@@ -25,7 +25,7 @@ function switchUser(container) {
   const button = [...container.querySelectorAll('button')].find((b) =>
     b.textContent.startsWith('Switch user'),
   );
-  act(() => button.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+  act(() => button.click());
 }
 
 describe('Reset state with a key', () => {

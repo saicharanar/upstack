@@ -31,7 +31,7 @@ function submitForm(container) {
 }
 
 function click(node) {
-  act(() => node.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+  act(() => node.click());
 }
 
 const items = (container) => container.querySelectorAll('li');

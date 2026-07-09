@@ -13,7 +13,7 @@ function setup() {
 }
 
 function click(node) {
-  act(() => node.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+  act(() => node.click());
 }
 
 const addButton = (c, name) => [...c.querySelectorAll('button')].find((b) => b.textContent === `Add ${name}`);

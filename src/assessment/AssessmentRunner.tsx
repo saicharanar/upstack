@@ -2,6 +2,7 @@
 
 import {
   SandpackCodeEditor,
+  SandpackConsole,
   SandpackPreview,
   SandpackProvider,
   SandpackTests,
@@ -47,6 +48,7 @@ interface LabProps {
 }
 
 function Lab({ nextHref, onComplete, result }: LabProps): ReactNode {
+  const [view, setView] = useState<'preview' | 'console'>('preview');
   return (
     <PanelGroup direction="horizontal" className="lab" autoSaveId="upstack-lab-columns">
       <Panel defaultSize={56} minSize={28} className="lab__editor">
@@ -62,10 +64,37 @@ function Lab({ nextHref, onComplete, result }: LabProps): ReactNode {
         <PanelGroup direction="vertical" className="lab__rows" autoSaveId="upstack-lab-rows">
           <Panel defaultSize={48} minSize={16} className="lab__preview">
             <div className="lab__preview-bar">
-              <span className="lab__preview-label">Live preview</span>
+              <span className="lab__preview-label">{view === 'preview' ? 'Live preview' : 'Console'}</span>
+              <div className="lab__view-toggle" role="tablist" aria-label="Preview or console">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={view === 'preview'}
+                  data-active={view === 'preview'}
+                  onClick={() => setView('preview')}
+                >
+                  Preview
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={view === 'console'}
+                  data-active={view === 'console'}
+                  onClick={() => setView('console')}
+                >
+                  Console
+                </button>
+              </div>
             </div>
-            <div className="lab__preview-stage">
-              <SandpackPreview showOpenInCodeSandbox={false} />
+            {/* Both panes stay mounted so console.log output isn't lost when the
+                preview is showing — we only toggle visibility, never unmount. */}
+            <div className="lab__preview-stage" data-view={view}>
+              <div className="lab__view lab__view--preview">
+                <SandpackPreview showOpenInCodeSandbox={false} />
+              </div>
+              <div className="lab__view lab__view--console">
+                <SandpackConsole resetOnPreviewRestart showSyntaxError />
+              </div>
             </div>
           </Panel>
 

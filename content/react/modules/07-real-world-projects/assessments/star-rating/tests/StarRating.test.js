@@ -13,7 +13,7 @@ function setup() {
 }
 
 function click(node) {
-  act(() => node.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+  act(() => node.click());
 }
 
 const filledCount = (container) => (container.textContent.match(/★/g) || []).length;

@@ -17,7 +17,7 @@ function setup() {
 function clickButton(container, label) {
   const button = [...container.querySelectorAll('button')].find((b) => b.textContent === label);
   act(() => {
-    button.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    button.click();
   });
 }
 
