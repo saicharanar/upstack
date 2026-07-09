@@ -7,8 +7,8 @@ import { ThemeToggle } from '@/theme/ThemeToggle';
 import { THEME_BOOTSTRAP_SCRIPT } from '@/theme/themeStorage';
 
 export const metadata: Metadata = {
-  title: 'upstack — learn React, one concept at a time',
-  description: 'A progressive, hands-on React learning platform with graded in-browser exercises.',
+  title: 'upstack — learn a stack, one concept at a time',
+  description: 'A progressive, hands-on learning platform with graded in-browser exercises.',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }): ReactNode {
@@ -25,7 +25,7 @@ export default function RootLayout({ children }: { children: ReactNode }): React
             </Link>
             <div className="app-header__actions">
               <ThemeToggle />
-              <Link className="button button--ghost" href="/learn">
+              <Link className="button button--ghost" href="/learn/react">
                 Open course
               </Link>
             </div>

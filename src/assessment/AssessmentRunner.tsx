@@ -92,11 +92,10 @@ export default function AssessmentRunner({ bundle, chapterId, nextHref }: Assess
     [bundle.visibleFiles, bundle.activeFile],
   );
   const [theme] = useState<SandpackPredefinedTheme>(initialTheme);
-  const customSetup = useMemo(
-    () =>
-      Object.keys(bundle.dependencies).length > 0 ? { dependencies: { ...bundle.dependencies } } : undefined,
-    [bundle.dependencies],
-  );
+  const customSetup = useMemo(() => {
+    const deps = bundle.dependencies ?? {};
+    return Object.keys(deps).length > 0 ? { dependencies: { ...deps } } : undefined;
+  }, [bundle.dependencies]);
 
   return (
     <div className="assessment">

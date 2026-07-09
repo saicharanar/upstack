@@ -11,17 +11,21 @@ function mountBadge() {
 }
 
 describe('Name badge', () => {
-  test('shows a big hello heading', () => {
+  test('greets with a hello heading', () => {
     const container = mountBadge();
     const heading = container.querySelector('h1');
     expect(heading).not.toBeNull();
-    expect((heading.textContent ?? '').trim().length).toBeGreaterThan(0);
+    expect((heading.textContent ?? '').toLowerCase()).toContain('hello');
   });
 
-  test('shows a name below the heading', () => {
+  test('introduces a name below the greeting', () => {
     const container = mountBadge();
+    const heading = container.querySelector('h1');
     const line = container.querySelector('p');
     expect(line).not.toBeNull();
-    expect((line.textContent ?? '').trim().length).toBeGreaterThan(0);
+    const name = (line.textContent ?? '').trim();
+    // A real name line — present, and not just repeating the greeting.
+    expect(name.length).toBeGreaterThan(0);
+    expect(name).not.toBe((heading?.textContent ?? '').trim());
   });
 });

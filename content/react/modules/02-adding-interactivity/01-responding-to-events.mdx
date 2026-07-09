@@ -11,7 +11,7 @@ concepts:
   - event-propagation
 estMinutes: 12
 status: published
-assessment: click-counter
+assessment: event-handlers
 prereqs: []
 ---
 
@@ -148,8 +148,8 @@ parentheses and watch it fire on load — then fix it.
 
 ## Your turn
 
-Build a **like button**, like on a social post: it starts at "♥ 0 likes" and adds one like on
-each tap. (You'll use `useState`, introduced in the next chapter — the label reads the count.)
-Run the checks.
+Wire up a menu: each button should call the `onPick` handler with its item's id **when clicked**.
+The catch is the lesson of this chapter — **pass** the function, don't **call** it during render.
+(No state yet — that's the very next chapter.)
 
-<Assessment id="click-counter" />
+<Assessment id="event-handlers" />

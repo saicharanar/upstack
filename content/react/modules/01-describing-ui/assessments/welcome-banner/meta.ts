@@ -7,15 +7,15 @@ const meta = {
   readOnlyFiles: [],
   concepts: [
     {
-      id: 'component-returns-heading',
-      label: 'Shows a hello heading',
-      tests: ['shows a big hello heading'],
+      id: 'badge-hello',
+      label: 'Greets with a hello heading',
+      tests: ['greets with a hello heading'],
       required: true,
     },
     {
-      id: 'component-returns-tagline',
-      label: 'Shows a name below',
-      tests: ['shows a name below the heading'],
+      id: 'badge-name',
+      label: 'Names the wearer below the greeting',
+      tests: ['introduces a name below the greeting'],
       required: true,
     },
   ],
