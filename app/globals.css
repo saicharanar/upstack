@@ -1151,6 +1151,46 @@ a.sidebar__chapter:hover {
   overflow: auto;
 }
 
+/* ---- Sandbox crash fallback (error boundary) --------------------------- */
+.sandbox-error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin: var(--space-4);
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.sandbox-error__title {
+  margin: 0;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-strong);
+}
+
+.sandbox-error__body {
+  margin: 0;
+  max-inline-size: 46ch;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.sandbox-error__button {
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm, 4px);
+  background: var(--color-accent);
+  color: #fff;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.sandbox-error__button:hover {
+  filter: brightness(1.05);
+}
+
 .lab__tests {
   display: flex;
   flex-direction: column;

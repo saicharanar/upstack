@@ -9,6 +9,7 @@ import {
   type SandpackPredefinedTemplate,
 } from '@codesandbox/sandpack-react';
 import { useEffect, useState, type ReactNode } from 'react';
+import { SandpackBoundary } from './SandpackBoundary';
 
 const DEFAULT_ENTRY = '/App.js';
 
@@ -46,6 +47,7 @@ export default function LiveExampleRunner({
   }, [fullscreen]);
 
   return (
+    <SandpackBoundary>
     <div className="live-example" data-fullscreen={fullscreen}>
       <div className="live-example__bar">
         <span className="live-example__label">Runnable example — edit the code, watch it update</span>
@@ -99,6 +101,7 @@ export default function LiveExampleRunner({
         </SandpackLayout>
       </SandpackProvider>
     </div>
+    </SandpackBoundary>
   );
 }
 

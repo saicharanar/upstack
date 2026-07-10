@@ -15,6 +15,7 @@ import type { AssessmentBundle } from '@/content-layer/loader';
 import { AssessmentFormatButton } from './AssessmentFormatButton';
 import type { GradeResult } from './grade';
 import { ResultPanel } from './ResultPanel';
+import { SandpackBoundary } from './SandpackBoundary';
 import { toSandpackFiles } from './sandpackFiles';
 import { useAssessmentResult, type SandpackSpecs } from './useAssessmentResult';
 
@@ -128,15 +129,17 @@ export default function AssessmentRunner({ bundle, chapterId, nextHref }: Assess
 
   return (
     <div className="assessment">
-      <SandpackProvider
-        template={bundle.template as SandpackPredefinedTemplate}
-        theme={theme}
-        customSetup={customSetup}
-        files={files}
-        options={options}
-      >
-        <Lab nextHref={nextHref} onComplete={onComplete} result={result} />
-      </SandpackProvider>
+      <SandpackBoundary>
+        <SandpackProvider
+          template={bundle.template as SandpackPredefinedTemplate}
+          theme={theme}
+          customSetup={customSetup}
+          files={files}
+          options={options}
+        >
+          <Lab nextHref={nextHref} onComplete={onComplete} result={result} />
+        </SandpackProvider>
+      </SandpackBoundary>
     </div>
   );
 }
