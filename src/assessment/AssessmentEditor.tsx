@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { AssessmentFile } from '@/content-layer/loader';
+import { AssessmentEditorSurface } from './AssessmentEditorSurface';
 import { editorThemeFromDocument } from './editorSurface';
 import { formatJavaScript } from './formatJavaScript';
 import {
@@ -11,7 +12,6 @@ import {
   type ValidatedRevision,
 } from './executionGate';
 import { hasValidJavaScriptSyntax } from './javascriptSyntax';
-import { LegacyMonacoSurface } from './LegacyMonacoSurface';
 
 const STATUS_LABELS: Record<ExecutionStatus, string> = {
   ready: 'Preview updated',
@@ -138,7 +138,7 @@ export function AssessmentEditor({
       ) : null}
 
       <div className="assessment-editor__surface">
-        <LegacyMonacoSurface
+        <AssessmentEditorSurface
           files={draftFiles}
           activePath={activePath}
           readOnly={isReadOnly}

@@ -1083,6 +1083,18 @@ a.sidebar__chapter:hover {
   overflow: hidden;
 }
 
+.assessment-editor__modern-surface {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.assessment-editor__loading {
+  margin: 0;
+  padding: var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
 .lab__editor-body {
   flex: 1 1 0;
   min-block-size: 0;
