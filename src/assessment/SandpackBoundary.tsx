@@ -4,6 +4,8 @@ import { Component, type ErrorInfo, type ReactNode } from 'react';
 
 interface SandpackBoundaryProps {
   readonly children: ReactNode;
+  readonly onRetry?: () => void;
+  readonly preservesDraft?: boolean;
 }
 
 interface SandpackBoundaryState {
@@ -34,19 +36,27 @@ export class SandpackBoundary extends Component<SandpackBoundaryProps, SandpackB
 
   override render(): ReactNode {
     if (this.state.hasError) {
+      const body = this.props.preservesDraft
+        ? 'The preview runtime stopped, but your code is safe. Restart the preview to run the last valid version again.'
+        : 'This is almost always a one-off while the code sandbox loads. Reloading fetches a fresh copy and usually clears it.';
       return (
         <div className="sandbox-error" role="alert">
           <p className="sandbox-error__title">The interactive sandbox hit a snag.</p>
           <p className="sandbox-error__body">
-            This is almost always a one-off while the code sandbox loads. Reloading fetches a
-            fresh copy and usually clears it.
+            {body}
           </p>
           <button
             type="button"
             className="sandbox-error__button"
-            onClick={() => window.location.reload()}
+            onClick={() => {
+              if (this.props.onRetry) {
+                this.props.onRetry();
+                return;
+              }
+              window.location.reload();
+            }}
           >
-            Reload
+            {this.props.onRetry ? 'Restart preview' : 'Reload'}
           </button>
         </div>
       );

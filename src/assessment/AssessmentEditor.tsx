@@ -4,7 +4,7 @@ import Editor, { loader, type Monaco, type OnMount } from '@monaco-editor/react'
 import * as localMonaco from 'monaco-editor';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { AssessmentFile } from '@/content-layer/loader';
-import { formatJavaScript } from './AssessmentFormatButton';
+import { formatJavaScript } from './formatJavaScript';
 import {
   AssessmentExecutionGate,
   type DraftFiles,
@@ -70,6 +70,7 @@ export function AssessmentEditor({
   const [activePath, setActivePath] = useState(activeFile);
   const [formatStatus, setFormatStatus] = useState<FormatStatus>('idle');
   const monacoRef = useRef<Monaco | null>(null);
+  const draftFilesRef = useRef(draftFiles);
 
   const executionGate = useMemo(
     () =>
@@ -88,11 +89,10 @@ export function AssessmentEditor({
   useEffect(() => () => executionGate.dispose(), [executionGate]);
 
   const updateActiveDraft = (code: string): void => {
-    setDraftFiles((current) => {
-      const next = { ...current, [activePath]: code };
-      executionGate.schedule(next);
-      return next;
-    });
+    const next = { ...draftFilesRef.current, [activePath]: code };
+    draftFilesRef.current = next;
+    setDraftFiles(next);
+    executionGate.schedule(next);
   };
 
   const handleMount: OnMount = (editor, monaco) => {
