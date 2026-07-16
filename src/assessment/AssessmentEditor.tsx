@@ -1,9 +1,8 @@
 'use client';
 
-import Editor, { loader, type OnMount } from '@monaco-editor/react';
-import * as localMonaco from 'monaco-editor';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { AssessmentFile } from '@/content-layer/loader';
+import { editorThemeFromDocument } from './editorSurface';
 import { formatJavaScript } from './formatJavaScript';
 import {
   AssessmentExecutionGate,
@@ -12,14 +11,7 @@ import {
   type ValidatedRevision,
 } from './executionGate';
 import { hasValidJavaScriptSyntax } from './javascriptSyntax';
-import {
-  configureMonaco,
-  configureMonacoWorkers,
-  modelUriFor,
-} from './monacoSetup';
-
-loader.config({ monaco: localMonaco });
-configureMonacoWorkers();
+import { LegacyMonacoSurface } from './LegacyMonacoSurface';
 
 const STATUS_LABELS: Record<ExecutionStatus, string> = {
   ready: 'Preview updated',
@@ -84,16 +76,11 @@ export function AssessmentEditor({
 
   useEffect(() => () => executionGate.dispose(), [executionGate]);
 
-  const updateActiveDraft = (code: string): void => {
-    const next = { ...draftFilesRef.current, [activePath]: code };
+  const updateDraft = (filePath: string, code: string): void => {
+    const next = { ...draftFilesRef.current, [filePath]: code };
     draftFilesRef.current = next;
     setDraftFiles(next);
     executionGate.schedule(next);
-  };
-
-  const handleMount: OnMount = (editor, monaco) => {
-    configureMonaco(monaco);
-    editor.focus();
   };
 
   const formatActiveFile = async (): Promise<void> => {
@@ -103,7 +90,7 @@ export function AssessmentEditor({
     setFormatStatus('formatting');
     try {
       const formatted = await formatJavaScript(draftFiles[activePath] ?? '');
-      updateActiveDraft(formatted);
+      updateDraft(activePath, formatted);
       setFormatStatus('idle');
     } catch {
       setFormatStatus('error');
@@ -151,29 +138,14 @@ export function AssessmentEditor({
       ) : null}
 
       <div className="assessment-editor__surface">
-        <Editor
-          path={modelUriFor(activePath)}
-          language="javascript"
-          value={draftFiles[activePath] ?? ''}
-          saveViewState
-          theme={typeof document !== 'undefined' && document.documentElement.dataset.theme === 'dark' ? 'vs-dark' : 'vs'}
-          options={{
-            automaticLayout: true,
-            fixedOverflowWidgets: true,
-            fontFamily: "'JetBrains Mono', 'SFMono-Regular', ui-monospace, Menlo, monospace",
-            fontSize: 14,
-            lineNumbers: 'on',
-            minimap: { enabled: false },
-            padding: { top: 14 },
-            quickSuggestions: { comments: false, other: true, strings: true },
-            readOnly: isReadOnly,
-            scrollBeyondLastLine: false,
-            suggestOnTriggerCharacters: true,
-            tabSize: 2,
-            wordWrap: 'off',
-          }}
-          onMount={handleMount}
-          onChange={(value) => updateActiveDraft(value ?? '')}
+        <LegacyMonacoSurface
+          files={draftFiles}
+          activePath={activePath}
+          readOnly={isReadOnly}
+          theme={editorThemeFromDocument(
+            typeof document === 'undefined' ? undefined : document,
+          )}
+          onChange={updateDraft}
         />
       </div>
     </section>
