@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AssessmentMemoryFileSystem } from '@/assessment/assessmentMemoryFileSystem';
 import {
+  ensureTextmateRuntimeEnvironment,
   modernModelPath,
   modernMonacoInitOptions,
   modernWorkspaceFiles,
@@ -15,6 +16,20 @@ describe('modern Monaco assessment client', () => {
   it('uses JSX-aware virtual extensions for JavaScript assessment files', () => {
     expect(modernModelPath('/App.js')).toBe('/assessment/App.jsx');
     expect(modernModelPath('/components/Card.jsx')).toBe('/assessment/components/Card.jsx');
+  });
+
+  it('defines the TextMate debug environment before loading the browser package', () => {
+    const emptyRuntime = {};
+    const existingRuntime = { process: { env: { EXISTING_VALUE: 'kept' } } };
+
+    ensureTextmateRuntimeEnvironment(emptyRuntime);
+    ensureTextmateRuntimeEnvironment(existingRuntime);
+
+    expect(emptyRuntime).toEqual({ process: { env: { VSCODE_TEXTMATE_DEBUG: '' } } });
+    expect(existingRuntime.process.env).toEqual({
+      EXISTING_VALUE: 'kept',
+      VSCODE_TEXTMATE_DEBUG: '',
+    });
   });
 
   it('ships React declarations and compiler config in the local workspace', () => {

@@ -1,4 +1,4 @@
-import { init, Workspace, type InitOptions, type TextmateTheme } from 'modern-monaco';
+import type { InitOptions, TextmateTheme, Workspace } from 'modern-monaco';
 import type * as ModernMonaco from 'modern-monaco/editor-core';
 import type { DraftFiles } from './executionGate';
 import {
@@ -38,10 +38,32 @@ const DARK_THEME: TextmateTheme = {
 
 const fileSystem = new AssessmentMemoryFileSystem();
 let workspace: Workspace | undefined;
+let packagePromise: Promise<typeof import('modern-monaco')> | undefined;
 let monacoPromise: Promise<typeof ModernMonaco> | undefined;
 
-function getWorkspace(): Workspace {
-  workspace ??= new Workspace({ name: 'upstack-assessment', customFS: fileSystem });
+interface TextmateRuntimeEnvironment {
+  process?: {
+    env?: Record<string, string | undefined>;
+  };
+}
+
+export function ensureTextmateRuntimeEnvironment(runtime: TextmateRuntimeEnvironment): void {
+  runtime.process ??= {};
+  runtime.process.env ??= {};
+  runtime.process.env.VSCODE_TEXTMATE_DEBUG ??= '';
+}
+
+function loadModernMonacoPackage(): Promise<typeof import('modern-monaco')> {
+  ensureTextmateRuntimeEnvironment(globalThis);
+  packagePromise ??= import('modern-monaco');
+  return packagePromise;
+}
+
+function getWorkspace(WorkspaceConstructor: typeof import('modern-monaco').Workspace): Workspace {
+  workspace ??= new WorkspaceConstructor({
+    name: 'upstack-assessment',
+    customFS: fileSystem,
+  });
   return workspace;
 }
 
@@ -128,7 +150,12 @@ export async function prepareModernAssessmentFiles(files: DraftFiles): Promise<v
 
 export function initializeModernMonaco(): Promise<typeof ModernMonaco> {
   monacoPromise ??= withTimeout(
-    init({ ...modernMonacoInitOptions(), workspace: getWorkspace() }),
+    loadModernMonacoPackage().then(({ init, Workspace: WorkspaceConstructor }) =>
+      init({
+        ...modernMonacoInitOptions(),
+        workspace: getWorkspace(WorkspaceConstructor),
+      }),
+    ),
     INITIALIZATION_TIMEOUT_MS,
   );
   return monacoPromise;
