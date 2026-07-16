@@ -1,7 +1,7 @@
 # Modern Monaco Assessment Editor Design
 
 **Date:** 2026-07-16
-**Status:** Proposed for implementation planning
+**Status:** Approved for implementation planning
 
 ## Context
 
@@ -86,7 +86,6 @@ interface AssessmentEditorSurfaceProps {
 
 interface AssessmentEditorSurfaceApi {
   formatDocument(): Promise<void>;
-  getSyntaxDiagnostics(paths: readonly string[]): Promise<readonly SyntaxDiagnostic[]>;
   focus(): void;
 }
 ```
@@ -106,7 +105,6 @@ components.
 - JavaScript, JSX, DOM, React, and React DOM language configuration.
 - Model switching without recreating the surrounding assessment shell.
 - Model and workspace disposal when the assessment changes or unmounts.
-- Translation of language-service diagnostics into the existing syntax-gate shape.
 
 Global services initialize once per browser session. Assessment workspaces and models have a
 shorter lifecycle and must be disposed without tearing down shared global services.
@@ -167,6 +165,11 @@ closing tags:
 Closing-tag insertion updates only the local draft. Like every other edit, it passes through the
 existing execution debounce and syntax gate before Sandpack receives it.
 
+The execution gate remains editor-independent. `modern-monaco` exposes combined syntax and
+semantic markers rather than a public syntax-only diagnostic API, so a pinned local JavaScript
+parser validates the draft snapshot. Editor semantic warnings remain visible but never block a
+valid assessment from running.
+
 ## Data Flow
 
 1. The assessment shell creates its initial draft independently of either editor surface.
@@ -174,7 +177,7 @@ existing execution debounce and syntax gate before Sandpack receives it.
 3. A learner edit, including an inserted closing tag, calls the shell's `onChange` callback.
 4. The shell updates the authoritative draft immediately.
 5. The existing execution gate waits for 600 milliseconds of inactivity.
-6. The surface adapter requests syntax diagnostics for the current revision.
+6. The execution gate parses every editable JavaScript or JSX file in the current revision.
 7. An invalid revision remains editor-only while Sandpack displays the last valid preview.
 8. A valid revision is published to the existing Sandpack runtime and tests run as they do now.
 9. If the surface fails, the legacy adapter reopens the same authoritative draft; the runtime is
@@ -231,8 +234,8 @@ later removal is a separate cleanup decision, not part of this migration.
 
 ### Repository verification
 
-- Focused unit tests cover surface selection, adapter behavior, revision-safe diagnostics, and
-  fallback with an existing draft.
+- Focused unit tests cover surface selection, adapter behavior, editor-independent JSX parsing,
+  revision-safe validation, and fallback with an existing draft.
 - Browser tests type representative JSX instead of setting the whole model programmatically.
 - The existing assessment browser flow still reaches its expected passing check count.
 - Type checking, unit tests, assessment-content validation, smoke checks, and the production build
