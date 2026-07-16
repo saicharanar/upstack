@@ -58,7 +58,11 @@ describe('Sandpack assessment results', () => {
   });
 
   it('treats missing maps and malformed errors as empty data', () => {
-    expect(flattenSandpackRun({ broken: null, empty: {} })).toEqual({
+    expect(flattenSandpackRun({
+      broken: null,
+      empty: {},
+      malformed: { tests: { missing: null, primitive: 'nope' } },
+    })).toEqual({
       tests: [],
       technicalMessages: [],
     });

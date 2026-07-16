@@ -5,12 +5,6 @@ const MAX_FAILURE_MESSAGE_LINES = 4;
 const STACK_LINE_PATTERN = /^at\s/u;
 const INTERNAL_PATH_PATTERN = /(?:sandpack\.codesandbox\.io|\/(?:[^/\s]+\.)?test\.[jt]sx?):/iu;
 
-interface SandpackTestNode {
-  readonly name?: unknown;
-  readonly status?: unknown;
-  readonly errors?: unknown;
-}
-
 interface SandpackResultNode {
   readonly tests?: unknown;
   readonly describes?: unknown;
@@ -48,7 +42,7 @@ function collectTests(node: SandpackResultNode | null | undefined): SpecTestResu
   if (!node) return [];
 
   const ownTests = Object.values(asRecord(node.tests)).flatMap((value) => {
-    const test = value as SandpackTestNode;
+    const test = asRecord(value);
     if (typeof test.name !== 'string') return [];
     const passed = test.status === 'pass';
     return [{
