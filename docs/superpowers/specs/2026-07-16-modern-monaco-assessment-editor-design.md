@@ -1,7 +1,7 @@
 # Modern Monaco Assessment Editor Design
 
 **Date:** 2026-07-16
-**Status:** Approved for implementation planning
+**Status:** Implemented and verified
 
 ## Context
 
@@ -240,6 +240,24 @@ later removal is a separate cleanup decision, not part of this migration.
 - The existing assessment browser flow still reaches its expected passing check count.
 - Type checking, unit tests, assessment-content validation, smoke checks, and the production build
   all pass.
+
+## Verification Record
+
+Verified on 2026-07-16 with:
+
+- `npm test` — 49 unit tests passed.
+- `npm run typecheck` — no TypeScript errors.
+- `npm run ci:content` — all 46 assessment solutions passed their hidden tests.
+- `npm run verify:smoke` — assessment assembly and grading smoke check passed.
+- `BASE_URL=http://localhost:3013 npm run e2e` — modern surface, JSX tag closing,
+  native tag/attribute/component-prop suggestions, syntax gating, grading, persistence, local-only
+  editor assets, and legacy fallback all passed.
+- `npm run build` — 143 static pages generated and exported.
+- `git diff --check` — no whitespace errors.
+
+The static export measures 62,368 KiB versus the 30,188 KiB baseline, an increase of 32,180 KiB.
+This is the explicit cost of serving the editor core, TypeScript runtime, language worker, and React
+type libraries locally instead of depending on public editor CDNs.
 
 ## Risks and Trade-offs
 

@@ -1083,7 +1083,8 @@ a.sidebar__chapter:hover {
   overflow: hidden;
 }
 
-.assessment-editor__modern-surface {
+.assessment-editor__modern-surface,
+.assessment-editor__legacy-surface {
   inline-size: 100%;
   block-size: 100%;
 }

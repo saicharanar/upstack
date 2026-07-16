@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AssessmentMemoryFileSystem } from '@/assessment/assessmentMemoryFileSystem';
 import {
-  ensureTextmateRuntimeEnvironment,
+  configureModernMonacoEnvironment,
+  loadModernReactTypeFiles,
   modernModelPath,
   modernMonacoInitOptions,
   modernWorkspaceFiles,
@@ -18,20 +19,6 @@ describe('modern Monaco assessment client', () => {
     expect(modernModelPath('/components/Card.jsx')).toBe('/assessment/components/Card.jsx');
   });
 
-  it('defines the TextMate debug environment before loading the browser package', () => {
-    const emptyRuntime = {};
-    const existingRuntime = { process: { env: { EXISTING_VALUE: 'kept' } } };
-
-    ensureTextmateRuntimeEnvironment(emptyRuntime);
-    ensureTextmateRuntimeEnvironment(existingRuntime);
-
-    expect(emptyRuntime).toEqual({ process: { env: { VSCODE_TEXTMATE_DEBUG: '' } } });
-    expect(existingRuntime.process.env).toEqual({
-      EXISTING_VALUE: 'kept',
-      VSCODE_TEXTMATE_DEBUG: '',
-    });
-  });
-
   it('ships React declarations and compiler config in the local workspace', () => {
     const workspaceFiles = modernWorkspaceFiles({
       '/App.js': 'export default () => <div />',
@@ -46,12 +33,47 @@ describe('modern Monaco assessment client', () => {
     ]);
   });
 
+  it('loads the full local React DOM and JSX type libraries without a public CDN', async () => {
+    const requestedUrls: string[] = [];
+    const fetchAsset = vi.fn(async (url: string) => {
+      requestedUrls.push(url);
+      return new Response(`type source for ${url}`, { status: 200 });
+    });
+
+    const typeFiles = await loadModernReactTypeFiles('/upstack', fetchAsset);
+
+    expect(requestedUrls).toContain('/upstack/vendor/types/react/index.d.ts');
+    expect(requestedUrls).toContain('/upstack/vendor/types/react/global.d.ts');
+    expect(requestedUrls).toContain('/upstack/vendor/types/react/jsx-runtime.d.ts');
+    expect(requestedUrls).toContain('/upstack/vendor/types/csstype/index.d.ts');
+    expect(typeFiles['/node_modules/@types/react/index.d.ts']).toContain('react/index.d.ts');
+    expect(typeFiles['/node_modules/csstype/index.d.ts']).toContain('csstype/index.d.ts');
+  });
+
   it('uses only bundled themes and grammars', () => {
     const options = modernMonacoInitOptions();
 
     expect(typeof options.defaultTheme).toBe('object');
     expect(options.themes?.every((theme) => typeof theme === 'object')).toBe(true);
+    expect(
+      options.themes?.every(
+        (theme) =>
+          typeof theme === 'object' &&
+          theme !== null &&
+          'tokenColors' in theme &&
+          Array.isArray(theme.tokenColors) &&
+          theme.tokenColors.length > 0,
+      ),
+    ).toBe(true);
     expect(options.cdn).toBe('');
+  });
+
+  it('enables the bundled JavaScript and JSX language service before initialization', () => {
+    const runtime = {};
+
+    configureModernMonacoEnvironment(runtime);
+
+    expect(runtime).toEqual({ MonacoEnvironment: { useBuiltinLSP: true } });
   });
 
   it('keeps workspace files in memory and removes assessment trees recursively', async () => {

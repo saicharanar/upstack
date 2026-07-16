@@ -17,7 +17,13 @@ export function AssessmentEditorSurface(props: AssessmentEditorSurfaceProps): Re
   const useLegacyEditor = useCallback(() => setIsUsingLegacyEditor(true), []);
 
   if (isUsingLegacyEditor) {
-    return <Suspense fallback={loadingEditor}><LegacyMonacoSurface {...props} /></Suspense>;
+    return (
+      <div className="assessment-editor__legacy-surface">
+        <Suspense fallback={loadingEditor}>
+          <LegacyMonacoSurface {...props} />
+        </Suspense>
+      </div>
+    );
   }
 
   return (

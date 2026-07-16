@@ -3,6 +3,8 @@ node_modules/
 out/
 .tmp/
 /public/vendor/modern-monaco/
+/public/vendor/typescript/
+/public/vendor/types/
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store

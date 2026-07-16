@@ -5,6 +5,7 @@ export function modernMonacoImportMap(basePath: string): string {
     imports: {
       'modern-monaco/editor-core': `${basePath}${VENDOR_PATH}/editor-core.mjs`,
       'modern-monaco/lsp': `${basePath}${VENDOR_PATH}/lsp/index.mjs`,
+      typescript: `${basePath}/vendor/typescript/typescript.mjs`,
     },
   });
 }
