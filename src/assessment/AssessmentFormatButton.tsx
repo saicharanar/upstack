@@ -8,7 +8,7 @@ import * as estreePlugin from 'prettier/plugins/estree';
 
 type FormatStatus = 'idle' | 'formatting' | 'error';
 
-async function formatJavaScript(code: string): Promise<string> {
+export async function formatJavaScript(code: string): Promise<string> {
   return format(code, {
     parser: 'babel',
     plugins: [babelPlugin, estreePlugin],
