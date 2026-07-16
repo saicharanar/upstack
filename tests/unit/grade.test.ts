@@ -19,7 +19,7 @@ const META: AssessmentMeta = {
 };
 
 function results(...names: string[]): SpecTestResult[] {
-  return names.map((name) => ({ name, passed: true }));
+  return names.map((name) => ({ name, passed: true, failureMessage: null }));
 }
 
 describe('grading an exercise', () => {
@@ -44,6 +44,26 @@ describe('grading an exercise', () => {
   it('records exactly which tests passed', () => {
     const result = grade(META, results('a1', 'b1'));
     expect([...result.passedTests].sort()).toEqual(['a1', 'b1']);
+  });
+
+  it('keeps every configured check under its concept in metadata order', () => {
+    const result = grade(META, [
+      { name: 'a2', passed: false, failureMessage: 'Expected a second item' },
+      { name: 'a1', passed: true, failureMessage: null },
+    ]);
+
+    expect(result.concepts[0]?.checks).toEqual([
+      { name: 'a1', passed: true, failureMessage: null },
+      { name: 'a2', passed: false, failureMessage: 'Expected a second item' },
+    ]);
+    expect(result.concepts[1]?.checks).toEqual([
+      { name: 'b1', passed: false, failureMessage: null },
+    ]);
+  });
+
+  it('keeps sanitized technical messages on the grade result', () => {
+    const result = grade(META, results('a1'), ['The test suite did not start']);
+    expect(result.technicalMessages).toEqual(['The test suite did not start']);
   });
 
   it('honours a minimum-percentage pass rule across required concepts', () => {
