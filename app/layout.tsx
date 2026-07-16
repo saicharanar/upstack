@@ -2,6 +2,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { modernMonacoImportMap } from '@/assessment/modernMonacoAssets';
 import { ProgressProvider } from '@/progress/ProgressProvider';
 import { ThemeToggle } from '@/theme/ThemeToggle';
 import { THEME_BOOTSTRAP_SCRIPT } from '@/theme/themeStorage';
@@ -11,10 +12,16 @@ export const metadata: Metadata = {
   description: 'A progressive, hands-on learning platform with graded in-browser exercises.',
 };
 
+const repositoryBasePath = process.env.GITHUB_PAGES === 'true' ? '/upstack' : '';
+
 export default function RootLayout({ children }: { children: ReactNode }): ReactNode {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <script
+          type="importmap"
+          dangerouslySetInnerHTML={{ __html: modernMonacoImportMap(repositoryBasePath) }}
+        />
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }} />
       </head>
       <body>
