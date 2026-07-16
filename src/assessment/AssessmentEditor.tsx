@@ -1,6 +1,6 @@
 'use client';
 
-import Editor, { loader, type Monaco, type OnMount } from '@monaco-editor/react';
+import Editor, { loader, type OnMount } from '@monaco-editor/react';
 import * as localMonaco from 'monaco-editor';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { AssessmentFile } from '@/content-layer/loader';
@@ -11,10 +11,10 @@ import {
   type ExecutionStatus,
   type ValidatedRevision,
 } from './executionGate';
+import { hasValidJavaScriptSyntax } from './javascriptSyntax';
 import {
   configureMonaco,
   configureMonacoWorkers,
-  hasValidSyntax,
   modelUriFor,
 } from './monacoSetup';
 
@@ -69,17 +69,13 @@ export function AssessmentEditor({
   );
   const [activePath, setActivePath] = useState(activeFile);
   const [formatStatus, setFormatStatus] = useState<FormatStatus>('idle');
-  const monacoRef = useRef<Monaco | null>(null);
   const draftFilesRef = useRef(draftFiles);
 
   const executionGate = useMemo(
     () =>
       new AssessmentExecutionGate({
-        validate: async () => {
-          const monaco = monacoRef.current;
-          if (!monaco) return false;
-          return hasValidSyntax(monaco, visibleFiles);
-        },
+        validate: async (candidateFiles) =>
+          hasValidJavaScriptSyntax(candidateFiles, visibleFiles),
         publish: onValidated,
         onStatus: onStatusChange,
       }),
@@ -96,7 +92,6 @@ export function AssessmentEditor({
   };
 
   const handleMount: OnMount = (editor, monaco) => {
-    monacoRef.current = monaco;
     configureMonaco(monaco);
     editor.focus();
   };

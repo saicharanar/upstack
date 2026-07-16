@@ -51,19 +51,3 @@ export function configureMonacoWorkers(): void {
     },
   };
 }
-
-export async function hasValidSyntax(monaco: Monaco, filePaths: readonly string[]): Promise<boolean> {
-  const getWorker = await monaco.languages.typescript.getJavaScriptWorker();
-
-  for (const filePath of filePaths) {
-    const uri = monaco.Uri.parse(modelUriFor(filePath));
-    const model = monaco.editor.getModel(uri);
-    if (!model) continue;
-
-    const worker = await getWorker(uri);
-    const diagnostics = await worker.getSyntacticDiagnostics(uri.toString());
-    if (diagnostics.length > 0) return false;
-  }
-
-  return true;
-}
