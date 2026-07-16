@@ -9,6 +9,9 @@ const SOLUTION = `export default function UserCard() {
     </div>
   );
 }`;
+const INCOMPLETE_SOLUTION = `export default function UserCard() {
+  return (
+    <div`;
 
 const log = (...a) => console.log(...a);
 const fail = (m) => { console.error('FAIL:', m); process.exitCode = 1; };
@@ -17,6 +20,7 @@ const browser = await chromium.launch({ chromiumSandbox: false });
 const context = await browser.newContext({
   viewport: { width: 1536, height: 960 },
   serviceWorkers: 'block',
+  permissions: ['clipboard-read', 'clipboard-write'],
 });
 
 /**
@@ -54,55 +58,96 @@ await context.route('**/*', async (route) => {
 });
 
 const page = await context.newPage();
-page.on('console', (m) => { if (m.type() === 'error') log('[browser error]', m.text().split('\n')[0]); });
+const browserErrors = [];
+page.on('console', (message) => {
+  if (message.type() !== 'error') return;
+  const firstLine = message.text().split('\n')[0];
+  if (!firstLine.startsWith('Failed to load resource:')) browserErrors.push(firstLine);
+  log('[browser error]', firstLine);
+});
+page.on('pageerror', (error) => browserErrors.push(error.message));
+
+async function replaceEditorContents(source) {
+  const editor = page.locator('.assessment .monaco-editor').first();
+  await editor.click({ position: { x: 240, y: 120 } });
+  await page.keyboard.press('ControlOrMeta+A');
+  await page.evaluate((text) => navigator.clipboard.writeText(text), source);
+  await page.keyboard.press('ControlOrMeta+V');
+}
 
 try {
-  log('1) Enter at "/" — redirects straight into the course');
-  await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
-  await page.waitForURL('**/learn/describing-ui/jsx', { timeout: 30_000 });
+  log('1) Open the JSX assessment workspace');
+  await page.goto(`${BASE}/learn/react/describing-ui/jsx/assessment`, {
+    waitUntil: 'domcontentloaded',
+  });
+  await page.waitForURL('**/learn/react/describing-ui/jsx/assessment/**', { timeout: 30_000 });
   log(`   -> ${page.url()}`);
 
-  log('2) Open the assessment workspace (Sandpack)');
-  await page.locator('a.launch-card').click();
-  await page.waitForURL('**/assessment', { timeout: 30_000 });
-
-  log('3) Wait for the Sandpack editor + tests to run against the starter (return null)');
-  await page.locator('.assessment .cm-content').first().waitFor({ state: 'visible', timeout: 90_000 });
-  await page.locator('.result-panel[data-status="failed"]').waitFor({ state: 'visible', timeout: 90_000 });
-  const failList = await page.locator('.sp-tests', { hasText: 'FAIL' }).count();
-  failList ? log('   -> Tests panel populated with a failing list') : fail('failing test list not visible');
+  log('2) Wait for Monaco and the readable starter test report');
+  await page.locator('.assessment .monaco-editor').first().waitFor({ state: 'visible', timeout: 90_000 });
+  await page.locator('.assessment-report[data-status="failed"]').waitFor({ state: 'visible', timeout: 90_000 });
+  const starterSummary = await page.locator('.assessment-report__count').innerText();
+  const starterChecks = await page.locator('.assessment-report__check').count();
+  starterChecks > 0
+    ? log(`   -> ${starterSummary}; ${starterChecks} individual checks shown`)
+    : fail('individual test checks not visible');
   await page.screenshot({ path: '/tmp/upstack-workspace-failing.png', fullPage: true });
   log('   -> Failing-state screenshot: /tmp/upstack-workspace-failing.png');
 
-  log('4) Type a correct solution — SandpackTests re-runs automatically in watch mode');
-  const editor = page.locator('.assessment .cm-content').first();
-  await editor.click();
-  await page.keyboard.press('ControlOrMeta+A');
-  await page.keyboard.insertText(SOLUTION);
+  log('3) Type incomplete JSX — keep the last valid preview instead of crashing');
+  await replaceEditorContents(INCOMPLETE_SOLUTION);
+  await page.locator('.assessment-editor__status[data-status="blocked"]').waitFor({
+    state: 'visible',
+    timeout: 30_000,
+  });
+  const sandboxErrorCount = await page.locator('.sandbox-error').count();
+  sandboxErrorCount === 0
+    ? log('   -> Syntax is blocked locally; preview remains available')
+    : fail('sandbox error appeared while typing incomplete JSX');
+
+  log('4) Type a correct solution — only the validated revision reaches Sandpack');
+  await replaceEditorContents(SOLUTION);
 
   log('5) Wait for a passing result');
-  await page.locator('.result-panel[data-status="passed"]').waitFor({ state: 'visible', timeout: 90_000 });
-  log('   -> Assessment PASSED in the workspace');
+  await page.locator('.assessment-report[data-status="passed"]').waitFor({ state: 'visible', timeout: 90_000 });
+  const passingSummary = await page.locator('.assessment-report__count').innerText();
+  passingSummary === '4 of 4 checks passed'
+    ? log(`   -> Assessment PASSED: ${passingSummary}`)
+    : fail(`unexpected passing summary (${passingSummary})`);
   await page.screenshot({ path: '/tmp/upstack-workspace-passing.png', fullPage: true });
   log('   -> Passing-state screenshot: /tmp/upstack-workspace-passing.png');
 
-  log('6) Return to the chapter');
+  log('6) Restart the preview and confirm the editor draft survives');
+  await page.getByRole('button', { name: 'Restart preview' }).click();
+  await page.locator('.assessment .monaco-editor').first().waitFor({ state: 'visible' });
+  await page.locator('.assessment .view-lines', { hasText: 'Ada Lovelace' }).waitFor({
+    state: 'visible',
+    timeout: 10_000,
+  });
+  log('   -> Draft preserved across runtime restart');
+
+  log('7) Return to the chapter');
   await page.locator('a.workspace__back').click();
   await page.waitForURL((url) => !url.pathname.endsWith('/assessment'), { timeout: 30_000 });
   await page.locator('.sidebar').waitFor({ state: 'visible', timeout: 30_000 });
   await page.waitForTimeout(1000);
 
-  log('7) Sidebar reflects the pass (shared progress store)');
-  const done = await page.locator('.sidebar__chapter[data-state="completed"]', { hasText: 'Writing Markup with JSX' }).count();
-  done ? log('   -> JSX chapter Completed ✓') : fail('JSX not marked completed');
-  const nextState = await page.locator('.sidebar__chapter', { hasText: 'Passing Props' }).first().getAttribute('data-state');
-  ['unlocked', 'in-progress'].includes(nextState) ? log(`   -> Next chapter UNLOCKED (${nextState})`) : fail(`next chapter not unlocked (${nextState})`);
+  log('8) Chapter reflects the pass (shared progress store)');
+  await page.locator('.launch-card[data-passed="true"]').waitFor({ state: 'visible' });
+  await page.getByText('Chapter complete ✓', { exact: true }).waitFor({ state: 'visible' });
+  log('   -> Assessment card passed and chapter completed');
 
-  log('8) Reload and confirm progress persisted');
+  log('9) Reload and confirm progress persisted');
   await page.reload({ waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1000);
-  const stillDone = await page.locator('.sidebar__chapter[data-state="completed"]', { hasText: 'Writing Markup with JSX' }).count();
-  stillDone ? log('   -> After refresh, JSX still Completed ✓ (localStorage persisted)') : fail('progress lost after refresh');
+  const stillDone = await page.locator('.launch-card[data-passed="true"]').count();
+  stillDone
+    ? log('   -> After refresh, JSX still completed ✓ (localStorage persisted)')
+    : fail('progress lost after refresh');
+
+  browserErrors.length === 0
+    ? log('   -> No browser console errors')
+    : fail(`${browserErrors.length} browser console error(s) occurred`);
 
   log(process.exitCode ? '\nRESULT: FAILURES ABOVE' : '\nRESULT: ALL EXIT CRITERIA MET');
 } catch (err) {
